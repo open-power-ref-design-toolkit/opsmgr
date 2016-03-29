@@ -2,9 +2,9 @@ FROM ubuntu:14.04.4
 MAINTAINER Guang Cheng Li liguangc@cn.ibm.com
 
 ENV codename trusty
-RUN echo "deb http://archive.ubuntu.com/ubuntu/ $codename main restricted universe multiverse" > /etc/apt/sources.list
-RUN echo "deb http://archive.ubuntu.com/ubuntu/ ${codename}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-RUN echo "deb http://archive.ubuntu.com/ubuntu/ ${codename}-security main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ $codename main restricted universe multiverse" > /etc/apt/sources.list
+RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ ${codename}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ ${codename}-security main restricted universe multiverse" >> /etc/apt/sources.list
 
 RUN apt-get update
 
@@ -19,7 +19,7 @@ RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/ss
 
 RUN apt-get -y install openjdk-7-jre
 
-VOLUME /elk
+VOLUME /elkdata
 
 #0. ELK setup
 #Install Redis, not required for now.
@@ -46,7 +46,9 @@ RUN echo "service elasticsearch start" >> /bin/startservices
 
 #3. Install Logstash
 RUN apt-get -y install logstash
-#TODO: config files in /etc/logstash/conf.d/
+COPY elk-config/logstash.conf /etc/logstash/conf.d/logstash.conf
+COPY elk-config/rsyslogconfig/master/rsyslog.conf /etc/rsyslog.conf
+COPY elk-config/rsyslogconfig/master/rsyslog.d/60-stack-cluster.conf /etc/rsyslog.d/60-stack-cluster.conf
 
 RUN echo "service logstash start" >> /bin/startservices
 
