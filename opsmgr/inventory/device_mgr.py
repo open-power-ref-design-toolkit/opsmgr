@@ -1,3 +1,6 @@
+import gettext
+# establish _ in global namespace
+gettext.install('opsmgr', '/usr/share/locale')
 import logging
 
 from datetime import datetime

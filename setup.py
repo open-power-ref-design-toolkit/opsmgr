@@ -27,6 +27,10 @@ setup(
     include_package_data=True,
 
     entry_points={
+        'console_scripts': [
+            'opsmgr = opsmgr.scripts.cli:main',
+            'opsmgr-admin = opsmgr.scripts.cli_admin:main',
+         ],
         'opsmgr.inventory.interfaces.IManagerDevicePlugin': [],
         'opsmgr.inventory.interfaces.IManagerDeviceHook': [],
         'opsmgr.inventory.interfaces.IManagerRackHook': [],
