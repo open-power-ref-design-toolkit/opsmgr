@@ -12,10 +12,20 @@ setup(
     url='',
 
     classifiers=[
+                 'Programming Language :: Python',
+                 'Programming Language :: Python :: 2',
+                 'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: 3.4',
                  'Programming Language :: Python :: 3.5',
                  ],
+
+    install_requires = [
+        'paramiko>=1.16.0',
+        'sqlalchemy>=1.0.12',
+        'stevedore>=1.12.0',
+        'pyyaml>=3.11',
+    ],
 
     platforms=['Any'],
 
