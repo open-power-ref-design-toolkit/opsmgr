@@ -25,6 +25,8 @@ setup(
         'sqlalchemy>=1.0.12',
         'stevedore>=1.12.0',
         'pyyaml>=3.11',
+        'enum-compat>=0.0.2',
+        'configparser>=3.5.0b2',
     ],
 
     platforms=['Any'],
