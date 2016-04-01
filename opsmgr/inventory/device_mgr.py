@@ -1,4 +1,5 @@
 import logging
+import socket
 
 from datetime import datetime
 from stevedore import extension
@@ -248,7 +249,18 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
     message = None
     label = label.strip()
     address = address.strip()
-    rc, message = validate_address(address)
+    ipv4 = ""
+    hostname = ""
+    # check if the address is hostname or ipv4
+    if is_valid_address(address):
+       ipv4 = address
+       hostname = socket.gethostbyaddr(address)[0]
+    else:
+       ipv4 = socket.gethostbyname(address)
+       hostname = address 
+
+    rc, message = validate_address(ipv4)
+       
     if rc != 0:
         return rc, message
     rc, message = validate_label(label)
@@ -256,7 +268,7 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         return rc, message
 
     validate_ret, device_type, mtm, serialnum, version = validate(
-        address, userid, password, device_type)
+        ipv4, userid, password, device_type)
     if validate_ret != 0:
         logging.error(
             "%s::failed to add device, validate device(%s) return value(%d).",
@@ -292,7 +304,8 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
     device_info.eia_location = rack_location
     device_info.machine_type_model = mtm
     device_info.serial_number = serialnum
-    device_info.address = address
+    device_info.address = ipv4
+    device_info.hostname = hostname
     device_info.userid = userid
     device_info.password = persistent_mgr.encrypt_data(password)
     device_info.label = label
