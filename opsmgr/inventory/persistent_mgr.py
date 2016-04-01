@@ -1,6 +1,6 @@
 import os
 import base64
-from configparser import ConfigParser
+from backports import configparser
 from Crypto.Cipher import AES  # encryption library
 from Crypto.Hash import SHA512
 from sqlalchemy.orm import sessionmaker
@@ -71,7 +71,7 @@ def read_passphrase():
     """
     # _METHOD_ = 'persistent_mgr.read_passphrase'
     if os.path.exists(PASSPHRASE):
-        parser = ConfigParser()
+        parser = configparser.ConfigParser()
         parser.read(PASSPHRASE, encoding='utf-8')
         passphrase = parser.get('DEFAULT', 'passphrase')
         # Hash the passphrase using a sha512 algorithm and 256 keysize It
@@ -92,7 +92,7 @@ def read_database_connection():
     """ gets the database connection info and returns it
     """
     if os.path.exists(OPSMGR_CONF):
-        parser = ConfigParser()
+        parser = configparser.ConfigParser()
         parser.read(OPSMGR_CONF, encoding='utf-8')
         return parser.get('DATABASE', 'connection')
     else:
