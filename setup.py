@@ -48,5 +48,7 @@ setup(
         'opsmgr.inventory.interfaces.IManagerRackHook': [],
     },
 
+    data_files=[('etc', ['etc/logging.yaml'])],
+
     zip_safe=False,
 )

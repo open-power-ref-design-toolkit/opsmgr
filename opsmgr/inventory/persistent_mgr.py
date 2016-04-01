@@ -8,8 +8,7 @@ from sqlalchemy import create_engine
 from opsmgr.inventory.data_model import Base, Device, Rack
 
 session = None
-PASSPHRASE = '/usr/local/opsmgr/etc/securedata.conf'
-OPSMGR_CONF = "/usr/local/opsmgr/etc/opsmgr.conf"
+OPSMGR_CONF = "/etc/opsmgr/opsmgr.conf"
 
 def encrypt_data(str_to_encrypt):
     """ encrypt data in string to encoded value
@@ -70,9 +69,9 @@ def read_passphrase():
     """ gets the passphrase info and returns it
     """
     # _METHOD_ = 'persistent_mgr.read_passphrase'
-    if os.path.exists(PASSPHRASE):
+    if os.path.exists(OPSMGR_CONF):
         parser = configparser.ConfigParser()
-        parser.read(PASSPHRASE, encoding='utf-8')
+        parser.read(OPSMGR_CONF, encoding='utf-8')
         passphrase = parser.get('DEFAULT', 'passphrase')
         # Hash the passphrase using a sha512 algorithm and 256 keysize It
         # returns the hashed string.
