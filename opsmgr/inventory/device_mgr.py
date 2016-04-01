@@ -256,11 +256,11 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
     hostname = ""
     # check if the address is hostname or ipv4
     if is_valid_address(address):
-       ipv4 = address
-       hostname = socket.gethostbyaddr(address)[0]
+        ipv4 = address
+        hostname = socket.gethostbyaddr(address)[0]
     else:
-       ipv4 = socket.gethostbyname(address)
-       hostname = address 
+        ipv4 = socket.gethostbyname(address)
+        hostname = address
 
     rc, message = validate_address(ipv4)
        
