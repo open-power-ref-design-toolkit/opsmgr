@@ -9,7 +9,7 @@ from stevedore import extension
 
 import opsmgr.inventory.constants as constants
 import opsmgr.inventory.persistent_mgr as persistent_mgr
-from opsmgr.inventory.data_model import Rack, Device
+from opsmgr.inventory.data_model import Rack, Device, Key
 from opsmgr.inventory.utils import entry_exit, is_valid_address
 
 I_MANAGER_DEVICE_PLUGIN = "opsmgr.inventory.interfaces.IManagerDevicePlugin"
@@ -232,7 +232,8 @@ def validate_label(label):
             return 101, error_message
     return 0, ""
 
-def add_device(label, device_type, address, userid, password, rackid='', rack_location=''):
+def add_device(label, device_type, address, userid, password, rackid='', rack_location='',
+               ssh_key=None):
 
     """add device to the list of devices in the configuration managed
 
@@ -241,9 +242,10 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         device_type: type of device from device enumeration
         address: IP address of device
         userid:  string with device userid
-        password:  string with device password
+        password:  string with device password (or password for ssh key)
         rackid: string identify rack id, if not specified will default to management rack
         rack:_location string identifying rack location
+        ssh_key: io.StringIO stream of the ssh key
     Returns:
         RC: integer return code
         Message: string with message associated with return code
@@ -271,7 +273,7 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         return rc, message
 
     validate_ret, device_type, mtm, serialnum, version = validate(
-        ipv4, userid, password, device_type)
+        ipv4, userid, password, device_type, ssh_key)
     if validate_ret != 0:
         logging.error(
             "%s::failed to add device, validate device(%s) return value(%d).",
@@ -316,7 +318,8 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
     device_info.address = ipv4
     device_info.hostname = hostname
     device_info.userid = userid
-    device_info.password = persistent_mgr.encrypt_data(password)
+    if password and not ssh_key:
+        device_info.password = persistent_mgr.encrypt_data(password)
     device_info.label = label
     device_info.device_type = device_type
     device_info.version = version
@@ -336,6 +339,15 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         return 102, message
 
     persistent_mgr.add_devices([device_info])
+
+    if ssh_key:
+        key_info = Key()
+        key_info.device = device_info
+        key_info.type = "RSA"
+        key_info.value = ssh_key.getvalue()
+        if password:
+            key_info.password = persistent_mgr.encrypt_data(password)
+        persistent_mgr.add_ssh_keys([key_info])
 
     try:
         for hook_name, hook_plugin in hooks.items():
@@ -778,15 +790,16 @@ def _validate(address, userid, password, device_type):
     return rc, message
 
 
-def validate(address, userid, password, device_type):
+def validate(address, userid, password, device_type, ssh_key=None):
     '''
     validate that the device is reachable with the credentials provided.
 
     Args:
         address    IPv4 address to the device.
         userid     Userid to access the device with
-        password   Password to access the device with
+        password   Password to access the device with (or ssh_key password)
         device_type string identifying device type to validate as.
+        ssh_key:   io.StringIO stream of the ssh key
     Returns:
         rc, device_type, mtm, serialnum, version_details, Interfaces
 
@@ -808,7 +821,7 @@ def validate(address, userid, password, device_type):
         plugin = plugins[device_type]
         try:
             plugin = plugins[device_type]
-            plugin.connect(address, userid, password)
+            plugin.connect(address, userid, password, ssh_key)
             mtm = plugin.get_machine_type_model()
             serialnum = plugin.get_serial_number()
             version = plugin.get_version()
@@ -825,7 +838,7 @@ def validate(address, userid, password, device_type):
     else: #Try all plugins
         for plugin_device_type, plugin in plugins.items():
             try:
-                plugin.connect(address, userid, password)
+                plugin.connect(address, userid, password, ssh_key)
                 mtm = plugin.get_machine_type_model()
                 serialnum = plugin.get_serial_number()
                 version = plugin.get_version()

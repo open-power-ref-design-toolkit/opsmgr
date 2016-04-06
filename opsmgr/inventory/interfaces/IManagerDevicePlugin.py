@@ -19,7 +19,7 @@ class IManagerDevicePlugin(object):
         """
 
     @abstractmethod
-    def connect(self, host, userid, password):
+    def connect(self, host, userid, password, ssh_key_string):
         """
         """
 

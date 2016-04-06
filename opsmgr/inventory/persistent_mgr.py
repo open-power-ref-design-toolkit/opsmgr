@@ -280,6 +280,9 @@ def add_devices(devices):
     """
     _add(devices)
 
+def add_ssh_keys(ssh_keys):
+    _add(ssh_keys)
+
 #TODO
 def update_rack(racks):
     """ Updates racks in data store

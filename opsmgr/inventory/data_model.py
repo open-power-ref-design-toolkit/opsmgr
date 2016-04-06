@@ -67,6 +67,7 @@ class Device(Base):
 
     rack_id = Column(Integer, ForeignKey('rack.rack_id'), nullable=False)
     rack = relationship("Rack", back_populates="devices")
+    key = relationship("Key", uselist=False, back_populates="device")
 
     def to_dict_obj(self):
         result = {}
@@ -90,3 +91,13 @@ class Device(Base):
     def __repr__(self, *args, **kwargs):
         _dict = self.to_dict_obj()
         return str(_dict)
+
+class Key(Base):
+    __tablename__ = "key"
+    key_id = Column(Integer, primary_key=True)
+
+    device_id = Column(Integer, ForeignKey('device.device_id'))
+    device = relationship("Device", back_populates="key")
+    type = Column(String(10), nullable=False)
+    value = Column(Text(), nullable=False)
+    password = Column(String(255))

@@ -8,18 +8,43 @@ import gettext
 gettext.install('opsmgr', '/usr/share/locale')
 import sys
 
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+import paramiko
+
 import opsmgr.inventory.device_mgr as device_mgr
 import opsmgr.inventory.persistent_mgr as persistent_mgr
 import opsmgr.inventory.remote_access as remote_access
 from opsmgr.inventory.utils import get_strip_strings_array
 from opsmgr.inventory.utils import LoggingService
 
-#TODO:
-#support hostname in addition to ip address
-#support sshkey authnetication
+def _prompt_for_key_password(key_file, password):
+    """ Given a key_file will attempt read it, if password is None
+        and a password is required, will prompt for the password
+    """
+    try:
+        paramiko.RSAKey.from_private_key_file(key_file, password)
+    except paramiko.PasswordRequiredException:
+        password = getpass.getpass(_("SSH Key password:"))
+        paramiko.RSAKey.from_private_key_file(key_file, password)
+
+    return password
 
 def add_device(args):
-    if args.password:
+    ssh_key_string = None
+    if args.key:
+        try:
+            password = _prompt_for_key_password(args.key, args.password)
+            file = open(args.key)
+            ssh_key_string = StringIO(file.read())
+            file.close()
+        except (IOError, paramiko.SSHException) as e:
+            message = _("Error reading key file: %s") % e
+            return -1, message
+    elif args.password:
         password = args.password
     else:
         new_password = getpass.getpass(_("Device password:"))
@@ -38,7 +63,7 @@ def add_device(args):
             return -1, error_message
 
     return device_mgr.add_device(args.label, args.type, args.address, args.user,
-                                 password, rack_id, args.rack_location)
+                                 password, rack_id, args.rack_location, ssh_key_string)
 
 def add_rack(args):
     return device_mgr.add_rack(args.label, args.data_center, args.location, args.notes)
@@ -239,8 +264,9 @@ def main(argv=sys.argv[1:]):
     pad.add_argument('-u', '--user', required=True,
                      help='The authorized user id to the device being added')
     pad.add_argument('-p', '--password',
-                     help='The password of the authorized user, if not specified prompts'
-                          ' for the password')
+                     help='The password of the authorized user or private key,'
+                          ' if not specified prompts for the password')
+    pad.add_argument('-k', '--key', help='private key to authenticate the user id')
     pad.add_argument('-a', '--address', required=True,
                      help='Ip Address or hostname for the device being added')
     pad.add_argument('-t', '--type', choices=device_mgr.list_supported_device_types(),

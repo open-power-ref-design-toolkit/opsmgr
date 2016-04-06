@@ -24,13 +24,16 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_web_url(host):
         return None
 
-    def connect(self, host, userid, password):
+    def connect(self, host, userid, password, ssh_key_string=None):
         _method_ = "UbuntuPlugin.connect"
         try:
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.client.connect(host, username=userid,
-                                password=password, timeout=30)
+            if ssh_key_string:
+                private_key = paramiko.RSAKey.from_private_key(ssh_key_string, password)
+                self.client.connect(host, username=userid, pkey=private_key, timeout=30)
+            else:
+                self.client.connect(host, username=userid, password=password, timeout=30)
             if not self._is_ubuntu():
                 raise IntegratedManagerException.InvalidDeviceException(
                     "Device is not a Ubuntu Device")
