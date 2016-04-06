@@ -39,6 +39,7 @@ def get_devicetag_text_id(tag_name):
         'machine-type-model': _('machine type model'),
         'serial-number': _('serial number'),
         'ipv4-service-address': _('ipv4 address'),
+        'hostname': _('hostname'),
         'userid': _('userid'),
         'password': _('password'),
         'device-type': _('device type'),
@@ -387,7 +388,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     _method_ = 'device_mgr.list_devices'
     logging.debug("ENTRY %s", _method_)
     all_tags = ['label', 'rackid', 'rack-eia-location', 'machine-type-model',
-                'serial-number', 'ip-address', 'userid', 'version', 'device-type',
+                'serial-number', 'ip-address', 'hostname','userid', 'version', 'device-type',
                 'status', 'statusTime']
     brief_tags = ['label']
     result = {}
@@ -944,7 +945,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
 @entry_exit(exclude_index=[], exclude_name=["user_password"])
 def change_device_properties(label=None, deviceid=None, new_label=None,
                              auth_handling=0,
-                             userid=None, user_password=None, ip_address=None,
+                             userid=None, user_password=None, address=None,
                              rackid=None, rack_location=None, version=None, fixes=None, ):
     ''' Change the device properties in devices.xml
 
@@ -956,7 +957,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
                    1-Set the Uid/PW info, 2-Change PW including device
         userid:  the userid to set as userid managing the device.
         user_password:  the existing password or set password for the device
-        ip_address: the ip address to set for the device
+        address: the ip address or the hostname to set for the device
         rackid:  rack id to set for the device
         rack_location: location in the rack of the element
         version:  firmware version information
@@ -971,7 +972,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
 
     # no properties changed
     if not user_password and new_label is None and rackid is None and rack_location is None \
-            and version is None and ip_address is None and fixes is None:
+            and version is None and address is None and fixes is None:
         return 0, ""
 
     # gain access to the device object for the targeted item.
@@ -986,10 +987,19 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
             "Failed to change device properties, device (%s) is not found.") % (device_des)
         return 101, message
 
-    ip_address_changed = False
+    address_changed = False
     # check if we now need to handle an IP address change in the change
     # properties. this
-    if ip_address is not None:
+    ip_address = ""
+    hostname = ""
+
+    if address is not None:
+        if is_valid_address(address):
+            ip_address = address
+            hostname = socket.gethostbyaddr(address)[0]
+        else:
+            ip_address = socket.gethostbyname(address)
+            hostname = address
         if ip_address != device.address:
             # check if id is of good form and not already in use as long as its
             # different from the one we have
@@ -1000,9 +1010,10 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
                 return rc, message
             else:
                 # now handle the IP address change
-                ip_address_changed = True
+                address_changed = True
                 logging.info("%s: IP address changed.", _method_)
                 device.address = ip_address
+                device.hostname = hostname
     else:
         # we may need the address for authorization changes, make sure its set
         ip_address = device.address
@@ -1013,7 +1024,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     if auth_handling == 0:
         logging.info("%s: no handling of credentials requested.", _method_)
 
-        if ip_address_changed or userid is not None or user_password is not None:
+        if address_changed or userid is not None or user_password is not None:
             # validate that the existing credentials work with the new IP
             # address
             device_type = device.device_type
@@ -1046,7 +1057,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
                 "Failed to change device properties, the password is not specified.")
             return 103, message
 
-        if not ip_address:
+        if not address:
             logging.error(
                 "%s::failed to change device properties, the address is not specified.", _method_)
             message = _(
