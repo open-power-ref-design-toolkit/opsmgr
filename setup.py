@@ -33,6 +33,8 @@ setup(
 
     scripts=[],
 
+    namespace_packages=['opsmgr'],
+
     provides=['opsmgr'],
 
     packages=find_packages(),

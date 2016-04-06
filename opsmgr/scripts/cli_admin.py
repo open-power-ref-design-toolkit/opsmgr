@@ -29,6 +29,13 @@ def _copy_logging_yaml():
         fp.close()
 
 def _write_conf_file(args):
+    #Hack to support python2.7
+    try:
+        input = raw_input
+    except NameError:
+        pass
+
+
     if os.path.exists(CONF_FILE):
         print(CONF_FILE + " exist. To generate a new passphrase delete " \
               "this file and run the command again.")

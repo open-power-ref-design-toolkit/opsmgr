@@ -264,7 +264,7 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         hostname = address
 
     rc, message = validate_address(ipv4)
-       
+
     if rc != 0:
         return rc, message
     rc, message = validate_label(label)
@@ -300,8 +300,14 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         rack = persistent_mgr.get_rack_by_id(rackid)
     else:
         # don't have a rack id. find first the rack and assign it there
-        racks_info = persistent_mgr.get_all_racks()
-        rack = racks_info[0]
+        try:
+            racks_info = persistent_mgr.get_all_racks()
+            rack = racks_info[0]
+        except IndexError:
+            #No rack exist, create one
+            rack = Rack()
+            rack.label = "Default"
+            persistent_mgr.add_racks([rack])
 
     device_info = Device()
     device_info.rack = rack
@@ -714,9 +720,8 @@ def remove_device(labels=None, all_devices=False, deviceids=None):
                     hook_plugin.remove_device_post_save(device)
             except Exception as e:
                 logging.exception(e)
-                message = push_message(message,
-                        _("After device was removed. Error in plugin (%s): %s") % \
-                        (hook_name, e))
+                message = push_message(message, _("After device was removed. Error in plugin " \
+                                       "(%s): %s") % (hook_name, e))
 
     if len(not_remove_devices) > 0:
         labels_message = get_labels_message(not_remove_devices, is_return_deviceid)
