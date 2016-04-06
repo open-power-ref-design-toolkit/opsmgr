@@ -69,7 +69,7 @@ def change_device(args):
         return -1, message
 
     return device_mgr.change_device_properties(label=args.label, userid=args.user,
-                                               user_password=password, ip_address=args.address,
+                                               user_password=password, address=args.address,
                                                new_label=args.new_label, rackid=rackid,
                                                rack_location=args.rack_location)
 
