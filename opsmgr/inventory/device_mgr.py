@@ -262,8 +262,8 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         ipv4 = address
         hostname = socket.gethostbyaddr(address)[0]
     else:
-        ipv4 = socket.gethostbyname(address)
-        hostname = address
+        hostname = socket.getfqdn(address)
+        ipv4 = socket.gethostbyname(hostname)
 
     rc, message = validate_address(ipv4)
 
@@ -388,7 +388,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     _method_ = 'device_mgr.list_devices'
     logging.debug("ENTRY %s", _method_)
     all_tags = ['label', 'rackid', 'rack-eia-location', 'machine-type-model',
-                'serial-number', 'ip-address', 'hostname','userid', 'version', 'device-type',
+                'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'device-type',
                 'status', 'statusTime']
     brief_tags = ['label']
     result = {}
@@ -998,8 +998,9 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
             ip_address = address
             hostname = socket.gethostbyaddr(address)[0]
         else:
-            ip_address = socket.gethostbyname(address)
-            hostname = address
+            hostname = socket.getfqdn(address)
+            ip_address = socket.gethostbyname(hostname)
+
         if ip_address != device.address:
             # check if id is of good form and not already in use as long as its
             # different from the one we have
