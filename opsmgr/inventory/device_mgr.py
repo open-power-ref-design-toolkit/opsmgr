@@ -9,6 +9,8 @@ from stevedore import extension
 
 import opsmgr.inventory.constants as constants
 import opsmgr.inventory.persistent_mgr as persistent_mgr
+import opsmgr.inventory.IntegratedManagerException as IntegratedManagerException
+
 from opsmgr.inventory.data_model import Rack, Device, Key
 from opsmgr.inventory.utils import entry_exit, is_valid_address
 
@@ -763,12 +765,11 @@ def _validate(address, userid, password, device_type):
     # have a userid and pw to try at this point with only new pw,
     # verify the new password as valid to set as the persisted pw
     message = ""
-    validate_result = validate(
-        address, userid, password, device_type)
+    validate_result = validate(address, userid, password, device_type)
     rc = validate_result[0]
     if rc == 0:
         logging.info("%s::validate device data successfully.", _method_)
-        message = _("Validate device data successfully.")
+        message = _("Validated device data successfully.")
     elif rc == 10:
         # validate does not work on device type  so can't tell if change pw
         # will work.
@@ -831,7 +832,13 @@ def validate(address, userid, password, device_type, ssh_key=None):
         except KeyError:
             logging.error("%s::plugin(%s) not found", _method_, device_type)
             return (constants.validation_codes.DEVICE_TYPE_ERROR.value,
-                    None, None, None, (None, []), None)
+                    None, None, None, None)
+        except IntegratedManagerException.ConnectionException:
+            return (constants.validation_codes.FAILED_TO_CONNECT.value,
+                    None, None, None, None)
+        except IntegratedManagerException.AuthenticationException:
+            return (constants.validation_codes.CREDENTIALS_INVALID.value,
+                    None, None, None, None)
         except Exception as e:
             logging.exception(e)
             logging.warning("%s:plugin(%s). Exception running validate: %s",
@@ -942,25 +949,22 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
     return 0, message
 
 
-@entry_exit(exclude_index=[], exclude_name=["user_password"])
+@entry_exit(exclude_index=[], exclude_name=["password"])
 def change_device_properties(label=None, deviceid=None, new_label=None,
-                             auth_handling=0,
-                             userid=None, user_password=None, address=None,
-                             rackid=None, rack_location=None, version=None, fixes=None, ):
-    ''' Change the device properties in devices.xml
+                             userid=None, password=None, address=None,
+                             rackid=None, rack_location=None, ssh_key=None):
+    ''' Change the device properties in the data store
 
     Args:
-        label:   the existing label of the device (this or device id should be provided
+        label: the existing label of the device (this or device id should be provided)
         deviceid: the device id of the device to change
         new_label:  new label to set for the device
-        auth_handling:  handling for auth information passed: 0-Nothing to do,
-                   1-Set the Uid/PW info, 2-Change PW including device
-        userid:  the userid to set as userid managing the device.
-        user_password:  the existing password or set password for the device
+        userid: the userid to set as userid managing the device.
+        password: password of the userid or the ssh key
         address: the ip address or the hostname to set for the device
         rackid:  rack id to set for the device
         rack_location: location in the rack of the element
-        version:  firmware version information
+        ssh_key: io.StringIO stream of the ssh key
 
     Returns:
         rc:  return code
@@ -968,18 +972,19 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     '''
     _method_ = 'device_mgr.change_device_properties'
     message = None
-    device_des = label if deviceid is None else deviceid
 
     # no properties changed
-    if not user_password and new_label is None and rackid is None and rack_location is None \
-            and version is None and address is None and fixes is None:
+    properties = [new_label, userid, password, address, rackid, rack_location, ssh_key]
+    if all(prop is None for prop in properties):
         return 0, ""
 
     # gain access to the device object for the targeted item.
     if deviceid is not None:
         device = persistent_mgr.get_device_by_id(deviceid)
+        device_des = deviceid
     else:
         device = persistent_mgr.get_device_by_label(label)
+        device_des = label
     if not device:
         logging.error("%s::Failed to change device properties device (%s) is not found.",
                       _method_, device_des)
@@ -988,8 +993,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
         return 101, message
 
     address_changed = False
-    # check if we now need to handle an IP address change in the change
-    # properties. this
+    # check if we now need to handle an IP address change in the change properties
     ip_address = ""
     hostname = ""
 
@@ -1022,73 +1026,28 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     # if we made it here we, have an ip address to use and maybe using a
     # changed address.
 
-    if auth_handling == 0:
-        logging.info("%s: no handling of credentials requested.", _method_)
-
-        if address_changed or userid is not None or user_password is not None:
-            # validate that the existing credentials work with the new IP
-            # address
-            device_type = device.device_type
-            if userid:
-                temp_userid = userid
-            else:
-                temp_userid = device.userid
-            if user_password:
-                temp_password = user_password
-            else:
-                temp_password = persistent_mgr.decrypt_data(device.password)
-            rc, message = _validate(
-                ip_address, temp_userid, temp_password, device_type)
-            if rc != 0:
-                # return error if unable to validate with currently set info
-                return rc, message
-            else:
-                device.userid = temp_userid
-                device.password = persistent_mgr.encrypt_data(temp_password)
-                device.status = constants.access_status.SUCCESS.value
-                device.statusTime = datetime.utcnow()
-    elif auth_handling == 1:
-        logging.info("%s: setting of credentials requested.", _method_)
-
-        # setting the userid and password.
-        if not user_password:
-            logging.error(
-                "%s::failed to change device properties, the password is not specified.", _method_)
-            message = _(
-                "Failed to change device properties, the password is not specified.")
-            return 103, message
-
-        if not address:
-            logging.error(
-                "%s::failed to change device properties, the address is not specified.", _method_)
-            message = _(
-                "Failed to change device properties, the address is not specified.")
-            return 103, message
-        if not userid:
-            logging.error(
-                "%s::failed to change device properties, the userid is not specified.", _method_)
-            message = _(
-                "Failed to change device properties, the userid is not specified.")
-            return 103, message
-
+    if address_changed or userid is not None or password is not None:
+        # validate that the existing credentials work with the new IP
+        # address
         device_type = device.device_type
-        rc, message = _validate(
-            ip_address, userid, user_password, device_type)
-        if rc == 0:
-            # the credential info is valid time to set it in the device config.
-            # ip address was updated earlier
-            device.userid = userid
-            device.password = user_password
-            device.encypt_password = persistent_mgr.encrypt_data(user_password)
+        if userid:
+            temp_userid = userid
         else:
+            temp_userid = device.userid
+        if password:
+            temp_password = password
+        else:
+            temp_password = persistent_mgr.decrypt_data(device.password)
+
+        rc, message = _validate(ip_address, temp_userid, temp_password, device_type)
+        if rc != 0:
+            # return error if unable to validate with currently set info
             return rc, message
-    else:
-        # auth_handling not set to valid value
-        logging.error("%s::failed to change device properties, the auth_handling parameter"
-                      " is not a valid value.", _method_)
-        message = _(
-            "Failed to change device properties, the auth_handling value is is not valid.")
-        return 103, message
+        else:
+            device.userid = temp_userid
+            device.password = persistent_mgr.encrypt_data(temp_password)
+            device.status = constants.access_status.SUCCESS.value
+            device.statusTime = datetime.utcnow()
 
     if new_label is not None and new_label != device.label:
         # have new label and the new label differs from the existing label for
@@ -1107,11 +1066,8 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
         device.rack_id = rackid
     if rack_location is not None:
         device.eia_location = rack_location
-    if version is not None:
-        device.fw_version = version
-    if fixes is not None:
-        device.fixes = fixes
 
+    #pre_save hooks
     hooks = load_inventory_device_plugins()
     hook_name = 'unknown' #keeps pylint happy
     try:
@@ -1127,18 +1083,18 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
         "%s: commit device changes now. device info: %s", _method_, device)
     persistent_mgr.update_device([device])
 
+    #post_save hooks
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.change_device_post_save(device)
     except Exception as e:
         logging.exception(e)
-        message = _("After device properties were changed, Error in plugin (%s): %s") \
-                  % (hook_name, e)
+        message = push_message(message, _("After device properties were changed, " \
+                               "Error in plugin (%): %s") % (hook_name, e))
 
     # return success
     logging.info("EXIT %s device properties changed", _method_)
-    if not message:
-        message = _("Changed device successfully.")
+    message = push_message(message, _("Changed device successfully."))
     return 0, message
 
 def get_rackid(rack_label):

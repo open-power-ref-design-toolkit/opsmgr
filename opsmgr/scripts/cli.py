@@ -21,7 +21,7 @@ import opsmgr.inventory.remote_access as remote_access
 from opsmgr.inventory.utils import get_strip_strings_array
 from opsmgr.inventory.utils import LoggingService
 
-def _prompt_for_key_password(key_file, password):
+def _prompt_for_key_password(key_file, password=None):
     """ Given a key_file will attempt read it, if password is None
         and a password is required, will prompt for the password
     """
@@ -33,14 +33,24 @@ def _prompt_for_key_password(key_file, password):
 
     return password
 
+
+def _read_key_file(key_file, password=None):
+    """ Given a key_file will return the StringIO string bufffer
+        of the key and it's password.
+    """
+    ssh_key_string = None
+    if key_file:
+        password = _prompt_for_key_password(key_file, password)
+        file = open(key_file)
+        ssh_key_string = StringIO(file.read())
+        file.close()
+    return (ssh_key_string,password)
+
 def add_device(args):
     ssh_key_string = None
     if args.key:
         try:
-            password = _prompt_for_key_password(args.key, args.password)
-            file = open(args.key)
-            ssh_key_string = StringIO(file.read())
-            file.close()
+            (ssh_key_string, password) = _read_key_file(args.key, args.password)
         except (IOError, paramiko.SSHException) as e:
             message = _("Error reading key file: %s") % e
             return -1, message
@@ -69,7 +79,14 @@ def add_rack(args):
     return device_mgr.add_rack(args.label, args.data_center, args.location, args.notes)
 
 def change_device(args):
-    if args.prompt_password:
+    ssh_key_string = None
+    if args.key:
+        try:
+            (ssh_key_string, password) = _read_key_file(args.key, args.password)
+        except (IOError, paramiko.SSHException) as e:
+            message = _("Error reading key file: %s") % e
+            return -1, message
+    elif args.prompt_password:
         new_password = getpass.getpass(_("Device password:"))
         if not new_password:
             message = _("Please input a valid password and retry the command.")
@@ -89,14 +106,15 @@ def change_device(args):
             return -1, message
 
     if (not password and not args.address and not args.new_label and not rackid
-            and not args.rack_location):
+            and not args.rack_location and not ssh_key_string):
         message = _("You must specify at least one property to be modified.")
         return -1, message
 
     return device_mgr.change_device_properties(label=args.label, userid=args.user,
-                                               user_password=password, address=args.address,
+                                               password=password, address=args.address,
                                                new_label=args.new_label, rackid=rackid,
-                                               rack_location=args.rack_location)
+                                               rack_location=args.rack_location,
+                                               ssh_key=ssh_key_string)
 
 def change_rack(args):
     if not args.new_label and not args.data_center and not args.location and not args.notes:
@@ -288,9 +306,11 @@ def main(argv=sys.argv[1:]):
     pcd.add_argument('-l', '--label', required=True, help='Label for the device being modified')
     pcd.add_argument('--new-label', help='New label for the device')
     pcd.add_argument('-u', '--user', help='Authorized user id of the device')
-    pcd.add_argument('-p', '--password', help='The password of the authorized user id')
-    pcd.add_argument('-P', '--prompt-password', action='store_true',
+    pcd.add_argument('-p', '--password', help='The password of the authorized user or private key')
+    pcd_mxg = pcd.add_mutually_exclusive_group()
+    pcd_mxg.add_argument('-P', '--prompt-password', action='store_true',
                      help='Prompts for entry of the password')
+    pcd_mxg.add_argument('-k', '--key', help='private key to authenticate the userid id')
     pcd.add_argument('-a', '--address', help='New Ip Address or hostname of the device')
     pcd.add_argument('-r', '--rack', help='The label of the rack to assign the device to')
     pcd.add_argument('--rack-location', help='The location in the rack of the device')

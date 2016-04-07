@@ -2,7 +2,7 @@ from enum import Enum
 
 OPSMGRLOG = "/var/log/opsmgr/opsmgr.log"
 OPSMGRLOG_ERROR = "/var/log/opsmgr/opsmgr_error.log"
-OPSMGR_LOG_CONF = "/etc/logging.yaml"
+OPSMGR_LOG_CONF = "/etc/opsmgr/logging.yaml"
 
 class access_status(Enum):
     """ codes assigned for access status field in device_info class
