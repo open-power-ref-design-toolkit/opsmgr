@@ -317,12 +317,19 @@ def delete_racks(racks):
 
 def delete_devices(devices):
     """ Removes list of Device classes from data store
-
+        Removes any key associated with a device
     args:
         devices:  list of Device classes
     returns:
         nothing
     """
+    keys = []
+    devices = [] if devices is None else devices
+    for device in devices:
+        key = device.key
+        if key:
+            keys.append(key)
+    _delete(keys)
     _delete(devices)
 
 def _add(items):
