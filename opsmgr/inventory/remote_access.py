@@ -5,8 +5,14 @@ import sys
 import termios
 import tty
 
-from paramiko import AutoAddPolicy
-from paramiko import SSHClient
+try:
+    #python 2.7
+    from StringIO import StringIO
+except ImportError:
+    #python 3.4
+    from io import StringIO
+
+import paramiko
 from paramiko.py3compat import u
 
 import opsmgr.inventory.persistent_mgr as persistent_mgr
@@ -26,15 +32,22 @@ def remote_access(label):
     if device:
         address = device.address
         userid = device.userid
-        password = persistent_mgr.decrypt_data(device.password)
+        password = None
+        if device.password:
+            password = persistent_mgr.decrypt_data(device.password)
+        ssh_key_string = None
+        key = device.key
+        if key:
+            ssh_key_string = StringIO(key.value)
+            if key.password:
+                password = persistent_mgr.decrypt_data(key.password)
         logging.info(
             "%s::Retrieved device details. Opening remote shell to the device (%s).",
             _method_, label)
         try:
             print(_(
                 "Establishing remote SSH connection to device (%s).") % label)
-            _create_remote_connection(
-                label, address, userid, password)
+            _create_remote_connection(label, address, userid, password, ssh_key_string)
         except Exception as e:
             message = _("Remote access to device (%s) failed due to error :%s") % (
                 label, e)
@@ -52,20 +65,24 @@ def remote_access(label):
     message = _("Remote access to device (%s) successful") % label
     return 0, message
 
-def _create_remote_connection(remote_access_label, address, userid, password):
+def _create_remote_connection(remote_access_label, address, userid, password, ssh_key_string):
     """ create a remote ssh connection based on the information provided.
 
     Args:
         remote_access_label: label of device we are connecting to.
         address: IPv4 address of device to connect to
         userid:  userid to authenticate with
-        password: password to authenticate with
+        password: password of userid or ssh_key_string
+        ssh_key_string: String containing an ssh private key
     """
     _method_ = 'device_mgr._create_remote_connection'
-    ssh = SSHClient()
-    ssh.set_missing_host_key_policy(AutoAddPolicy())
-    ssh.connect(
-        address, username=userid, password=password, look_for_keys=False)
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    if ssh_key_string:
+        private_key = paramiko.RSAKey.from_private_key(ssh_key_string, password)
+        ssh.connect(address, username=userid, pkey=private_key, look_for_keys=False)
+    else:
+        ssh.connect(address, username=userid, password=password, look_for_keys=False)
     chan = ssh.invoke_shell()
     print(_("Remote connection to device (%s) established successfully.") %
           remote_access_label)
