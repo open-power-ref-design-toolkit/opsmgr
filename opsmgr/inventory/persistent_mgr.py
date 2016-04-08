@@ -332,6 +332,17 @@ def delete_devices(devices):
     _delete(keys)
     _delete(devices)
 
+def delete_keys(keys):
+    """Removes list of key classes from data store
+
+    args:
+        keys:  list of key classes
+    returns:
+        nothing
+    """
+    _delete(keys)
+
+
 def _add(items):
     create_database_session_if_required()
     items = [] if items is None else items

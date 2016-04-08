@@ -4,6 +4,13 @@ gettext.install('opsmgr', '/usr/share/locale')
 import logging
 import socket
 
+try:
+    #python 2.7
+    from StringIO import StringIO
+except ImportError:
+    #python 3.4
+    from io import StringIO
+
 from datetime import datetime
 from stevedore import extension
 
@@ -749,7 +756,7 @@ def remove_device(labels=None, all_devices=False, deviceids=None):
     return ret, message
 
 
-def _validate(address, userid, password, device_type):
+def _validate(address, userid, password, device_type, ssh_key=None):
     """ Validate the password, address and userid information
 
     Args:
@@ -757,6 +764,7 @@ def _validate(address, userid, password, device_type):
         userid:  userid of the device to validate
         password:  password for the device
         device_type: device type of device to validate the info for
+        ssh_key:   io.StringIO stream of the ssh key
     Returns:
         rc:  return code for the operation
         message:  message to return to user in case of non 0 return code
@@ -765,7 +773,7 @@ def _validate(address, userid, password, device_type):
     # have a userid and pw to try at this point with only new pw,
     # verify the new password as valid to set as the persisted pw
     message = ""
-    validate_result = validate(address, userid, password, device_type)
+    validate_result = validate(address, userid, password, device_type, ssh_key)
     rc = validate_result[0]
     if rc == 0:
         logging.info("%s::validate device data successfully.", _method_)
@@ -948,12 +956,65 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
         message = _("Changed rack property successfully.")
     return 0, message
 
+def _change_device_key(device, address, userid, ssh_key_string, password):
+    """ Validate the new ssh key works, and change the device properties
+        prior to saving the device.
+
+    Args:
+        device - original device properties
+        address - new address if changed, else old address
+        userid - new userid if changed, else old userid
+        ssh_key_string: io.StringIO stream of the ssh key - new
+        password - password for the ssh key if any
+    Returns:
+        rc, message - if rc 0, updated device object
+        if rc non 0, message with failure
+    """
+    rc, message = _validate(address, userid, password, device.device_type, ssh_key_string)
+    if rc == 0:
+        # Update the device and key object for the new ssh_key
+        if device.key: #existing key to update
+            key_info = device.key
+        else: #new key needs created
+            key_info = Key()
+            key_info.device = device
+            key_info.type = "RSA"
+        key_info.value = ssh_key_string.getvalue()
+        if password:
+            key_info.password = persistent_mgr.encrypt_data(password)
+        else:
+            key_info.password = None
+
+        device.password = None # using ssh_key authentication
+    return (rc, message)
+
+def _change_device_userpass(device, address, userid, password):
+    """ Validate the userid password works and change the device_propeties
+        prior to the saving the device.
+        Doesn't update any password on the device itself
+    Args:
+        device - original device properties
+        address - new address if changed, else old address
+        userid - new userid if changed, else old userid
+        password - password of the userid
+    Returns:
+        rc, message - if rc 0, updated device object
+        if rc non 0, message with failure
+    """
+    rc, message = _validate(address, userid, password, device.device_type, None)
+    if rc == 0:
+        #Update the device object for the new userid/password
+        device.userid = userid
+        device.password = persistent_mgr.encrypt_data(password)
+    return (rc, message)
+
+
 
 @entry_exit(exclude_index=[], exclude_name=["password"])
 def change_device_properties(label=None, deviceid=None, new_label=None,
                              userid=None, password=None, address=None,
                              rackid=None, rack_location=None, ssh_key=None):
-    ''' Change the device properties in the data store
+    """ Change the device properties in the data store
 
     Args:
         label: the existing label of the device (this or device id should be provided)
@@ -969,7 +1030,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     Returns:
         rc:  return code
         message: completion message indicating reason for non zero rc (translated)
-    '''
+    """
     _method_ = 'device_mgr.change_device_properties'
     message = None
 
@@ -1025,27 +1086,63 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
 
     # if we made it here we, have an ip address to use and maybe using a
     # changed address.
-
-    if address_changed or userid is not None or password is not None:
+    if address_changed or userid is not None or password is not None or ssh_key is not None:
         # validate that the existing credentials work with the new IP
-        # address
+        # address or the new credentials are valid
+
+        # Figure out if we are:
+        # 1. Replacing the userid and password with another userid and pasword
+        # 2. Replacing the ssh_key with another ssh_key (may or may not have a password)
+        # 3. Replacing the userid and password with an ssh_key
+        # 4. Replacing the ssh_key with a userid nad password
+        # 5. Not changing anything just the ip address
+        # Figure out and set old_auth and new_auth to either userpass or key
+
+        if device.key is not None:
+            old_auth = "key"
+        else:
+            old_auth = "userpass"
+        
+        if ssh_key is not None:
+            new_auth = "key"
+        elif userid is not None or password is not None:
+            new_auth = "userpass"
+        else:
+            new_auth = None
+
         device_type = device.device_type
         if userid:
             temp_userid = userid
         else:
             temp_userid = device.userid
+
+        temp_password = None
         if password:
             temp_password = password
         else:
-            temp_password = persistent_mgr.decrypt_data(device.password)
+            if device.password is not None:
+                temp_password = persistent_mgr.decrypt_data(device.password)
+        if ssh_key:
+            temp_ssh_key = ssh_key
+        else:
+            if device.key:
+                key = device.key
+                temp_ssh_key = StringIO(key.value)
+                if key.password:
+                    password = persistent_mgr.decrypt_data(key.password)
 
-        rc, message = _validate(ip_address, temp_userid, temp_password, device_type)
+        if new_auth == "key":
+            rc, message = _change_device_key(device, ip_address, temp_userid,
+                                             temp_ssh_key, temp_password)
+        elif new_auth == "userpass":
+            rc, message = _change_device_userpass(device, ip_address, temp_userid, temp_password)
+        else:
+            rc, message = _validate(ip_address, temp_userid, temp_password,
+                                    device_type, temp_ssh_key)
         if rc != 0:
             # return error if unable to validate with currently set info
             return rc, message
         else:
-            device.userid = temp_userid
-            device.password = persistent_mgr.encrypt_data(temp_password)
             device.status = constants.access_status.SUCCESS.value
             device.statusTime = datetime.utcnow()
 
@@ -1082,6 +1179,11 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     logging.info(
         "%s: commit device changes now. device info: %s", _method_, device)
     persistent_mgr.update_device([device])
+
+    if old_auth == "key" and new_auth == "userpass":
+        # Need to delete ssh key from database
+        key_info = device.key
+        persistent_mgr.delete_keys([key_info])
 
     #post_save hooks
     try:
