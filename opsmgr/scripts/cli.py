@@ -98,6 +98,30 @@ def change_device(args):
                                                new_label=args.new_label, rackid=rackid,
                                                rack_location=args.rack_location)
 
+def change_device_password(args):
+    if not args.oldpassword:
+        old_password = getpass.getpass(prompt='Enter the current Password:')
+    else:
+        old_password = args.oldpassword
+
+    if not args.newpassword:
+        new_password1 = getpass.getpass(prompt='Enter new Password:')
+        new_password2 = getpass.getpass(prompt='Re-enter new Password:')
+        if new_password1 == new_password2:
+            new_password = new_password1
+        else:
+            message = _("The new passwords are not same.")
+            return -1, message
+    else:
+        new_password = args.newpassword
+
+    if not args.label and not args.oldpassword and not args.newpassword:
+        message = _("You must specify at least label in the command.")
+        return -1, message
+
+    return device_mgr.change_device_password(label=args.label, old_password=old_password,
+                                             new_password=new_password)
+
 def change_rack(args):
     if not args.new_label and not args.data_center and not args.location and not args.notes:
         message = _("You must specify at least one property to be modified.")
@@ -295,6 +319,12 @@ def main(argv=sys.argv[1:]):
     pcd.add_argument('-r', '--rack', help='The label of the rack to assign the device to')
     pcd.add_argument('--rack-location', help='The location in the rack of the device')
 
+    #change_device_password
+    pcdp = subparsers.add_parser('change_device_password', help='Change the password on the device')
+    pcdp.add_argument('-l', '--label', required=True, help='Label for the device being modified')
+    pcdp.add_argument('-o', '--oldpassword', help='The current password of the device')
+    pcdp.add_argument('-n', '--newpassword', help='The new password of the device')
+
     #change_rack
     pcr = subparsers.add_parser('change_rack', help='Modify parameters associated with a rack')
     pcr.add_argument('-l', '--label', required=True, help='Label for the rack being modified')
@@ -357,6 +387,8 @@ def main(argv=sys.argv[1:]):
         (rc, message) = add_rack(args)
     elif args.operation == 'change_device':
         (rc, message) = change_device(args)
+    elif args.operation == 'change_device_password':
+        (rc, message) = change_device_password(args)
     elif args.operation == 'change_rack':
         (rc, message) = change_rack(args)
     elif args.operation == 'list_devices':

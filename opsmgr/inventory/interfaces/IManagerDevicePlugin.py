@@ -46,8 +46,10 @@ class IManagerDevicePlugin(object):
     #@abstractmethod
     #def get_fixes(self):
 
-    #@abstractmethod
-    #def change_device_password(self, newPassword):
+    @abstractmethod
+    def change_device_password(self, newPassword):
+        """
+        """
 
     #@abstractmethod
     #def change_device_network(self, new_address, subnet=None, gateway=None):

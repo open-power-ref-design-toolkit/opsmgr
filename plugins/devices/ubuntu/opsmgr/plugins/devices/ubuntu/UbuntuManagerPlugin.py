@@ -11,10 +11,14 @@ RELEASE_TAG = "Release:"
 
 class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
+    PASSWORD_CHANGED_MESSAGE = "password updated successfully"
+
     def __init__(self):
         self.client = None
         self.machine_type_model = ""
         self.serial_number = ""
+        self.userid = ""
+        self.password = ""
 
     @staticmethod
     def get_type():
@@ -27,6 +31,8 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def connect(self, host, userid, password, ssh_key_string=None):
         _method_ = "UbuntuPlugin.connect"
         try:
+            self.userid = userid
+            self.password = password
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if ssh_key_string:
@@ -88,3 +94,27 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             if stdout.read().decode().lower().find("ubuntu") >= 0:
                 return True
         return False
+
+    def change_device_password(self, new_password):
+        """Update the password for the logged in userid.
+        Return 0 - Success
+        """
+
+        #_METHOD_ = "manage_ubuntu.change_device_password"
+
+        change_user_passwd = "echo -e \"" + self.password + "\\n" + new_password + \
+             "\\n" + new_password + "\" | passwd " + self.userid
+        (stdin, stdout, dummy_stderr) = self.client.exec_command(change_user_passwd)
+        stdin.close()
+        rc = stdout.channel.recv_exit_status()
+
+        # if the command failed , the output should be read from stderr, and
+        # EOFError, so should check the return code first
+        if rc == 0:
+            logging.info("Device password changed for " + self.userid + " successfully")
+        else:
+            output = stdout.read().decode()
+            message = "Failed to change password for %s. Console output: %s" % \
+                      (self.userid, output)
+            logging.warning(message)
+            raise IntegratedManagerException.IntegratedManagerDeviceException(message)

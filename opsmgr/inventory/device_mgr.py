@@ -361,6 +361,47 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         message = _("Added device successfully.")
     return 0, message
 
+def change_device_password(label=None, deviceid=None, old_password=None, new_password=None):
+
+    method_ = 'device_mgr.device_change_password'
+    message = None
+    label = label.strip()
+
+    # gain access to the device object for the targeted item.
+    if deviceid is not None:
+        device = persistent_mgr.get_device_by_id(deviceid)
+        device_des = deviceid
+    else:
+        device = persistent_mgr.get_device_by_label(label)
+        device_des = label
+    if not device:
+        logging.error("%s::Failed to change device password device (%s) is not found.",
+                      method_, device_des)
+        message = _(
+            "Failed to change device password, device (%s) is not found.") % (device_des)
+        return 101, message
+    device_type = device.device_type
+
+    plugins = load_device_plugins()
+
+    if device_type:
+        plugin = plugins[device_type]
+        try:
+            plugin.connect(device.address, device.userid, old_password)
+            plugin.change_device_password(new_password)
+            plugin.disconnect()
+        except KeyError:
+            logging.error("%s::plugin(%s) not found", method_, device_type)
+        except Exception as e:
+            logging.exception(e)
+            logging.warning("%s:plugin. Exception running change_device_password: %s",
+                            method_, e)
+
+   # Now change the password in the database
+    device.password = persistent_mgr.encrypt_data(new_password)
+    if not message:
+        message = _("Changed device password successfully.")
+    return 0, message
 
 def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None,
                  list_device_id=False, is_detail=False, racks=None):
