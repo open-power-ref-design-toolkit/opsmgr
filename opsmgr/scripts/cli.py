@@ -8,11 +8,6 @@ import gettext
 gettext.install('opsmgr', '/usr/share/locale')
 import sys
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
 import paramiko
 
 import opsmgr.inventory.device_mgr as device_mgr
@@ -35,16 +30,16 @@ def _prompt_for_key_password(key_file, password=None):
 
 
 def _read_key_file(key_file, password=None):
-    """ Given a key_file will return the StringIO string bufffer
+    """ Given a key_file will return the string contents
         of the key and it's password.
     """
     ssh_key_string = None
     if key_file:
         password = _prompt_for_key_password(key_file, password)
         file = open(key_file)
-        ssh_key_string = StringIO(file.read())
+        ssh_key_string = file.read()
         file.close()
-    return (ssh_key_string,password)
+    return (ssh_key_string, password)
 
 def add_device(args):
     ssh_key_string = None
@@ -333,7 +328,7 @@ def main(argv=sys.argv[1:]):
     pcd.add_argument('-p', '--password', help='The password of the authorized user or private key')
     pcd_mxg = pcd.add_mutually_exclusive_group()
     pcd_mxg.add_argument('-P', '--prompt-password', action='store_true',
-                     help='Prompts for entry of the password')
+                         help='Prompts for entry of the password')
     pcd_mxg.add_argument('-k', '--key', help='private key to authenticate the userid id')
     pcd.add_argument('-a', '--address', help='New Ip Address or hostname of the device')
     pcd.add_argument('-r', '--rack', help='The label of the rack to assign the device to')

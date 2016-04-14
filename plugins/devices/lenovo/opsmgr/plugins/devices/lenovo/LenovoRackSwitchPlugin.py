@@ -2,6 +2,13 @@ import logging
 import socket
 import time
 
+try:
+    #python 2.7
+    from StringIO import StringIO
+except ImportError:
+    #python 3.4
+    from io import StringIO
+
 import paramiko
 
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
@@ -46,7 +53,7 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if ssh_key_string:
-                private_key = paramiko.RSAKey.from_private_key(ssh_key_string, password)
+                private_key = paramiko.RSAKey.from_private_key(StringIO(ssh_key_string), password)
                 self.client.connect(host, username=userid, pkey=private_key, timeout=30)
             else:
                 self.client.connect(host, username=userid, password=password, timeout=30)
@@ -124,7 +131,8 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         transport = self.client.get_transport()
         if transport is None or transport.is_active() is False:
             if self.ssh_key_string:
-                private_key = paramiko.RSAKey.from_private_key(self.ssh_key_string, self.password)
+                private_key = paramiko.RSAKey.from_private_key(StringIO(self.ssh_key_string),
+                                                               self.password)
                 self.client.connect(self.host, username=self.userid, pkey=private_key, timeout=30)
             else:
                 self.client.connect(self.host, username=self.userid,

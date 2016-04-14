@@ -2,6 +2,13 @@ import logging
 import socket
 import time
 
+try:
+    #python 2.7
+    from StringIO import StringIO
+except ImportError:
+    #python 3.4
+    from io import StringIO
+
 import paramiko
 
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
@@ -14,7 +21,6 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
     PASSWORD_CHANGE_COMMAND = "passwd\n"
     PASSWORD_CHANGED_MESSAGE = "password updated successfully"
-
 
     def __init__(self):
         self.client = None
@@ -39,7 +45,7 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if ssh_key_string:
-                private_key = paramiko.RSAKey.from_private_key(ssh_key_string, password)
+                private_key = paramiko.RSAKey.from_private_key(StringIO(ssh_key_string), password)
                 self.client.connect(host, username=userid, pkey=private_key, timeout=30)
             else:
                 self.client.connect(host, username=userid, password=password, timeout=30)

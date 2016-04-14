@@ -4,13 +4,6 @@ gettext.install('opsmgr', '/usr/share/locale')
 import logging
 import socket
 
-try:
-    #python 2.7
-    from StringIO import StringIO
-except ImportError:
-    #python 3.4
-    from io import StringIO
-
 from datetime import datetime
 from stevedore import extension
 
@@ -255,7 +248,7 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         password:  string with device password (or password for ssh key)
         rackid: string identify rack id, if not specified will default to management rack
         rack:_location string identifying rack location
-        ssh_key: io.StringIO stream of the ssh key
+        ssh_key: string containing the ssh private key
     Returns:
         RC: integer return code
         Message: string with message associated with return code
@@ -354,7 +347,7 @@ def add_device(label, device_type, address, userid, password, rackid='', rack_lo
         key_info = Key()
         key_info.device = device_info
         key_info.type = "RSA"
-        key_info.value = ssh_key.getvalue()
+        key_info.value = ssh_key
         if password:
             key_info.password = persistent_mgr.encrypt_data(password)
         persistent_mgr.add_ssh_keys([key_info])
@@ -815,7 +808,7 @@ def _validate(address, userid, password, device_type, ssh_key=None):
         userid:  userid of the device to validate
         password:  password for the device
         device_type: device type of device to validate the info for
-        ssh_key:   io.StringIO stream of the ssh key
+        ssh_key:   string containing the ssh private key
     Returns:
         rc:  return code for the operation
         message:  message to return to user in case of non 0 return code
@@ -860,7 +853,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
         userid     Userid to access the device with
         password   Password to access the device with (or ssh_key password)
         device_type string identifying device type to validate as.
-        ssh_key:   io.StringIO stream of the ssh key
+        ssh_key:   string containing the ssh private key
     Returns:
         rc, device_type, mtm, serialnum, version_details, Interfaces
 
@@ -881,7 +874,6 @@ def validate(address, userid, password, device_type, ssh_key=None):
     if device_type:
         plugin = plugins[device_type]
         try:
-            plugin = plugins[device_type]
             plugin.connect(address, userid, password, ssh_key)
             mtm = plugin.get_machine_type_model()
             serialnum = plugin.get_serial_number()
@@ -1015,7 +1007,7 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
         device - original device properties
         address - new address if changed, else old address
         userid - new userid if changed, else old userid
-        ssh_key_string: io.StringIO stream of the ssh key - new
+        ssh_key_string - string containing the new private ssh key
         password - password for the ssh key if any
     Returns:
         rc, message - if rc 0, updated device object
@@ -1030,7 +1022,7 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
             key_info = Key()
             key_info.device = device
             key_info.type = "RSA"
-        key_info.value = ssh_key_string.getvalue()
+        key_info.value = ssh_key_string
         if password:
             key_info.password = persistent_mgr.encrypt_data(password)
         else:
@@ -1076,7 +1068,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
         address: the ip address or the hostname to set for the device
         rackid:  rack id to set for the device
         rack_location: location in the rack of the element
-        ssh_key: io.StringIO stream of the ssh key
+        ssh_key: string containing the new ssh private key
 
     Returns:
         rc:  return code
@@ -1178,7 +1170,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
         else:
             if device.key:
                 key = device.key
-                temp_ssh_key = StringIO(key.value)
+                temp_ssh_key = key.value
                 if key.password:
                     password = persistent_mgr.decrypt_data(key.password)
 
