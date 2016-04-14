@@ -399,15 +399,25 @@ def change_device_password(label=None, deviceid=None, old_password=None, new_pas
             plugin.connect(device.address, device.userid, old_password)
             plugin.change_device_password(new_password)
             plugin.disconnect()
+            # Now change the password in the database
+            device.password = persistent_mgr.encrypt_data(new_password)
+            # Commit the change
+            logging.info(
+                "%s: commit device changes now. device info: %s", method_, device)
+            persistent_mgr.update_device([device])
         except KeyError:
             logging.error("%s::plugin(%s) not found", method_, device_type)
+            message = _(
+                "Failed to change device password, plugin (%s) is not found.") % (device_type)
+            return 101, message
         except Exception as e:
             logging.exception(e)
             logging.warning("%s:plugin. Exception running change_device_password: %s",
                             method_, e)
+            message = _("Failed to change device password, Exception occurred for " \
+                      "plugin (%s).") % (device_type)
+            return 101, message
 
-   # Now change the password in the database
-    device.password = persistent_mgr.encrypt_data(new_password)
     if not message:
         message = _("Changed device password successfully.")
     return 0, message
@@ -882,7 +892,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
             logging.error("%s::plugin(%s) not found", _method_, device_type)
             return (constants.validation_codes.DEVICE_TYPE_ERROR.value,
                     None, None, None, None)
-        except IntegratedManagerException.ConnectionException:
+        except     IntegratedManagerException.ConnectionException:
             return (constants.validation_codes.FAILED_TO_CONNECT.value,
                     None, None, None, None)
         except IntegratedManagerException.AuthenticationException:
@@ -1143,7 +1153,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
             old_auth = "key"
         else:
             old_auth = "userpass"
-        
+
         if ssh_key is not None:
             new_auth = "key"
         elif userid is not None or password is not None:

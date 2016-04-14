@@ -1,5 +1,6 @@
 import logging
 import socket
+import time
 
 import paramiko
 
@@ -11,7 +12,9 @@ RELEASE_TAG = "Release:"
 
 class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
+    PASSWORD_CHANGE_COMMAND = "passwd\n"
     PASSWORD_CHANGED_MESSAGE = "password updated successfully"
+
 
     def __init__(self):
         self.client = None
@@ -97,23 +100,23 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
     def change_device_password(self, new_password):
         """Update the password for the logged in userid.
-        Return 0 - Success
         """
 
-        #_METHOD_ = "manage_ubuntu.change_device_password"
-
-        change_user_passwd = "echo -e \"" + self.password + "\\n" + new_password + \
-             "\\n" + new_password + "\" | passwd " + self.userid
-        (stdin, stdout, dummy_stderr) = self.client.exec_command(change_user_passwd)
-        stdin.close()
-        rc = stdout.channel.recv_exit_status()
-
-        # if the command failed , the output should be read from stderr, and
-        # EOFError, so should check the return code first
-        if rc == 0:
-            logging.info("Device password changed for " + self.userid + " successfully")
+        client_shell = self.client.invoke_shell()
+        client_shell.send(self.PASSWORD_CHANGE_COMMAND)
+        if self.userid != "root":
+            time.sleep(2)
+            client_shell.send(self.password + "\n")
+        time.sleep(2)
+        client_shell.send(new_password + "\n")
+        time.sleep(2)
+        client_shell.send(new_password + "\n")
+        time.sleep(5)
+        output = client_shell.recv(1000).decode()
+        client_shell.close()
+        if self.PASSWORD_CHANGED_MESSAGE in output:
+            logging.info("Password changed for " + self.userid + " successfully")
         else:
-            output = stdout.read().decode()
             message = "Failed to change password for %s. Console output: %s" % \
                       (self.userid, output)
             logging.warning(message)
