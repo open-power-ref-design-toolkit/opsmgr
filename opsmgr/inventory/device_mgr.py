@@ -442,7 +442,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     logging.debug("ENTRY %s", _method_)
     all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
                 'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'device-type',
-                'status', 'statusTime']
+                'status', 'statusTime', 'web_url']
     brief_tags = ['label']
     result = {}
 
@@ -508,6 +508,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
 
     logging.debug("%s: before add devices to output", _method_)
     result_devices = []
+    plugins = load_device_plugins()
     for device in rack_filtered_devices:
         device_dict = device.to_dict_obj()
         device_output = {}
@@ -517,20 +518,10 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
                 tag_value = tag_value.replace(',', ' ')
             device_output[tag] = tag_value
 
-        # check if caller wants extra detail.
-        if is_detail:
-            management_interfaces = device_dict.get('management-interface')
-            # if any additional interfaces to report for device.
-            if management_interfaces:
-                result_extra_interfaces = []
-                for management_interface in management_interfaces:
-                    additional_interfaces_info = {}
-                    additional_interfaces_info[
-                        'qualifier'] = management_interface.get('qualifier')
-                    additional_interfaces_info[
-                        'ipv4-address'] = management_interface.get('ipv4-address')
-                    result_extra_interfaces.append(additional_interfaces_info)
-                device_output['management-interface'] = result_extra_interfaces
+        # add the web url for the device
+        plugin = plugins[device.device_type]
+        web_url = plugin.get_web_url(device.address)
+        device_output["web_url"] = web_url
 
         # add final form of device info to result
         result_devices.append(device_output)
