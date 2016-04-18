@@ -165,6 +165,14 @@ def list_devices(args):
         SEPARATOR = ","
         labels_array = result_dict['column_titles']
         tags_array = result_dict['column_tags']
+
+        if not args.briefly:
+            # find the device id and remove from both arrays to generate list
+            # result without the device id info.
+            deviceid_index = tags_array.index('deviceid')
+            del tags_array[deviceid_index]
+            del labels_array[deviceid_index]
+
         # create the CSV header line
         header = ""
         for label in labels_array:

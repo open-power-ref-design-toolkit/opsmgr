@@ -440,7 +440,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     """
     _method_ = 'device_mgr.list_devices'
     logging.debug("ENTRY %s", _method_)
-    all_tags = ['label', 'rackid', 'rack-eia-location', 'machine-type-model',
+    all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
                 'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'device-type',
                 'status', 'statusTime']
     brief_tags = ['label']
@@ -1053,7 +1053,7 @@ def _change_device_userpass(device, address, userid, password):
 
 
 
-@entry_exit(exclude_index=[], exclude_name=["password"])
+@entry_exit(exclude_index=[4], exclude_name=["password"])
 def change_device_properties(label=None, deviceid=None, new_label=None,
                              userid=None, password=None, address=None,
                              rackid=None, rack_location=None, ssh_key=None):
