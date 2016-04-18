@@ -1,0 +1,12 @@
+task test_fvt (type : Exec) {
+     print 'Testing opsMgr'
+     //exec { commandLine = ["sudo python3 setup.py install"] }
+     executable = "python"; args = ["test_opsmgr.py"]
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+       return standardOutput.toString()
+    }
+}
+task do_all{
+  test_fvt.execute();
+}
