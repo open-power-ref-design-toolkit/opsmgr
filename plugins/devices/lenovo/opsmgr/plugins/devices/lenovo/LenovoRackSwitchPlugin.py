@@ -56,7 +56,8 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                 private_key = paramiko.RSAKey.from_private_key(StringIO(ssh_key_string), password)
                 self.client.connect(host, username=userid, pkey=private_key, timeout=30)
             else:
-                self.client.connect(host, username=userid, password=password, timeout=30)
+                self.client.connect(host, username=userid, password=password, timeout=30,
+                                    look_for_keys=False)
             if not self._is_rack_switch():
                 raise IntegratedManagerException.InvalidDeviceException(
                     "Device is not a Lenovo Rack Switch")
@@ -135,5 +136,5 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                                                                self.password)
                 self.client.connect(self.host, username=self.userid, pkey=private_key, timeout=30)
             else:
-                self.client.connect(self.host, username=self.userid,
-                                    password=self.password, timeout=30)
+                self.client.connect(self.host, username=self.userid, password=self.password,
+                                    timeout=30, look_for_keys=False)
