@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Inventory" %}{% endblock %}
+
+{% block page_header %}
+   {% include "horizon/common/_page_header.html" with title=_("Inventory") %}
+{% endblock page_header %}
+
+{% block main %}
+<p>The Operational Management Inventory panel lists preconfigured resources in your environment.  From this panel, you can add, edit, and remove resources from inventory.  
+<br />
+
+<div class="row">
+   <div class="col-sm-12">
+   {{ tab_group.render }}
+   </div>
+</div>
+{% endblock %}
