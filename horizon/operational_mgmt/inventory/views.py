@@ -15,6 +15,8 @@
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+from django.utils.decorators import method_decorator  # noqa
+from django.views.decorators.debug import sensitive_post_parameters  # noqa
 
 from horizon import exceptions
 from horizon import forms
@@ -80,12 +82,58 @@ class EditResourceView(forms.ModalFormView):
 
     def get_initial(self):
         raw_device = self.get_object()
-        return {'label': raw_device['label'],
+        # TODO: Must retrieve the authMethod from the raw_device (when available in Sprint 2)
+        return {'label': raw_device['label'], 'authMethod':0,
                               'rackid': raw_device['rackid'],
                               'eiaLocation': raw_device['rack-eia-location'],
                               'ip_address': raw_device['ip-address'],
                               'userID': raw_device['userid'],
                               'deviceId': raw_device['deviceid']}
+
+class ChangePasswordView(forms.ModalFormView):
+    template_name = 'op_mgmt/inventory/changePassword.html'
+    modal_header = _("Change Password")
+    form_id = "change_password_form"
+    form_class = project_forms.ChangePasswordForm
+    submit_label = _("Change Password")
+    submit_url = "horizon:op_mgmt:inventory:changePassword"
+    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+    page_title = _("Change Password")
+
+    @method_decorator(sensitive_post_parameters('password',
+                                                'confirm_password'))
+    def dispatch(self, *args, **kwargs):
+        return super(ChangePasswordView, self).dispatch(*args, **kwargs)
+
+    @memoized.memoized_method
+    def get_object(self):
+        try:
+            (rc, result_dict) = device_mgr.list_devices(None, False, None, [self.kwargs['resource_id']])
+            if rc!=0:
+               messages.error(self.request, _('Unable to retrive selected resource for change password.'))
+               return
+            else:
+               value = result_dict['devices']
+               # loop through each raw device
+               for raw_device in value:
+                  # should only be 1 -- return the first found
+                  return raw_device
+        except Exception:
+            redirect = reverse("horizon:op_mgmt:inventory:index")
+            exceptions.handle(self.request,
+                              _('Unable to retrive selected resource for change password.'),
+                              redirect=redirect)
+
+    def get_context_data(self, **kwargs):
+        context = super(ChangePasswordView, self).get_context_data(**kwargs)
+        args = (self.get_object()['deviceid'],)
+        context['submit_url'] = reverse(self.submit_url, args=args)
+        return context
+
+    def get_initial(self):
+        raw_device = self.get_object()
+        return {'label': raw_device['label'],
+                'userID': raw_device['userid']}
 
 class AddResourceView(forms.ModalFormView):
     template_name = 'op_mgmt/inventory/addResource.html'

@@ -22,5 +22,7 @@ urlpatterns = patterns(
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^(?P<resource_id>[^/]+)/update/$',
         views.EditResourceView.as_view(), name='editResource'),
+    url(r'^(?P<resource_id>[^/]+)/chpwd/$',
+        views.ChangePasswordView.as_view(), name='changePassword'),
     url(r'^addResource/$', views.AddResourceView.as_view(), name='addResource'),
     url(r'^edit_rack/$', views.EditRackView.as_view(), name='edit_rack'))

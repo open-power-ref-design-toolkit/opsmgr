@@ -41,6 +41,13 @@ class EditResourceLink(tables.LinkAction):
     classes = ("ajax-modal",)
     icon = "pencil"
 
+class ChangePasswordLink(tables.LinkAction):
+    name = "changePassword"
+    verbose_name = _("Change Password")
+    url = "horizon:op_mgmt:inventory:changePassword"
+    classes = ("ajax-modal",)
+    icon = "pencil"
+
 class DeleteResourcesAction(tables.DeleteAction):
     @staticmethod
     def action_present(count):
@@ -68,10 +75,6 @@ class DeleteResourcesAction(tables.DeleteAction):
            msg = _('Attempt to remove resource was not successful. Details of the attempt: "%s"' % result_dict)
            messages.error(request, msg)
         else:
-           # Default message displays the device ID instead of the device label...do we need to use our own message here?  How?
-           #msg = _('Attempt to remove resources was successful.')
-           #messages.info(request, msg)
-
            return  # allow the base class to display the success message
 
 class EditRack(tables.LinkAction):
@@ -112,7 +115,7 @@ class ResourceFilterAction(tables.FilterAction):
         """Naive case-insensitive search."""
         q = filter_string.lower()
         return [resource for resource in resources
-                if q in resource.label.lower()]
+                if q in resource.name.lower()]
 
 def get_link_value(device):
     if not hasattr(device, 'web_url') or device.web_url is None:
@@ -121,12 +124,12 @@ def get_link_value(device):
         return device.web_url
 
 def get_link_target(device):
-    return _(device.label)
+    return _(device.name)
 class ResourcesTable(tables.DataTable):
     # TODO:  The reference to link target isn't working because the value of it is being set
     # to the method call get_link_target(xx) instead of the value returned from that
     # method....
-    label = tables.Column('label',
+    name = tables.Column('name',
                           form_field=forms.CharField(),
                           verbose_name=_("Label"),
                           link=get_link_value,
@@ -141,8 +144,8 @@ class ResourcesTable(tables.DataTable):
                        verbose_name=_("Machine Type/Model"))
     sn = tables.Column('sn', \
                       verbose_name=_("Serial Number"))
-    mgmtIpaV4 = tables.Column('mgmtIpaV4', \
-                      verbose_name=_("IP Address"))
+    hostName = tables.Column('displayHost', \
+                      verbose_name=_("Host Name"))
     version = tables.Column('version', \
                       verbose_name=_("Installed Version"))
     deviceId = tables.Column('deviceId', \
@@ -152,7 +155,7 @@ class ResourcesTable(tables.DataTable):
         name = "resources"
         verbose_name = _("Resources")
         rack_id = ""
-        row_actions = (EditResourceLink, DeleteResourcesAction)
+        row_actions = (EditResourceLink, ChangePasswordLink, DeleteResourcesAction)
         table_actions = (ResourceFilterAction, AddResourceLink, DeleteResourcesAction)
 
 class RackDetailsTable(tables.DataTable):  
