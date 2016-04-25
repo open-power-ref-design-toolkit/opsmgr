@@ -257,7 +257,6 @@ def _check_address(address):
 
 def add_resource(label, device_type, address, userid, password, rackid='', rack_location='',
                  ssh_key=None, offline=False):
-    print offline
     _method_ = 'device_mgr._add_resource'
     label = label.strip()
     address = address.strip()
