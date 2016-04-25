@@ -1150,6 +1150,9 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
 
     # if we made it here we, have an ip address to use and maybe using a
     # changed address.
+    old_auth = None
+    new_auth = None
+
     if address_changed or userid is not None or password is not None or ssh_key is not None:
         # validate that the existing credentials work with the new IP
         # address or the new credentials are valid
