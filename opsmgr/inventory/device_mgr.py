@@ -278,7 +278,6 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     serialnum = ""
     version = ""
     if not offline:
-        print "validate"
         validate_ret, device_type, mtm, serialnum, version = validate(
             ipv4, userid, password, device_type, ssh_key)
         if validate_ret != 0:
