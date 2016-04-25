@@ -24,5 +24,11 @@ class validation_codes(Enum):
     DEVICE_TYPE_ERROR = 3
     UNSUPPORTED_FUNCTION = 10
 
+class auth_method(Enum):
+    """ Authentication method used to access a device
+    """
+    USERID_PASSWORD = 0
+    SSH_KEY_AUTHENTICATION = 1
+
 JSON_IDENTIFIER_ATTR = 'id'
 JSON_LABEL_ATTR = 'name'

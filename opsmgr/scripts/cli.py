@@ -207,6 +207,8 @@ def list_devices(args):
                     line += str(device[tag])
                 elif tag == 'statusTime':
                     line += str(device[tag])
+                elif tag == 'auth_method':
+                    line += str(device[tag])
                 else:
                     # normal handling
                     line += device[tag] if device[tag] else ''
@@ -419,15 +421,18 @@ def main(argv=sys.argv[1:]):
 
     #find_resources
     subparsers.add_parser('find_resources',
-                          help='Loads all supported discovery plugins and lists resources from them')
+                          help='Loads all supported discovery plugins and lists resources ' \
+                               'from them')
 
     #import_resources
     pir = subparsers.add_parser('import_resources',
-                                help='Loads all supported discovery plugins and import resources from them')
+                                help='Loads all supported discovery plugins and imports ' \
+                                     'resources from them')
     pir.add_argument('--offline', action='store_true',
                      help='Imports resource into Inventory even if it is offline.')
     pir.add_argument('-l', '--label', required=False,
-                     help='Label of the resource to import into Inventory. If omitted, all are imported.')
+                     help='Label of the resource to import into Inventory. If omitted, ' \
+                          'all are imported.')
 
     message = ''
     rc = -1
