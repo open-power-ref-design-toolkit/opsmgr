@@ -11,8 +11,8 @@ except ImportError:
 
 import paramiko
 
+from opsmgr.common import exceptions
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
-from opsmgr.inventory import IntegratedManagerException
 
 class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
@@ -59,17 +59,17 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                 self.client.connect(host, username=userid, password=password, timeout=30,
                                     look_for_keys=False)
             if not self._is_rack_switch():
-                raise IntegratedManagerException.InvalidDeviceException(
+                raise exceptions.DeviceException(
                     "Device is not a Lenovo Rack Switch")
         except paramiko.AuthenticationException:
             logging.error("%s::userid/password combination not valid. host=%s userid=%s",
                           _method_, host, userid)
-            raise IntegratedManagerException.AuthenticationException(
+            raise exceptions.AuthenticationException(
                 "userid/password combination not valid")
         except (paramiko.ssh_exception.SSHException, OSError, socket.timeout) as e:
             logging.exception(e)
             logging.error("%s::Connection timed out. host=%s", _method_, host)
-            raise IntegratedManagerException.ConnectionException("Unable to ssh to the device")
+            raise exceptions.ConnectionException("Unable to ssh to the device")
 
     def disconnect(self):
         if self.client:
@@ -103,7 +103,7 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             message = "Failed to change password for %s. Console output: %s" % \
                       (self.userid, output)
             logging.warning(message)
-            raise IntegratedManagerException.IntegratedManagerDeviceException(message)
+            raise exceptions.DeviceException(message)
 
     def _is_rack_switch(self):
         """Check if the Device type is Lenovo Rack Switch

@@ -3,8 +3,7 @@ import logging
 import logging.config
 import socket
 import yaml
-
-import opsmgr.inventory.constants as constants
+import constants
 
 def is_valid_address(address, family=socket.AF_INET):
     # Modified this script to take in any IP address format.
@@ -19,7 +18,6 @@ def is_valid_address(address, family=socket.AF_INET):
         return address.count('.') == 3
     except socket.error:  # not a valid address
         return False
-
     return True
 
 

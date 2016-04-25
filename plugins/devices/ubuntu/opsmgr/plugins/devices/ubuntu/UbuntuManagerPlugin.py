@@ -11,8 +11,8 @@ except ImportError:
 
 import paramiko
 
+from opsmgr.common import exceptions
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
-from opsmgr.inventory import IntegratedManagerException
 
 UBUNTU_RELEASE_CMD = "lsb_release -a"
 RELEASE_TAG = "Release:"
@@ -50,17 +50,17 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             else:
                 self.client.connect(host, username=userid, password=password, timeout=30)
             if not self._is_ubuntu():
-                raise IntegratedManagerException.InvalidDeviceException(
+                raise exceptions.InvalidDeviceException(
                     "Device is not a Ubuntu Device")
         except paramiko.AuthenticationException:
             logging.error("%s::userid/password combination not valid. host=%s userid=%s",
                           _method_, host, userid)
-            raise IntegratedManagerException.AuthenticationException(
+            raise exceptions.AuthenticationException(
                 "userid/password combination not valid")
         except (paramiko.ssh_exception.SSHException, OSError, socket.timeout) as e:
             logging.exception(e)
             logging.error("%s::Connection timed out. host=%s", _method_, host)
-            raise IntegratedManagerException.ConnectionException("Unable to ssh to the device")
+            raise exceptions.ConnectionException("Unable to ssh to the device")
 
     def disconnect(self):
         if self.client:

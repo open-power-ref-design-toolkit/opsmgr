@@ -7,12 +7,12 @@ import socket
 from datetime import datetime
 from stevedore import extension
 
-import opsmgr.inventory.constants as constants
+import opsmgr.common.constants as constants
+import opsmgr.common.exceptions as exceptions
 import opsmgr.inventory.persistent_mgr as persistent_mgr
-import opsmgr.inventory.IntegratedManagerException as IntegratedManagerException
 
+from opsmgr.common.utils import entry_exit, is_valid_address
 from opsmgr.inventory.data_model import Rack, Device, Key
-from opsmgr.inventory.utils import entry_exit, is_valid_address
 
 I_MANAGER_DEVICE_PLUGIN = "opsmgr.inventory.interfaces.IManagerDevicePlugin"
 I_MANAGER_DEVICE_HOOK = "opsmgr.inventory.interfaces.IManagerDeviceHook"
@@ -132,8 +132,11 @@ def check_device_exist_by_props(device_type, mtm, serialnum):
     (devices, dummy_not_found_types) = persistent_mgr.get_devices_by_device_type([device_type])
     found = False
     for device in devices:
-        if device.serial == serialnum and device.mtm == mtm:
-            found = True
+        try:
+            if device.serial == serialnum and device.mtm == mtm:
+                found = True
+        except AttributeError:
+            continue
     return found
 
 def add_rack(label, data_center='', location='', notes=''):
@@ -235,69 +238,71 @@ def validate_label(label):
             return 101, error_message
     return 0, ""
 
-def add_device(label, device_type, address, userid, password, rackid='', rack_location='',
-               ssh_key=None):
-
-    """add device to the list of devices in the configuration managed
-
-    Args:
-        label: label for device
-        device_type: type of device from device enumeration
-        address: IP address of device
-        userid:  string with device userid
-        password:  string with device password (or password for ssh key)
-        rackid: string identify rack id, if not specified will default to management rack
-        rack:_location string identifying rack location
-        ssh_key: string containing the ssh private key
-    Returns:
-        RC: integer return code
-        Message: string with message associated with return code
-    """
-    _method_ = 'device_mgr.add_device'
-    message = None
-    label = label.strip()
-    address = address.strip()
+def _check_address(address):
     ipv4 = ""
     hostname = ""
-    # check if the address is hostname or ipv4
     if is_valid_address(address):
         ipv4 = address
-        hostname = socket.gethostbyaddr(address)[0]
+        try:
+            hostname = socket.gethostbyaddr(address)[0]
+        except:
+            pass # no DNS
     else:
         hostname = socket.getfqdn(address)
-        ipv4 = socket.gethostbyname(hostname)
+        try:
+            ipv4 = socket.gethostbyname(hostname)
+        except:
+            pass # host not valid or offline
+    return ipv4, hostname
+
+def add_resource(label, device_type, address, userid, password, rackid='', rack_location='',
+                 ssh_key=None, offline=False):
+    print offline
+    _method_ = 'device_mgr._add_resource'
+    label = label.strip()
+    address = address.strip()
+    if not offline:
+        ipv4, hostname = _check_address(address)
+    else:
+        ipv4 = address
+        hostname = ""
 
     rc, message = validate_address(ipv4)
-
     if rc != 0:
         return rc, message
+    
     rc, message = validate_label(label)
     if rc != 0:
         return rc, message
 
-    validate_ret, device_type, mtm, serialnum, version = validate(
-        ipv4, userid, password, device_type, ssh_key)
-    if validate_ret != 0:
-        logging.error(
-            "%s::failed to add device, validate device(%s) return value(%d).",
-            _method_, label, validate_ret)
-        error_message = None
-        if validate_ret == 1:
-            error_message = _("Failed to connect the device.")
-        elif validate_ret == 2:
-            error_message = _("The userid/password combination is not valid.")
-        elif validate_ret == 3:
-            error_message = _("No plugin capable of managing device was found.")
-        elif validate_ret == 109:
-            error_message = _("Connect timeout.")
-        return validate_ret, error_message
-    else:
-        if check_device_exist_by_props(device_type, mtm, serialnum):
-            logging.error("%s::failed to add device, device(machine-type-model=%s, "
-                          "serial-number=%s) is already managed.", _method_, mtm, serialnum)
-            error_message = _("The device is not added, a device with the same serial number and"
-                              " machine type model is found in the configuration file.")
-            return 110, error_message
+    mtm = ""
+    serialnum = ""
+    version = ""
+    if not offline:
+        print "validate"
+        validate_ret, device_type, mtm, serialnum, version = validate(
+            ipv4, userid, password, device_type, ssh_key)
+        if validate_ret != 0:
+            logging.error(
+                "%s::failed to add device, validate device(%s) return value(%d).",
+                _method_, label, validate_ret)
+            error_message = None
+            if validate_ret == 1:
+                error_message = _("Failed to connect the device.")
+            elif validate_ret == 2:
+                error_message = _("The userid/password combination is not valid.")
+            elif validate_ret == 3:
+                error_message = _("No plugin capable of managing device was found.")
+            elif validate_ret == 109:
+                error_message = _("Connect timeout.")
+            return validate_ret, error_message
+        else:
+            if check_device_exist_by_props(device_type, mtm, serialnum):
+                logging.error("%s::failed to add device, device(machine-type-model=%s, "
+                              "serial-number=%s) is already managed.", _method_, mtm, serialnum)
+                error_message = _("The device is not added, a device with the same serial number and"
+                                  " machine type model is found in the configuration file.")
+                return 110, error_message
 
     # figure out the rack ID to add the device under
     if rackid:
@@ -414,6 +419,24 @@ def change_device_password(label=None, deviceid=None, old_password=None, new_pas
     if not message:
         message = _("Changed device password successfully.")
     return 0, message
+
+def add_device(label, device_type, address, userid, password, rackid='', rack_location='', ssh_key=None):
+    """ Add device to the list of devices in the configuration managed
+    Args:
+        label: label for device
+        device_type: type of device from device enumeration
+        address: IP address of device
+        userid:  string with device userid
+        password:  string with device password (or password for ssh key)
+        rackid: string identify rack id, if not specified will default to management rack
+        rack:_location string identifying rack location
+        ssh_key: io.StringIO stream of the ssh key
+    Returns:
+        RC: integer return code
+        Message: string with message associated with return code
+    """
+    return add_resource(label, device_type, address, userid, password,
+                        rackid, rack_location, ssh_key, offline=False)
 
 def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None,
                  list_device_id=False, is_detail=False, racks=None):
@@ -865,6 +888,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
     if device_type:
         plugin = plugins[device_type]
         try:
+            plugin = plugins[device_type]
             plugin.connect(address, userid, password, ssh_key)
             mtm = plugin.get_machine_type_model()
             serialnum = plugin.get_serial_number()
@@ -875,10 +899,10 @@ def validate(address, userid, password, device_type, ssh_key=None):
             logging.error("%s::plugin(%s) not found", _method_, device_type)
             return (constants.validation_codes.DEVICE_TYPE_ERROR.value,
                     None, None, None, None)
-        except     IntegratedManagerException.ConnectionException:
+        except exceptions.ConnectionException:
             return (constants.validation_codes.FAILED_TO_CONNECT.value,
                     None, None, None, None)
-        except IntegratedManagerException.AuthenticationException:
+        except exceptions.AuthenticationException:
             return (constants.validation_codes.CREDENTIALS_INVALID.value,
                     None, None, None, None)
         except Exception as e:

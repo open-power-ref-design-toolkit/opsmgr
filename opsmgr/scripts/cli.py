@@ -10,11 +10,12 @@ import sys
 
 import paramiko
 
+import opsmgr.discovery.discovery_mgr as discovery_mgr
 import opsmgr.inventory.device_mgr as device_mgr
 import opsmgr.inventory.persistent_mgr as persistent_mgr
 import opsmgr.inventory.remote_access as remote_access
-from opsmgr.inventory.utils import get_strip_strings_array
-from opsmgr.inventory.utils import LoggingService
+from opsmgr.common.utils import get_strip_strings_array
+from opsmgr.common.utils import LoggingService
 
 def _prompt_for_key_password(key_file, password=None):
     """ Given a key_file will attempt read it, if password is None
@@ -264,7 +265,6 @@ def list_racks(args):
         #if a key is missing the error will be in the message
         pass
 
-
     # if a message, now output it
     if result_dict['message']:
         result += "\n"
@@ -279,17 +279,30 @@ def list_supported_device_types():
 def remote_access_cmd(args):
     return remote_access.remote_access(args.label)
 
-
 def remove_device(args):
     labels = None
     if args.label:
         labels = get_strip_strings_array(str(args.label))
     return device_mgr.remove_device(labels, args.all)
 
-
 def remove_rack(args):
     labels = get_strip_strings_array(str(args.label))
     return device_mgr.remove_rack(labels)
+
+def list_discovery_plugins():
+    discovery_plugins = discovery_mgr.list_plugins()
+    result = ",".join(discovery_plugins)
+    return 0, result
+
+def find_resources():
+    return discovery_mgr.find_resources()
+
+def import_resources(args):
+    if args.label:
+        resource = args.label.strip()
+    else:
+        resource = '*'
+    return discovery_mgr.import_resources(resource, args.offline)
 
 
 
@@ -400,6 +413,22 @@ def main(argv=sys.argv[1:]):
     prr = subparsers.add_parser('remove_rack', help='Removes a rack having no devices')
     prr.add_argument('-l', '--label', required=True, help='Label of the rack to be removed.')
 
+    #list_discovery_plugins
+    subparsers.add_parser('list_discovery_plugins',
+                          help='List the supported discovery plugin types')
+
+    #find_resources
+    subparsers.add_parser('find_resources',
+                          help='Loads all supported discovery plugins and lists resources from them')
+
+    #import_resources
+    pir = subparsers.add_parser('import_resources',
+                                help='Loads all supported discovery plugins and import resources from them')
+    pir.add_argument('--offline', action='store_true',
+                     help='Imports resource into Inventory even if it is offline.')
+    pir.add_argument('-l', '--label', required=False,
+                     help='Label of the resource to import into Inventory. If omitted, all are imported.')
+
     message = ''
     rc = -1
     args = parser.parse_args(argv)
@@ -426,6 +455,12 @@ def main(argv=sys.argv[1:]):
         (rc, message) = remove_device(args)
     elif args.operation == 'remove_rack':
         (rc, message) = remove_rack(args)
+    elif args.operation == 'list_discovery_plugins':
+        (rc, message) = list_discovery_plugins()
+    elif args.operation == 'find_resources':
+        (rc, message) = find_resources()
+    elif args.operation == 'import_resources':
+        (rc, message) = import_resources(args)
     else:
         parser.print_help()
 

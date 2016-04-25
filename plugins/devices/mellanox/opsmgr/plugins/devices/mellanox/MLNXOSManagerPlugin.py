@@ -11,8 +11,8 @@ except ImportError:
 
 import paramiko
 
+from opsmgr.common import exceptions
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
-from opsmgr.inventory import IntegratedManagerException
 
 class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
@@ -52,17 +52,17 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             else:
                 self.client.connect(host, username=userid, password=password, timeout=30)
             if not self._is_mellanox_switch():
-                raise IntegratedManagerException.InvalidDeviceException(
+                raise exceptions.InvalidDeviceException(
                     "Device is not a Mellanox Switch")
         except paramiko.AuthenticationException:
             logging.error("%s::userid/password combination not valid. host=%s userid=%s",
                           _method_, host, userid)
-            raise IntegratedManagerException.AuthenticationException(
+            raise exceptions.AuthenticationException(
                 "userid/password combination not valid")
         except (paramiko.ssh_exception.SSHException, OSError, socket.timeout) as e:
             logging.exception(e)
             logging.error("%s::Connection timed out. host=%s", _method_, host)
-            raise IntegratedManagerException.ConnectionException("Unable to ssh to the device")
+            raise exceptions.ConnectionException("Unable to ssh to the device")
 
     def disconnect(self):
         if self.client:
@@ -98,7 +98,7 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         test_connect = MLNXOSPlugin()
         try:
             test_connect.connect(self.host, self.userid, new_password)
-        except IntegratedManagerException.IntegratedManagerDeviceException as e:
+        except exceptions.DeviceException as e:
             logging.exception(e)
             logging.error("%s::Failed to login with new password, login exception was thrown: "
                           "%s", _method_, str(e))

@@ -45,6 +45,7 @@ setup(
             'opsmgr = opsmgr.scripts.cli:main',
             'opsmgr-admin = opsmgr.scripts.cli_admin:main',
          ],
+        'opsmgr.discovery.interfaces.IDiscoveryPlugin': [],
         'opsmgr.inventory.interfaces.IManagerDevicePlugin': [],
         'opsmgr.inventory.interfaces.IManagerDeviceHook': [],
         'opsmgr.inventory.interfaces.IManagerRackHook': [],
