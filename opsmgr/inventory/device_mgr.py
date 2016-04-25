@@ -1049,6 +1049,7 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
         else:
             key_info.password = None
 
+        device.userid = userid
         device.password = None # using ssh_key authentication
     return (rc, message)
 
