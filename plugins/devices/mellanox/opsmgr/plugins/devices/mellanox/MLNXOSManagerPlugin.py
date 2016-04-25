@@ -48,9 +48,11 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if ssh_key_string:
                 private_key = paramiko.RSAKey.from_private_key(StringIO(ssh_key_string), password)
-                self.client.connect(host, username=userid, pkey=private_key, timeout=30)
+                self.client.connect(host, username=userid, pkey=private_key, timeout=30,
+                                    allow_agent=False)
             else:
-                self.client.connect(host, username=userid, password=password, timeout=30)
+                self.client.connect(host, username=userid, password=password, timeout=30,
+                                    allow_agent=False)
             if not self._is_mellanox_switch():
                 raise exceptions.InvalidDeviceException(
                     "Device is not a Mellanox Switch")

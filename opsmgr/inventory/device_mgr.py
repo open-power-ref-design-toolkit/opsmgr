@@ -245,13 +245,13 @@ def _check_address(address):
         ipv4 = address
         try:
             hostname = socket.gethostbyaddr(address)[0]
-        except:
+        except Exception:
             pass # no DNS
     else:
         hostname = socket.getfqdn(address)
         try:
             ipv4 = socket.gethostbyname(hostname)
-        except:
+        except Exception:
             pass # host not valid or offline
     return ipv4, hostname
 
@@ -269,7 +269,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     rc, message = validate_address(ipv4)
     if rc != 0:
         return rc, message
-    
+
     rc, message = validate_label(label)
     if rc != 0:
         return rc, message
@@ -298,8 +298,8 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
             if check_device_exist_by_props(device_type, mtm, serialnum):
                 logging.error("%s::failed to add device, device(machine-type-model=%s, "
                               "serial-number=%s) is already managed.", _method_, mtm, serialnum)
-                error_message = _("The device is not added, a device with the same serial number and"
-                                  " machine type model is found in the configuration file.")
+                error_message = _("The device is not added, a device with the same serial number "
+                                  "and machine type model is found in the configuration file.")
                 return 110, error_message
 
     # figure out the rack ID to add the device under
@@ -418,7 +418,8 @@ def change_device_password(label=None, deviceid=None, old_password=None, new_pas
         message = _("Changed device password successfully.")
     return 0, message
 
-def add_device(label, device_type, address, userid, password, rackid='', rack_location='', ssh_key=None):
+def add_device(label, device_type, address, userid, password, rackid='', rack_location='',
+               ssh_key=None):
     """ Add device to the list of devices in the configuration managed
     Args:
         label: label for device
@@ -463,7 +464,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     logging.debug("ENTRY %s", _method_)
     all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
                 'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'device-type',
-                'status', 'statusTime', 'web_url']
+                'status', 'statusTime', 'web_url', 'auth_method']
     brief_tags = ['label']
     result = {}
 
@@ -543,6 +544,13 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
         plugin = plugins[device.device_type]
         web_url = plugin.get_web_url(device.address)
         device_output["web_url"] = web_url
+
+        # add the auth_method for the device
+        if device.key:
+            auth_method = constants.auth_method.SSH_KEY_AUTHENTICATION.value
+        else:
+            auth_method = constants.auth_method.USERID_PASSWORD.value
+        device_output["auth_method"] = auth_method
 
         # add final form of device info to result
         result_devices.append(device_output)
@@ -1142,6 +1150,9 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
 
     # if we made it here we, have an ip address to use and maybe using a
     # changed address.
+    old_auth = None
+    new_auth = None
+
     if address_changed or userid is not None or password is not None or ssh_key is not None:
         # validate that the existing credentials work with the new IP
         # address or the new credentials are valid

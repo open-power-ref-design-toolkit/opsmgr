@@ -54,10 +54,11 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if ssh_key_string:
                 private_key = paramiko.RSAKey.from_private_key(StringIO(ssh_key_string), password)
-                self.client.connect(host, username=userid, pkey=private_key, timeout=30)
+                self.client.connect(host, username=userid, pkey=private_key, timeout=30,
+                                    allow_agent=False)
             else:
                 self.client.connect(host, username=userid, password=password, timeout=30,
-                                    look_for_keys=False)
+                                    allow_agent=False, look_for_keys=False)
             if not self._is_rack_switch():
                 raise exceptions.DeviceException(
                     "Device is not a Lenovo Rack Switch")
@@ -134,7 +135,8 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             if self.ssh_key_string:
                 private_key = paramiko.RSAKey.from_private_key(StringIO(self.ssh_key_string),
                                                                self.password)
-                self.client.connect(self.host, username=self.userid, pkey=private_key, timeout=30)
+                self.client.connect(self.host, username=self.userid, pkey=private_key, timeout=30,
+                                    allow_agent=False)
             else:
                 self.client.connect(self.host, username=self.userid, password=self.password,
-                                    timeout=30, look_for_keys=False)
+                                    timeout=30, allow_agent=False, look_for_keys=False)
