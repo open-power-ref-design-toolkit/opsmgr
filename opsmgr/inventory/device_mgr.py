@@ -899,7 +899,6 @@ def validate(address, userid, password, device_type, ssh_key=None):
             mtm = plugin.get_machine_type_model()
             serialnum = plugin.get_serial_number()
             version = plugin.get_version()
-            plugin.disconnect()
             return (constants.validation_codes.SUCCESS.value, device_type, mtm, serialnum, version)
         except KeyError:
             logging.error("%s::plugin(%s) not found", _method_, device_type)
@@ -915,6 +914,8 @@ def validate(address, userid, password, device_type, ssh_key=None):
             logging.exception(e)
             logging.warning("%s:plugin(%s). Exception running validate: %s",
                             _method_, plugin.__class__.__name__, e)
+        finally:
+            plugin.disconnect()
     else: #Try all plugins
         for plugin_device_type, plugin in plugins.items():
             try:
@@ -922,7 +923,6 @@ def validate(address, userid, password, device_type, ssh_key=None):
                 mtm = plugin.get_machine_type_model()
                 serialnum = plugin.get_serial_number()
                 version = plugin.get_version()
-                plugin.disconnect()
                 device_type = plugin_device_type
                 break
             except Exception as e:
@@ -930,6 +930,8 @@ def validate(address, userid, password, device_type, ssh_key=None):
                 logging.warning("%s:plugin(%s). Exception running validate: %s",
                                 _method_, plugin.__class__.__name__, e)
                 continue
+            finally:
+                plugin.disconnect()
         if device_type:
             return (constants.validation_codes.SUCCESS.value, device_type, mtm, serialnum, version)
 
