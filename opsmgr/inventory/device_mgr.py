@@ -370,13 +370,13 @@ def change_device_password(label=None, deviceid=None, old_password=None, new_pas
 
     method_ = 'device_mgr.device_change_password'
     message = None
-    label = label.strip()
 
     # gain access to the device object for the targeted item.
     if deviceid is not None:
         device = persistent_mgr.get_device_by_id(deviceid)
         device_des = deviceid
     else:
+        label = label.strip()
         device = persistent_mgr.get_device_by_label(label)
         device_des = label
     if not device:
