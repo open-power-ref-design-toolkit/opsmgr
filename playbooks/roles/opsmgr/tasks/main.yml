@@ -1,13 +1,9 @@
 ---
     - name: Installs prereqs from apt-get
-      become: yes
-      become_user: root
       apt: name={{item}} state=present update_cache=true
       with_items: "{{container_packages_to_install}}"
 
     - name: Install lxc-python2 library for ansible
-      become: yes
-      become_user: root
       pip: name=lxc-python2
 
     - name: Create nagios container
@@ -16,32 +12,24 @@
           template: ubuntu
           state: stopped
           template_options: --release trusty
-      become: yes
-      become_user: root
 
     - name: Add static IP
       template:
           src: nagios_network_interface 
-          dest: /usr/local/var/lib/lxc/{{ container }}/rootfs/etc/network/interfaces
+          dest: /var/lib/lxc/{{ container }}/rootfs/etc/network/interfaces
           mode: 0644
-      become: yes
-      become_user: root
   
     - name: Create /root/.ssh directory
       file: 
-          path: /usr/local/var/lib/lxc/{{ container }}/rootfs/home/ubuntu/.ssh
+          path: /var/lib/lxc/{{ container }}/rootfs/home/ubuntu/.ssh
           state: directory
           mode: 0700
-      become: yes
-      become_user: root
 
     - name: Copy ssh key
       copy:
           src: ~/.ssh/id_rsa.pub
-          dest: /usr/local/var/lib/lxc/{{ container }}/rootfs/home/ubuntu/.ssh/authorized_keys
+          dest: /var/lib/lxc/{{ container }}/rootfs/home/ubuntu/.ssh/authorized_keys
           mode: 0600
-      become: yes
-      become_user: root
 
     - name: Start container, fix permissions, install python
       lxc_container:
@@ -50,13 +38,9 @@
         container_command: |
             chown -R ubuntu:ubuntu /home/ubuntu
             apt-get install -y python
-      become: yes
-      become_user: root
 
     - name: Create iptables rule to forward port 80
       command: iptables -t nat -A PREROUTING -p tcp -d {{ ansible_nodename }} --dport 80 -j DNAT --to {{ nagios_ip }}:80
-      become: yes
-      become_user: root
 
 # The follow is only valid with ansible 2.1
 #

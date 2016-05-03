@@ -6,8 +6,6 @@
           command: rm -rf {{ plugin_tmp_dir }}
 
         - name: Installs all prereqs
-          become: yes
-          become_user: root
           apt: name={{item}} state=present update_cache=true
           with_items: "{{nagios_packages_to_install}}"
 
@@ -23,13 +21,9 @@
 
         - name: Create nagcmd group
           group: name=nagcmd state=present
-          become: yes
-          become_user: root
 
         - name: Create nagios user and add him to the nagcmd group
           user: name=nagios groups=nagcmd
-          become: yes
-          become_user: root
 
         - name: Extract nagios core
           unarchive: src=/tmp/{{ nagios_download_file }} dest={{ download_dir }}/ creates={{ nagios_tmp_dir }} copy=no
@@ -45,33 +39,21 @@
 
         - name: make install
           command: make install chdir={{ nagios_tmp_dir }}
-          become: yes
-          become_user: root
 
         - name: make install-init
           command: make install-init chdir={{ nagios_tmp_dir }}
-          become: yes
-          become_user: root
 
         - name: make install-config
           command: make install-config chdir={{ nagios_tmp_dir }}
-          become: yes
-          become_user: root
 
         - name: make install-commandmode
           command: make install-commandmode chdir={{ nagios_tmp_dir }}
-          become: yes
-          become_user: root
 
         - name: copy nagios conf to apache
           command: /usr/bin/install -c -m 644 sample-config/httpd.conf /etc/apache2/sites-enabled/nagios.conf chdir={{ nagios_tmp_dir }}
-          become: yes
-          become_user: root
 
         - name: create nagiosadmin web user with password 
           command: htpasswd -c -b /usr/local/nagios/etc/htpasswd.users {{ nagiosadmin_user }} {{ nagiosadmin_password }}
-          become: yes
-          become_user: root
 
         - name: configure nagios plugins
           command: ./configure --with-nagios-user=nagios --with-nagios-group=nagios chdir={{ plugin_tmp_dir }}
@@ -81,35 +63,21 @@
 
         - name: make install plugins
           command: make install chdir={{ plugin_tmp_dir }}
-          become: yes
-          become_user: root
 
         - name: allow urls rewrites
           command: a2enmod rewrite
-          become: yes
-          become_user: root
 
         - name: allow cgi-bins
           command: a2enmod cgi
-          become: yes
-          become_user: root
 
 #        - name: Make nagios start on boot
 #          command: ln -sf /etc/init.d/nagios /etc/rcS.d/S99nagios
-#          become: yes
-#          become_user: root
    
         - name: Validate Nagios Config
           command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
-          become: yes
-          become_user: root
 
         - name: Restart apache
           service: name=apache2 state=restarted enabled=yes
-          become: yes
-          become_user: root
 
         - name: Restart nagios
           service: name=nagios state=restarted enabled=yes
-          become: yes
-          become_user: root
