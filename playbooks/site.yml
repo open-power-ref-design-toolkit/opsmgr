@@ -1,0 +1,3 @@
+---
+- include: opsmgr.yml
+- include: nagios.yml

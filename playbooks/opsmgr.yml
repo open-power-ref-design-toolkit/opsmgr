@@ -1,0 +1,5 @@
+---
+- hosts: opsmgr_host
+  become: true
+  roles:
+    - opsmgr

@@ -1,0 +1,24 @@
+---
+ansible_ssh_user: ubuntu
+ansible_become_pass: ubuntu
+nagios_download_site: https://assets.nagios.com/downloads/nagioscore/releases
+nagios_download_file: nagios-4.1.1.tar.gz
+plugin_download_site: http://nagios-plugins.org/download
+plugin_download_file: nagios-plugins-2.1.1.tar.gz
+download_dir: /tmp
+#nagios_tmp_dir and plugin_tmp_dir are subdirectories of download_dir
+#created by the path contained in the files downloaded
+nagios_tmp_dir:  /tmp/nagios-4.1.1
+plugin_tmp_dir: /tmp/nagios-plugins-2.1.1
+nagiosadmin_user: nagiosadmin
+nagiosadmin_password: nagiosadmin
+nagios_packages_to_install:
+    - wget
+    - build-essential
+    - apache2
+    - apache2-utils
+    - php5-gd
+    - libgd2-xpm-dev
+    - libapache2-mod-php5
+    - sendmail
+    - unzip
