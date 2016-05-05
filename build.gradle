@@ -1,5 +1,5 @@
 task build (type : Exec) {
-     print 'Building opsMgr'
+     print 'Building opsMgr for CI'
      //exec { commandLine = ["sudo python3 setup.py install"] }
      executable = "sudo"; args = ["python3", "setup.py", "install"] 
     standardOutput = new ByteArrayOutputStream()
