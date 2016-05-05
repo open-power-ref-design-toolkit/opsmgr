@@ -12,6 +12,8 @@
           template: ubuntu
           state: stopped
           template_options: --release trusty
+          container_command: |
+              mkdir -p /{{ container_directory_to_mount }}
 
     - name: Add static IP
       template:
@@ -30,6 +32,14 @@
           src: ~/.ssh/id_rsa.pub
           dest: /var/lib/lxc/{{ container }}/rootfs/home/ubuntu/.ssh/authorized_keys
           mode: 0600
+
+    - name: Validate the shared directory on the host is created
+      file: path={{ host_directory_to_mount }} state=directory mode=0755
+
+    - name: Edit the container config to mount the shared directory
+      lineinfile:
+          line: "lxc.mount.entry = {{ host_directory_to_mount }} {{ container_directory_to_mount }}  none ro,bind 0.0"
+          dest: "/var/lib/lxc/{{ container }}/config"
 
     - name: Start container, fix permissions, install python
       lxc_container:

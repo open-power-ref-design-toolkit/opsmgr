@@ -72,6 +72,18 @@
 
 #        - name: Make nagios start on boot
 #          command: ln -sf /etc/init.d/nagios /etc/rcS.d/S99nagios
+
+        - name: Add plugin check_mellanox_switch
+          template:
+              src: check_mellanox_switch
+              dest: /usr/local/nagios/libexec
+              mode: 0755
+
+        - name: Add plugin check_rack_switch
+          template:
+              src: check_rack_switch
+              dest: /usr/local/nagios/libexec
+              mode: 0755
    
         - name: Validate Nagios Config
           command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
@@ -81,3 +93,10 @@
 
         - name: Restart nagios
           service: name=nagios state=restarted enabled=yes
+
+        - name: cleanup nagios core directory
+          command: rm -rf {{ nagios_tmp_dir }}
+
+        - name: cleanup nagios plugin directory
+          command: rm -rf {{ plugin_tmp_dir }}
+

@@ -13,12 +13,13 @@ plugin_tmp_dir: /tmp/nagios-plugins-2.1.1
 nagiosadmin_user: nagiosadmin
 nagiosadmin_password: nagiosadmin
 nagios_packages_to_install:
-    - wget
-    - build-essential
     - apache2
     - apache2-utils
-    - php5-gd
-    - libgd2-xpm-dev
+    - build-essential
     - libapache2-mod-php5
+    - libgd2-xpm-dev
+    - php5-gd
     - sendmail
+    - snmp
     - unzip
+    - wget
