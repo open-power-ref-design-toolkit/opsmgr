@@ -287,7 +287,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                     "Because you are using the authentication"
                     " method 'User ID and Password' for this"
                     " device and are changing the User ID,"
-                    " ayou must supply password value."]
+                    " you must supply password value."]
             # else we don't have a password (and) we don't need a password
             # (no error needed)
             else:
