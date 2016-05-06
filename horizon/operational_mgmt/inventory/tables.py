@@ -97,6 +97,7 @@ class RemoveRackLink(tables.LinkAction):
             return self.url
 
     def allowed(self, request, datum):
+        return False # hide remove for now
         # The Remove Rack button should always be displayed, but we want
         # it to be disabled when there are any resources present.  For now
         # assume button is NOT disabled.
