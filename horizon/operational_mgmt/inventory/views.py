@@ -14,22 +14,17 @@
 
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
-from django.utils.translation import ugettext_lazy as _
 from django.utils.decorators import method_decorator  # noqa
+from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters  # noqa
 
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
-from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
 
-from openstack_dashboard import api
-#from openstack_dashboard import policy
-
 import logging
-import pdb
 
 from openstack_dashboard.dashboards.operational_mgmt.inventory \
     import forms as project_forms
@@ -38,12 +33,74 @@ from openstack_dashboard.dashboards.operational_mgmt.inventory \
 from openstack_dashboard.dashboards.operational_mgmt.inventory \
     import tabs as inventoryRacks_tabs
 import opsmgr.inventory.device_mgr as device_mgr
-import gc
+
 
 class IndexView(tabs.TabbedTableView):
-    tab_group_class = inventoryRacks_tabs.InventoryRacksTabs    
+    tab_group_class = inventoryRacks_tabs.InventoryRacksTabs
     table_class = project_tables.ResourcesTable
     template_name = 'op_mgmt/inventory/index.html'
+
+
+class AddResourceView(forms.ModalFormView):
+    template_name = 'op_mgmt/inventory/addResource.html'
+    modal_header = _("Add Resource")
+    form_id = "add_resource_form"
+    form_class = project_forms.AddResourceForm
+    submit_label = _("Add Resource")
+    submit_url = "horizon:op_mgmt:inventory:addResource"
+    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+    page_title = _("Add Resource")
+
+    def get_initial(self):
+        # Need the rack for the active tab
+        rack = self.get_object()
+        # Prime the rack information on our AddResourceForm
+        if rack:
+            return {'rackid': rack['rackid'],
+                    'rack_label': rack['label']}
+        else:
+            return
+
+    @memoized.memoized_method
+    def get_object(self):
+        failure_message = str("Unable to retrieve rack information " +
+                              " for the resource being added.")
+        if "rack_id" in self.kwargs:
+            try:
+                (rc, result_dict) = device_mgr.list_racks(
+                    None, False, [self.kwargs["rack_id"]])
+            except Exception as e:
+                logging.error("Exception received trying to retrieve rack"
+                              " information.  Exception is: %s", e)
+                exceptions.handle(self.request, failure_message)
+                return
+        else:
+            # This is unexpected.  AddResourceView called with no context of
+            # what rack the resource is being added.  Need to display an error
+            # message because the dialog will not be primed with required data
+            logging.error("AddResourceView called with no context.")
+            messages.error(self.request, failure_message)
+            return
+
+        if rc != 0:
+            messages.error(self.request, failure_message)
+            return
+        else:
+            # We should have at least one rack in the results...just return
+            # the first value
+            if len(result_dict['racks']) > 0:
+                return result_dict['racks'][0]
+            else:
+                messages.error(self.request, failure_message)
+                return
+
+    def get_context_data(self, **kwargs):
+        # place the rack id onto the submit url
+        context = super(AddResourceView, self).get_context_data(**kwargs)
+        args = (self.get_object()['rackid'],)
+        context['submit_url'] = reverse(self.submit_url, args=args)
+        return context
+
 
 class EditResourceView(forms.ModalFormView):
     template_name = 'op_mgmt/inventory/editResource.html'
@@ -55,40 +112,60 @@ class EditResourceView(forms.ModalFormView):
     success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
     page_title = _("Edit Resource")
 
+    def get_initial(self):
+        # Need the device being edited
+        device = self.get_object()
+        if device:
+            return {'label': device['label'],
+                    'auth_method': device['auth_method'],
+                    'rackid': device['rackid'],
+                    'eiaLocation': device['rack-eia-location'],
+                    'ip_address': device['ip-address'],
+                    'userID': device['userid'],
+                    'deviceId': device['deviceid']}
+        else:
+            return
+
     @memoized.memoized_method
     def get_object(self):
-        try:
-            (rc, result_dict) = device_mgr.list_devices(None, False, None, [self.kwargs['resource_id']])
-            if rc!=0:
-               messages.error(self.request, _('Unable to retrive resource to be edited.'))
-               return
+        failure_message = str("Unable to retrieve resource information" +
+                              " for the resource being edited.")
+        if "resource_id" in self.kwargs:
+            try:
+                (rc, result_dict) = device_mgr.list_devices(
+                    None, False, None, [self.kwargs['resource_id']])
+            except Exception as e:
+                logging.error("Exception received trying to retrieve"
+                              " resource information.  Exception is: %s", e)
+                exceptions.handle(self.request, failure_message)
+                return
+        else:
+            # This is unexpected.  EditResourceView called with no context
+            # of what to edit.  Need to display an error message because the
+            # dialog will not be primed with required data
+            logging.error("EditResourceView called with no context.")
+            messages.error(self.request, failure_message)
+            return
+
+        if rc != 0:
+            messages.error(self.request, failure_message)
+            return
+        else:
+            # We should have at least one resource in the results...just
+            # return the first value
+            if len(result_dict['devices']) > 0:
+                return result_dict['devices'][0]
             else:
-               value = result_dict['devices']
-               # loop through each raw device
-               for raw_device in value:
-                  # should only be 1 -- return the first found
-                  return raw_device
-        except Exception:
-            redirect = reverse("horizon:op_mgmt:inventory:index")
-            exceptions.handle(self.request,
-                              _('Unable to retrive resource to be edited.'),
-                              redirect=redirect)
+                messages.error(self.request, failure_message)
+                return
 
     def get_context_data(self, **kwargs):
+        # place the device id on to the submit url
         context = super(EditResourceView, self).get_context_data(**kwargs)
         args = (self.get_object()['deviceid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
         return context
 
-    def get_initial(self):
-        raw_device = self.get_object()
-        # TODO: Must retrieve the authMethod from the raw_device (when available in Sprint 2)
-        return {'label': raw_device['label'], 'authMethod':0,
-                              'rackid': raw_device['rackid'],
-                              'eiaLocation': raw_device['rack-eia-location'],
-                              'ip_address': raw_device['ip-address'],
-                              'userID': raw_device['userid'],
-                              'deviceId': raw_device['deviceid']}
 
 class ChangePasswordView(forms.ModalFormView):
     template_name = 'op_mgmt/inventory/changePassword.html'
@@ -105,97 +182,234 @@ class ChangePasswordView(forms.ModalFormView):
     def dispatch(self, *args, **kwargs):
         return super(ChangePasswordView, self).dispatch(*args, **kwargs)
 
+    def get_initial(self):
+        # Need the device and user information to prime the dialog
+        device = self.get_object()
+        if device:
+            return {'label': device['label'],
+                    'userID': device['userid'],
+                    'deviceid': device['deviceid']}
+        else:
+            return
+
     @memoized.memoized_method
     def get_object(self):
-        try:
-            (rc, result_dict) = device_mgr.list_devices(None, False, None, [self.kwargs['resource_id']])
-            if rc!=0:
-               messages.error(self.request, _('Unable to retrive selected resource for change password.'))
-               return
+        failure_message = str("Unable to retrieve resource information for" +
+                              " the resource being edited.")
+        if "resource_id" in self.kwargs:
+            try:
+                (rc, result_dict) = device_mgr.list_devices(
+                    None, False, None, [self.kwargs['resource_id']])
+            except Exception as e:
+                logging.error("Exception received trying to retrieve"
+                              " resource information.  Exception is: %s", e)
+                exceptions.handle(self.request, failure_message)
+                return
+        else:
+            # This is unexpected.  ChangePasswordView called with no context
+            # of what to edit.  Need to display an error message because the
+            # dialog will not be primed with required data
+            logging.error("ChangePasswordView called with no context.")
+            messages.error(self.request, failure_message)
+            return
+
+        if rc != 0:
+            messages.error(self.request, failure_message)
+            return
+        else:
+            # We should have at least one resource in the results...just
+            # return the first value
+            if len(result_dict['devices']) > 0:
+                return result_dict['devices'][0]
             else:
-               value = result_dict['devices']
-               # loop through each raw device
-               for raw_device in value:
-                  # should only be 1 -- return the first found
-                  return raw_device
-        except Exception:
-            redirect = reverse("horizon:op_mgmt:inventory:index")
-            exceptions.handle(self.request,
-                              _('Unable to retrive selected resource for change password.'),
-                              redirect=redirect)
+                messages.error(self.request, failure_message)
+                return
 
     def get_context_data(self, **kwargs):
+        # place the device id on the submit url
         context = super(ChangePasswordView, self).get_context_data(**kwargs)
         args = (self.get_object()['deviceid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
         return context
 
-    def get_initial(self):
-        raw_device = self.get_object()
-        return {'label': raw_device['label'],
-                'userID': raw_device['userid']}
-
-class AddResourceView(forms.ModalFormView):
-    template_name = 'op_mgmt/inventory/addResource.html'
-    modal_header = _("Add Resource")
-    form_id = "add_resource_form"
-    form_class = project_forms.AddResourceForm
-    submit_label = _("Add Resource")
-    submit_url = reverse_lazy("horizon:op_mgmt:inventory:addResource")
-    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
-    page_title = _("Add Resource")
-
-    def get_initial(self):
-       return {'rackid': ""}
 
 class EditRackView(forms.ModalFormView):
-    form_class = project_forms.EditRack
-    form_id = "edit_rack"
-    template_name = 'op_mgmt/inventory/edit_rack.html'
-    success_url = reverse_lazy("horizon:op_mgmt:inventory:index")
-    context_object_name = 'id'
-    modal_id = "edit_rack_modal"
+    template_name = 'op_mgmt/inventory/editRack.html'
     modal_header = _("Edit Rack Details")
-    submit_label = _("Save Changes")
-    submit_url = reverse_lazy("horizon:op_mgmt:inventory:edit_rack")
-    
-    def get_initial(self):
-        self.rack = self.get_object()        
-        initial = super(EditRackView, self).get_initial()
-        if self.rack:
-           return {'label': self.rack['label'],
-                              'data_center': self.rack['data_center'],
-                              'location': self.rack['location'],
-                              'notes': self.rack['notes']}
-        else:
-           return
-    def get_context_data(self, **kwargs):
-        context = super(EditRackView, self).get_context_data(**kwargs)
-        if self.get_form():
-           context['form'] = self.get_form()
-        device = self.get_object()
-        if "label" in self.kwargs:
-           args = (self.kwargs['label'],)
-        
-        if "label" in self.kwargs:
-           context['id'] = self.kwargs['label']
-        return context
-    @memoized.memoized_method
-    def get_form(self, **kwargs):
-        form_class = kwargs.get('form_class', self.get_form_class())
-        return super(EditRackView, self).get_form(form_class)
-    def get_object(self):
-        if "label" in self.kwargs:
-           (rc, result_dict) = device_mgr.list_racks(None, False, [self.kwargs["label"]])
-        else:
-           # we were called with no context of what to edit...just return
-           return
+    form_id = "edit_rack"
+    form_class = project_forms.EditRackForm
+    submit_label = _("Edit Rack")
+    submit_url = "horizon:op_mgmt:inventory:editRack"
+    success_url = reverse_lazy("horizon:op_mgmt:inventory:index")
 
-        if rc!=0:
-           messages.error(self.request, _('Unable to retrive rack to be edited.'))
+    def get_initial(self):
+        # Need the rack being edited
+        rack = self.get_object()
+        if rack:
+            return {'rack_id': rack['rackid'],
+                    'label': rack['label'],
+                    'data_center': rack['data-center'],
+                    'location': rack['location'],
+                    'notes': rack['notes']}
         else:
-           value = result_dict['racks']
-           # loop through each raw device
-           for rack in value:
-              # should only be 1
-              return rack
+            return
+
+    @memoized.memoized_method
+    def get_object(self):
+        failure_message = str("Unable to retrieve rack information" +
+                              " for the rack being edited.")
+        if "rack_id" in self.kwargs:
+            try:
+                (rc, result_dict) = device_mgr.list_racks(
+                    None, False, [self.kwargs["rack_id"]])
+            except Exception as e:
+                logging.error("Exception received trying to retrieve"
+                              " rack information.  Exception is: %s", e)
+                exceptions.handle(self.request, failure_message)
+                return
+        else:
+            # This is unexpected.  EditRackView called with no context
+            # of what to edit.  Need to display an error message because
+            # the dialog will not be primed with required data
+            logging.error("EditRackView called with no context.")
+            messages.error(self.request, failure_message)
+            return
+
+        if rc != 0:
+            messages.error(self.request, failure_message)
+            return
+        else:
+            # We should have at least one resource in the results...just
+            # return the first value
+            if len(result_dict['racks']) > 0:
+                return result_dict['racks'][0]
+            else:
+                messages.error(self.request, failure_message)
+                return
+
+    def get_context_data(self, **kwargs):
+        # place the device id on to the submit url
+        context = super(EditRackView, self).get_context_data(**kwargs)
+        args = (self.get_object()['rackid'],)
+        context['submit_url'] = reverse(self.submit_url, args=args)
+        return context
+
+
+class RemoveRackView(forms.ModalFormView):
+    template_name = 'op_mgmt/inventory/removeRack.html'
+    modal_header = _("Confirm Remove Rack")
+    form_id = "remove_rack_form"
+    form_class = project_forms.RemoveRackForm
+    submit_label = _("Remove Rack")
+    submit_url = "horizon:op_mgmt:inventory:removeRack"
+    success_url = reverse_lazy("horizon:op_mgmt:inventory:index")
+    page_title = _("Confirm Remove Rack")
+
+    def get_initial(self):
+        # Need the rack being edited
+        rack = self.get_object()
+        if rack:
+            return {'rack_id': rack['rackid'],
+                    'label': rack['label']}
+        else:
+            return
+
+    @memoized.memoized_method
+    def get_object(self):
+        failure_message = str("Unable to retrieve rack information" +
+                              " for the rack being removed.")
+        if "rack_id" in self.kwargs:
+            try:
+                (rc, result_dict) = device_mgr.list_racks(
+                    None, False, [self.kwargs["rack_id"]])
+            except Exception as e:
+                logging.error("Exception received trying to retrieve"
+                              " rack information.  Exception is: %s", e)
+                exceptions.handle(self.request, failure_message)
+                return
+        else:
+            # This is unexpected.  RemoveRackView called with no context
+            # of what to edit.  Need to display an error message because
+            # the dialog will not be primed with required data
+            logging.error("RemoveRackView called with no context.")
+            messages.error(self.request, failure_message)
+            return
+
+        if rc != 0:
+            messages.error(self.request, failure_message)
+            return
+        else:
+            # We should have at least one resource in the results...just
+            # return the first value
+            if len(result_dict['racks']) > 0:
+                return result_dict['racks'][0]
+            else:
+                messages.error(self.request, failure_message)
+                return
+
+    def get_context_data(self, **kwargs):
+        # place the device id on to the submit url
+        context = super(RemoveRackView, self).get_context_data(**kwargs)
+        args = (self.get_object()['rackid'],)
+        context['submit_url'] = reverse(self.submit_url, args=args)
+        return context
+
+
+class RemoveResourceView(forms.ModalFormView):
+    template_name = 'op_mgmt/inventory/removeResource.html'
+    modal_header = _("Remove Resource")
+    form_id = "remove_resource_form"
+    form_class = project_forms.RemoveResourceForm
+    submit_label = _("Remove Resource")
+    submit_url = "horizon:op_mgmt:inventory:removeResource"
+    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+    page_title = _("Remove Resource")
+
+    def get_initial(self):
+        # Need the device being edited
+        device = self.get_object()
+        if device:
+            return {'label': device['label'],
+                    'deviceId': device['deviceid']}
+        else:
+            return
+
+    @memoized.memoized_method
+    def get_object(self):
+        failure_message = str("Unable to retrieve resource information" +
+                              " for the resource being removed.")
+        if "resource_id" in self.kwargs:
+            try:
+                (rc, result_dict) = device_mgr.list_devices(
+                    None, False, None, [self.kwargs['resource_id']])
+            except Exception as e:
+                logging.error("Exception received trying to retrieve"
+                              " resource information.  Exception is: %s", e)
+                exceptions.handle(self.request, failure_message)
+                return
+        else:
+            # This is unexpected.  RemoveResourceView called with no context
+            # of what to edit.  Need to display an error message because the
+            # dialog will not be primed with required data
+            logging.error("RemoveResourceView called with no context.")
+            messages.error(self.request, failure_message)
+            return
+
+        if rc != 0:
+            messages.error(self.request, failure_message)
+            return
+        else:
+            # We should have at least one resource in the results...just
+            # return the first value
+            if len(result_dict['devices']) > 0:
+                return result_dict['devices'][0]
+            else:
+                messages.error(self.request, failure_message)
+                return
+
+    def get_context_data(self, **kwargs):
+        # place the device id on to the submit url
+        context = super(RemoveResourceView, self).get_context_data(**kwargs)
+        args = (self.get_object()['deviceid'],)
+        context['submit_url'] = reverse(self.submit_url, args=args)
+        return context

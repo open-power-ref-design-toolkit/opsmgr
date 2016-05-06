@@ -9,30 +9,31 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import pdb
+
+
 class Resource(object):
-    # The class "constructor" - It's actually an initializer 
+    # The class "constructor" - It's actually an initializer
     def __init__(self, device):
         self.id = device['deviceid']
         self.name = device['label']
         self.type = device['device-type']
-        self.rackLoc = device['rack-eia-location']
+        self.rack_loc = device['rack-eia-location']
         self.userid = device['userid']
         self.mtm = device['machine-type-model']
-        self.sn = device['serial-number']
-        self.mgmtIpaV4 = device['ip-address']
+        self.serial_num = device['serial-number']
+        self.ip_address = device['ip-address']
         self.hostname = device['hostname']
         self.version = device['version']
         self.web_url = device['web_url']
-        self.deviceId = device['deviceid']
-    
+        self.device_id = device['deviceid']
+
         # displayable host / ip address info
-        if ((self.hostname != None) and (self.mgmtIpaV4 != None)):
-           # both pieces of info are set.
-           self.displayHost = self.hostname + " (" + self.mgmtIpaV4 + ")"
-        elif (self.mgmtIpaV4 != None):
-           # only ip address field is set
-           self.displayHost = self.mgmtIpV4 + " (" + self.mgmtIpaV4 + ")"
+        if (self.hostname is not None) and (self.ip_address is not None):
+            # both pieces of info are set.
+            self.host_name = self.hostname + " (" + self.ip_address + ")"
+        elif self.ip_address is not None:
+            # only ip address field is set
+            self.host_name = self.ip_address + " (" + self.ip_address + ")"
         else:
-           # only hostname is set
-           self.displayHost = self.hostname
+            # only hostname is set
+            self.host_name = self.hostname
