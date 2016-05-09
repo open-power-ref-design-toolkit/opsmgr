@@ -24,7 +24,7 @@ from horizon.utils import validators
 
 import logging
 import opsmgr.inventory.device_mgr as device_mgr
-import pdb
+
 AUTH_METHOD_USER_PWD = u'0'
 AUTH_METHOD_USER_KEY = u'1'
 
@@ -155,7 +155,6 @@ class AddResourceForm(forms.SelfHandlingForm):
                     password_value = data['passphrase']
             # pass in "None" for device type in add_device -- so that the
             # API will determine type for us
-            pdb.set_trace()
             logging.debug("%s: Attempting to add a device to rack: %s, using"
                           " label: %s, address: %s, user id: %s, eia location"
                           " %s, and authentication method: %s", __method__,
@@ -365,7 +364,6 @@ class EditResourceForm(forms.SelfHandlingForm):
                         new_password = data['passphrase']
             # pass in "None" for original device label -- we'll instead pass
             # in the device ID so the API knows which device is being edited
-            pdb.set_trace()
             logging.debug("%s: Attempting to edit device %s on rack: %s, using"
                           " label: %s, address: %s, user id: %s, eia location"
                           " %s, new rack %s, and authentication method: %s",
