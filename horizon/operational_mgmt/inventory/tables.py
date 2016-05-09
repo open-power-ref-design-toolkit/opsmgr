@@ -97,7 +97,9 @@ class RemoveRackLink(tables.LinkAction):
             return self.url
 
     def allowed(self, request, datum):
-        return False # hide remove for now
+        return False  # hide Remove function for now
+        __method__ = 'tables.RemoveRackLink.allowed'
+
         # The Remove Rack button should always be displayed, but we want
         # it to be disabled when there are any resources present.  For now
         # assume button is NOT disabled.
@@ -107,6 +109,9 @@ class RemoveRackLink(tables.LinkAction):
             # deviceids=None, list_device_id=False, is_detail=False,
             # racks=None)
             # Retrieve the devices for the selected rack
+            logging.debug("%s: before retrieving devices for rack: %s",
+                          __method__, self.rack_id)
+
             (rc, result_dict) = device_mgr.list_devices(None, False, None,
                                                         None, False, False,
                                                         [self.rack_id])
@@ -118,14 +123,17 @@ class RemoveRackLink(tables.LinkAction):
                 msg = str('Unable to retrieve Operational Management inventory'
                           ' information for resources.')
                 messages.error(request, msg)
-                logging.error('Unable to retrieve Operational Management'
+                logging.error('%s: Unable to retrieve Operational Management'
                               ' inventory information. A Non-0 return code'
                               ' returned from device_mgr.list_devices.'
-                              ' The return code is: %s', rc)
+                              ' The return code is: %s', __method__, rc)
             else:
                 devices = result_dict['devices']
                 # if the rack has any resources associated with it in the
                 # inventory don't allow the user to delete it
+                logging.debug("%s: got device info for rack %s.  Number of "
+                              "devices for this rack is: %s",
+                              __method__, self.rack_id, len(devices))
                 if len(devices) > 0:
                     disable_delete = True
 

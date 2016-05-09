@@ -63,6 +63,7 @@ class AddResourceView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
+        __method__ = 'views.AddResourceView.get_object'
         failure_message = str("Unable to retrieve rack information " +
                               " for the resource being added.")
         if "rack_id" in self.kwargs:
@@ -70,15 +71,17 @@ class AddResourceView(forms.ModalFormView):
                 (rc, result_dict) = device_mgr.list_racks(
                     None, False, [self.kwargs["rack_id"]])
             except Exception as e:
-                logging.error("Exception received trying to retrieve rack"
-                              " information.  Exception is: %s", e)
+                logging.error("%s: Exception received trying to retrieve rack"
+                              " information.  Exception is: %s",
+                              __method__, e)
                 exceptions.handle(self.request, failure_message)
                 return
         else:
             # This is unexpected.  AddResourceView called with no context of
             # what rack the resource is being added.  Need to display an error
             # message because the dialog will not be primed with required data
-            logging.error("AddResourceView called with no context.")
+            logging.error("%s: AddResourceView called with no rack id"
+                          " context.", __method__)
             messages.error(self.request, failure_message)
             return
 
@@ -91,6 +94,9 @@ class AddResourceView(forms.ModalFormView):
             if len(result_dict['racks']) > 0:
                 return result_dict['racks'][0]
             else:
+                logging.error("%s: list_rack returned no information for"
+                              " rack with rack id %s",
+                              __method__, self.kwargs["rack_id"])
                 messages.error(self.request, failure_message)
                 return
 
@@ -128,6 +134,7 @@ class EditResourceView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
+        __method__ = 'views.EditResourceView.get_object'
         failure_message = str("Unable to retrieve resource information" +
                               " for the resource being edited.")
         if "resource_id" in self.kwargs:
@@ -135,15 +142,17 @@ class EditResourceView(forms.ModalFormView):
                 (rc, result_dict) = device_mgr.list_devices(
                     None, False, None, [self.kwargs['resource_id']])
             except Exception as e:
-                logging.error("Exception received trying to retrieve"
-                              " resource information.  Exception is: %s", e)
+                logging.error("%s: Exception received trying to retrieve"
+                              " resource information.  Exception is: %s",
+                              __method__, e)
                 exceptions.handle(self.request, failure_message)
                 return
         else:
             # This is unexpected.  EditResourceView called with no context
             # of what to edit.  Need to display an error message because the
             # dialog will not be primed with required data
-            logging.error("EditResourceView called with no context.")
+            logging.error("%s: EditResourceView called with no resource id"
+                          " context.", __method__)
             messages.error(self.request, failure_message)
             return
 
@@ -156,6 +165,9 @@ class EditResourceView(forms.ModalFormView):
             if len(result_dict['devices']) > 0:
                 return result_dict['devices'][0]
             else:
+                logging.error("%s: list_devices returned no information for"
+                              " resource with device id %s",
+                              __method__, self.kwargs["resource_id"])
                 messages.error(self.request, failure_message)
                 return
 
@@ -194,22 +206,25 @@ class ChangePasswordView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
+        __method__ = 'views.ChangePasswordView.get_object'
         failure_message = str("Unable to retrieve resource information for" +
-                              " the resource being edited.")
+                              " the resource having password changed.")
         if "resource_id" in self.kwargs:
             try:
                 (rc, result_dict) = device_mgr.list_devices(
                     None, False, None, [self.kwargs['resource_id']])
             except Exception as e:
-                logging.error("Exception received trying to retrieve"
-                              " resource information.  Exception is: %s", e)
+                logging.error("%s: Exception received trying to retrieve"
+                              " resource information.  Exception is: %s",
+                              __method__, e)
                 exceptions.handle(self.request, failure_message)
                 return
         else:
             # This is unexpected.  ChangePasswordView called with no context
             # of what to edit.  Need to display an error message because the
             # dialog will not be primed with required data
-            logging.error("ChangePasswordView called with no context.")
+            logging.error("%s: ChangePasswordView called with no context.",
+                          __method__)
             messages.error(self.request, failure_message)
             return
 
@@ -222,6 +237,9 @@ class ChangePasswordView(forms.ModalFormView):
             if len(result_dict['devices']) > 0:
                 return result_dict['devices'][0]
             else:
+                logging.error("%s: list_devices returned no information for"
+                              " resource with device id %s",
+                              __method__, self.kwargs["resource_id"])
                 messages.error(self.request, failure_message)
                 return
 
@@ -256,6 +274,7 @@ class EditRackView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
+        __method__ = 'views.EditRackView.get_object'
         failure_message = str("Unable to retrieve rack information" +
                               " for the rack being edited.")
         if "rack_id" in self.kwargs:
@@ -263,15 +282,17 @@ class EditRackView(forms.ModalFormView):
                 (rc, result_dict) = device_mgr.list_racks(
                     None, False, [self.kwargs["rack_id"]])
             except Exception as e:
-                logging.error("Exception received trying to retrieve"
-                              " rack information.  Exception is: %s", e)
+                logging.error("%s: Exception received trying to retrieve"
+                              " rack information.  Exception is: %s",
+                              __method__, e)
                 exceptions.handle(self.request, failure_message)
                 return
         else:
             # This is unexpected.  EditRackView called with no context
             # of what to edit.  Need to display an error message because
             # the dialog will not be primed with required data
-            logging.error("EditRackView called with no context.")
+            logging.error("%s: EditRackView called with no context.",
+                          __method__)
             messages.error(self.request, failure_message)
             return
 
@@ -284,6 +305,9 @@ class EditRackView(forms.ModalFormView):
             if len(result_dict['racks']) > 0:
                 return result_dict['racks'][0]
             else:
+                logging.error("%s: list_racks returned no information for"
+                              " rack with rack id %s",
+                              __method__, self.kwargs["rack_id"])
                 messages.error(self.request, failure_message)
                 return
 
@@ -316,6 +340,7 @@ class RemoveRackView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
+        __method__ = 'views.RemovewRackView.get_object'
         failure_message = str("Unable to retrieve rack information" +
                               " for the rack being removed.")
         if "rack_id" in self.kwargs:
@@ -323,15 +348,17 @@ class RemoveRackView(forms.ModalFormView):
                 (rc, result_dict) = device_mgr.list_racks(
                     None, False, [self.kwargs["rack_id"]])
             except Exception as e:
-                logging.error("Exception received trying to retrieve"
-                              " rack information.  Exception is: %s", e)
+                logging.error("%s: Exception received trying to retrieve"
+                              " rack information.  Exception is: %s",
+                              __method__, e)
                 exceptions.handle(self.request, failure_message)
                 return
         else:
             # This is unexpected.  RemoveRackView called with no context
             # of what to edit.  Need to display an error message because
             # the dialog will not be primed with required data
-            logging.error("RemoveRackView called with no context.")
+            logging.error("%s: RemoveRackView called with no context.",
+                          __method__)
             messages.error(self.request, failure_message)
             return
 
@@ -344,6 +371,9 @@ class RemoveRackView(forms.ModalFormView):
             if len(result_dict['racks']) > 0:
                 return result_dict['racks'][0]
             else:
+                logging.error("%s: list_racks returned no information for"
+                              " rack with rack id %s",
+                              __method__, self.kwargs["rack_id"])
                 messages.error(self.request, failure_message)
                 return
 
@@ -376,6 +406,7 @@ class RemoveResourceView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
+        __method__ = 'views.RemovewResourceView.get_object'
         failure_message = str("Unable to retrieve resource information" +
                               " for the resource being removed.")
         if "resource_id" in self.kwargs:
@@ -383,15 +414,17 @@ class RemoveResourceView(forms.ModalFormView):
                 (rc, result_dict) = device_mgr.list_devices(
                     None, False, None, [self.kwargs['resource_id']])
             except Exception as e:
-                logging.error("Exception received trying to retrieve"
-                              " resource information.  Exception is: %s", e)
+                logging.error("%s: Exception received trying to retrieve"
+                              " resource information.  Exception is: %s",
+                              __method__, e)
                 exceptions.handle(self.request, failure_message)
                 return
         else:
             # This is unexpected.  RemoveResourceView called with no context
             # of what to edit.  Need to display an error message because the
             # dialog will not be primed with required data
-            logging.error("RemoveResourceView called with no context.")
+            logging.error("%s: RemoveResourceView called with no context.",
+                          __method__)
             messages.error(self.request, failure_message)
             return
 
@@ -404,6 +437,9 @@ class RemoveResourceView(forms.ModalFormView):
             if len(result_dict['devices']) > 0:
                 return result_dict['devices'][0]
             else:
+                logging.error("%s: list_devices returned no information for"
+                              " resource with device id %s",
+                              __method__, self.kwargs["resource_id"])
                 messages.error(self.request, failure_message)
                 return
 

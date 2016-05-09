@@ -24,12 +24,13 @@ from horizon.utils import validators
 
 import logging
 import opsmgr.inventory.device_mgr as device_mgr
-
+import pdb
 AUTH_METHOD_USER_PWD = u'0'
 AUTH_METHOD_USER_KEY = u'1'
 
 
 def create_rack_choices(request):
+    __method__ = 'forms.create_rack_choices'
     rack_choices = []
     (rc, result_dict) = device_mgr.list_racks()
     if rc is not 0:
@@ -39,10 +40,10 @@ def create_rack_choices(request):
                 'Unable to retrieve Operational'
                 ' Management inventory information for rack extensions.'))
         logging.error(
-            "Unable to retrieve Operational Management rack"
+            "%s: Unable to retrieve Operational Management rack"
             " inventory information. A Non-0 return code returned from"
             " device_mgr.list_racks.  The return code is: %s.  Details"
-            " of the attempt: %s", rc, result_dict)
+            " of the attempt: %s", __method__, rc, result_dict)
     else:
         value = result_dict['racks']
         for s in value:
@@ -139,6 +140,7 @@ class AddResourceForm(forms.SelfHandlingForm):
             del self._errors['sshKey']
 
     def handle(self, request, data):
+        __method__ = 'forms.AddResourceForm.handle'
         try:
             # Need to ensure we pass along the correct password (either
             # password or phassphrase), and that we don't accidently pass
@@ -153,23 +155,46 @@ class AddResourceForm(forms.SelfHandlingForm):
                     password_value = data['passphrase']
             # pass in "None" for device type in add_device -- so that the
             # API will determine type for us
+            pdb.set_trace()
+            logging.debug("%s: Attempting to add a device to rack: %s, using"
+                          " label: %s, address: %s, user id: %s, eia location"
+                          " %s, and authentication method: %s", __method__,
+                          self.initial['rackid'], data['label'],
+                          data['ip_address'], data['userID'],
+                          data['eiaLocation'], data['auth_method'])
             (rc, result_dict) = device_mgr.add_device(
                 data['label'], None, data['ip_address'],
-                data['userID'].strip(), password_value, self.initial['rackid'],
-                data['eiaLocation'], data['sshKey'])
+                data['userID'].strip(), password_value,
+                self.initial['rackid'], data['eiaLocation'], data['sshKey'])
 
             if rc is not 0:
+                # Log details of the unsuccessful attempt.
+                logging.error("%s: Attemp to add a device to rack: %s, using"
+                              " label: %s, address: %s, user id: %s, eia"
+                              " location %s, and authentication method:"
+                              " %s failed.", __method__,
+                              self.initial['rackid'], data['label'],
+                              data['ip_address'], data['userID'],
+                              data['eiaLocation'], data['auth_method'])
+
+                logging.error(
+                    "%s: Unable to add resource %s to rack %s.  A Non-0 "
+                    " return code returned from device_mgr.add_device.  "
+                    " The return code is: %s.  Details of the attempt: "
+                    " %s", __method__, data['label'], self.initial['rackid'],
+                    rc, result_dict)
                 msg = str(
                     'Attempt to add resource ' + data['label'] + ' was '
                     'not successful. Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
             else:
-                msg = str('Resource ' + data['label'] + ' successfully added.')
+                msg = str('Resource ' + data['label'] + ' successfully'
+                          ' added.')
                 messages.info(request, msg)
             return True
         except Exception as e:
-            logging.error("Exception received trying to add a resource.  "
-                          "Exception is: %s", e)
+            logging.error("%s: Exception received trying to add a resource.  "
+                          "Exception is: %s", __method__, e)
             exceptions.handle(request,
                               _('Unable to add resource.'))
 
@@ -298,6 +323,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                 del self._errors['password']
 
     def handle(self, request, data):
+        __method__ = 'forms.EditResourceForm.handle'
         try:
             # We only want to pass the changed fields to the API.
             # Determine what fields have changed (we will process
@@ -339,18 +365,43 @@ class EditResourceForm(forms.SelfHandlingForm):
                         new_password = data['passphrase']
             # pass in "None" for original device label -- we'll instead pass
             # in the device ID so the API knows which device is being edited
+            pdb.set_trace()
+            logging.debug("%s: Attempting to edit device %s on rack: %s, using"
+                          " label: %s, address: %s, user id: %s, eia location"
+                          " %s, new rack %s, and authentication method: %s",
+                          __method__, self.initial['label'],
+                          self.initial['rackid'], new_label, new_ip_address,
+                          new_user_id, new_eia_location, new_rackid,
+                          data['auth_method'])
             (rc, result_dict) = device_mgr.change_device_properties(
                 None, self.initial['deviceId'], new_label, new_user_id,
                 new_password, new_ip_address, new_rackid, new_eia_location,
                 new_ssh_key)
             if rc is not 0:
+                # Log details of the unsuccessful attempt.
+                logging.error("%s: Attempt to edit device %s on rack: %s,"
+                              " using new label: %s, address: %s, user id:"
+                              " %s, eia location %s, new rack %s, and"
+                              " authentication method: %s failed.", __method__,
+                              self.initial['label'], self.initial['rackid'],
+                              new_label, new_ip_address, new_user_id,
+                              new_eia_location, new_rackid,
+                              data['auth_method'])
+
+                logging.error(
+                    "%s: Unable to edit resource %s to rack %s.  A Non-0 "
+                    " return code returned from device_mgr.add_device.  "
+                    " The return code is: %s.  Details of the attempt: "
+                    " %s", __method__, self.initial['label'],
+                    self.initial['rackid'], rc, result_dict)
                 # failure case -- so use the initial label for logging/message
                 msg = str('Attempt to edit resource ' +
                           self.initial['label'] + " was not successful."
                           ' Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
-                logging.error('Unable to edit resource "%s".  Return code "%s"'
-                              ' received.  Details of the failure: "%s"',
+                logging.error('%s: Unable to edit resource "%s".  Return'
+                              ' code "%s" received.  Details of the'
+                              ' failure: "%s"', __method__,
                               self.initial['label'], rc, result_dict)
             else:
                 # must have a 0 rc -- display completion msg -- use current
@@ -360,8 +411,8 @@ class EditResourceForm(forms.SelfHandlingForm):
                 messages.info(request, msg)
             return True
         except Exception as e:
-            logging.error("Exception received trying to edit resource."
-                          " Exception is: %s", e)
+            logging.error("%s: Exception received trying to edit resource."
+                          " Exception is: %s", __method__, e)
             exceptions.handle(request, _('Unable to edit selected resource.'))
 
 
@@ -389,6 +440,7 @@ class ChangePasswordForm(PasswordMixin, forms.SelfHandlingForm):
         self.fields["userID"].widget = read_only_input
 
     def handle(self, request, data):
+        __method__ = 'forms.ChangePasswordForm.handle'
         try:
             # pass in "None" for device label -- we'll instead pass in the
             # device ID so the API knows which device to act on
@@ -403,9 +455,9 @@ class ChangePasswordForm(PasswordMixin, forms.SelfHandlingForm):
                           ' Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
                 logging.error(
-                    'Unable to change password for user "%s" on'
+                    '%s: Unable to change password for user "%s" on'
                     ' resource "%s".  Return code "%s" received.  Details'
-                    ' of the failure: "%s"',
+                    ' of the failure: "%s"', __method__,
                     data['userID'], data['label'], rc, result_dict)
             else:
                 # must have a 0 rc -- display completion msg -- use
@@ -416,9 +468,11 @@ class ChangePasswordForm(PasswordMixin, forms.SelfHandlingForm):
                 messages.info(request, msg)
             return True
         except Exception as e:
-            logging.error("Exception received trying to change the password"
-                          " of the selected resource.  Exception is: %s", e)
-            exceptions.handle(request, _('Unable to edit selected resource.'))
+            logging.error("%s: Exception received trying to change the"
+                          " password of the selected resource.  Exception"
+                          " is: %s", __method__, e)
+            exceptions.handle(request, _('Unable to change password for'
+                                         ' the selected resource.'))
 
 
 class EditRackForm(forms.SelfHandlingForm):
@@ -435,29 +489,41 @@ class EditRackForm(forms.SelfHandlingForm):
                             max_length=255)
 
     def handle(self, request, data):
+        __method__ = 'forms.EditRackForm.handle'
         try:
             # pass in "None" for rack label -- we'll instead pass in the
             # rack ID so the API knows which rack to act on
+            logging.debug("%s: Attempting to edit rack %s using"
+                          " label: %s, data center: %s, location: %s,"
+                          " notes: %s", __method__, self.initial['label'],
+                          data['label'], data['data_center'],
+                          data['location'], data['notes'])
             (rc, result_dict) = device_mgr.change_rack_properties(
                 None, data['rack_id'], data['label'], data['data_center'],
                 data['location'], data['notes'])
             if rc is not 0:
+                logging.error("%s: Attempt to edit rack %s using"
+                              " label: %s, data center: %s, location: %s,"
+                              " notes: %s, was not successful.", __method__,
+                              self.initial['label'], data['label'],
+                              data['data_center'], data['location'],
+                              data['notes'])
+                logging.error(
+                    '%s: Unable to edit rack "%s".  Return '
+                    'code "%s" received.  Details of the failure: "%s"',
+                    __method__, self.initial['label'], rc, result_dict)
                 msg = str('Attempt to update rack details for ' +
                           self.initial['label'] + ' failed. Details of the' +
                           ' attempt: ' + result_dict)
                 messages.error(request, msg)
-                logging.error(
-                    'Unable to edit rack "%s".  Return '
-                    'code "%s" received.  Details of the failure: "%s"',
-                    data['label'], rc, result_dict)
             else:
                 # must have a 0 rc -- display completion msg
                 msg = str('Rack details successfully updated.')
                 messages.info(request, msg)
             return True
         except Exception as e:
-            logging.error("Exception received trying to edit the "
-                          "selected rack.  Exception is: %s", e)
+            logging.error("%s: Exception received trying to edit the "
+                          "selected rack.  Exception is: %s", __method__, e)
             exceptions.handle(request,
                               _('Unable to edit rack details.'))
 
@@ -472,6 +538,7 @@ class RemoveRackForm(forms.SelfHandlingForm):
         self.fields["label"].widget = read_only_input
 
     def handle(self, request, data):
+        __method__ = 'forms.RemoveRackForm.handle'
         try:
             # pass in "None" for rack label -- we'll instead pass in the
             # rack ID so the API knows which rack to act on.  Also pass in
@@ -485,17 +552,17 @@ class RemoveRackForm(forms.SelfHandlingForm):
                     result_dict)
                 messages.error(request, msg)
                 logging.error(
-                    'Unable to remove rack with label "%s".  Return '
+                    '%s: Unable to remove rack with label "%s".  Return '
                     'code "%s" received.  Details of the failure: "%s"',
-                    self.initial['label'], rc, result_dict)
+                    __method__, self.initial['label'], rc, result_dict)
             else:
                 # must have a 0 rc -- display completion msg
                 msg = str('Rack successfully removed.')
                 messages.info(request, msg)
             return True
         except Exception as e:
-            logging.error("Exception received trying to remove the "
-                          "selected rack.  Exception is: %s", e)
+            logging.error("%s: Exception received trying to remove the "
+                          "selected rack.  Exception is: %s", __method__, e)
             exceptions.handle(request, _('Unable to remove rack.'))
 
 
@@ -512,6 +579,7 @@ class RemoveResourceForm(forms.SelfHandlingForm):
         self.fields["label"].widget = read_only_input
 
     def handle(self, request, data):
+        __method__ = 'forms.RemoveResourceForm.handle'
         try:
             # pass in "None" for device label -- we'll instead pass
             # in the device ID so the API knows which device is being
@@ -524,9 +592,9 @@ class RemoveResourceForm(forms.SelfHandlingForm):
                           self.initial['label'] + " was not successful."
                           ' Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
-                logging.error('Unable to remove resource "%s".  Return '
+                logging.error('%s: Unable to remove resource "%s".  Return '
                               'code "%s" received.  Details of the failure:'
-                              '"%s"', self.initial['label'],
+                              '"%s"', __method__, self.initial['label'],
                               rc, result_dict)
             else:
                 # must have a 0 rc -- display completion msg -- use current
@@ -535,7 +603,7 @@ class RemoveResourceForm(forms.SelfHandlingForm):
                 messages.info(request, msg)
             return True
         except Exception as e:
-            logging.error("Exception received trying to remove resource."
-                          " Exception is: %s", e)
+            logging.error("%s: Exception received trying to remove resource."
+                          " Exception is: %s", __method__, e)
             exceptions.handle(request, _('Unable to remove selected '
                                          'resource.'))
