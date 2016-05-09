@@ -17,7 +17,6 @@ from django.utils.translation import ugettext_lazy as _
 import horizon
 
 from openstack_dashboard.api import keystone
-from openstack_dashboard.dashboards.operational_mgmt import dashboard
 
 
 class Inventory(horizon.Panel):

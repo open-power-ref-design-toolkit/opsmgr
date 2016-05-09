@@ -12,15 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
-from horizon import tables
-from horizon import forms
+
 from horizon import messages
+from horizon import tables
+
 import opsmgr.inventory.device_mgr as device_mgr
 
 import logging
-import pdb
+
 
 class AddResourceLink(tables.LinkAction):
     name = "addResource"
@@ -30,9 +31,13 @@ class AddResourceLink(tables.LinkAction):
     icon = "plus"
     rack_id = ""
 
-    # dev: try this for multi-rack support
-    def initialize(self, rack_id):
-       self.rack_id = rack_id
+    # required to prime the add resource dialog with the rack id
+    def get_link_url(self):
+        if self.rack_id != "":
+            return reverse(self.url, args=[self.rack_id])
+        else:
+            return self.url
+
 
 class EditResourceLink(tables.LinkAction):
     name = "edit"
@@ -41,6 +46,7 @@ class EditResourceLink(tables.LinkAction):
     classes = ("ajax-modal",)
     icon = "pencil"
 
+
 class ChangePasswordLink(tables.LinkAction):
     name = "changePassword"
     verbose_name = _("Change Password")
@@ -48,130 +54,166 @@ class ChangePasswordLink(tables.LinkAction):
     classes = ("ajax-modal",)
     icon = "pencil"
 
-class DeleteResourcesAction(tables.DeleteAction):
-    @staticmethod
-    def action_present(count):
-        return ungettext_lazy(
-            u"Delete Resource",
-            u"Delete Resource",
-            count
-        )
 
-    @staticmethod
-    def action_past(count):
-        return ungettext_lazy(
-            u"Deleted Resource",
-            u"Deleted Resource",	
-            count
-        )
+class RemoveResourceLink(tables.LinkAction):
+    name = "removeResource"
+    verbose_name = _("Remove Resource")
+    url = "horizon:op_mgmt:inventory:removeResource"
+    # consider adding class to indicate action is 'dangerous' --
+    # btn-danger makes the words black, and background red: a bit much
+    classes = ("ajax-modal",)
+    icon = "trash"
 
-    def delete(self, request, obj_id):
-        deviceIds = []
-        deviceIds.append(obj_id)
-   
-        (rc, result_dict) = device_mgr.remove_device(None, False, deviceIds);
-        
-        if rc!=0:
-           msg = _('Attempt to remove resource was not successful. Details of the attempt: "%s"' % result_dict)
-           messages.error(request, msg)
-        else:
-           return  # allow the base class to display the success message
 
-class EditRack(tables.LinkAction):
+class EditRackLink(tables.LinkAction):
     name = "editRack"
     verbose_name = _("Edit Rack")
-    url = "horizon:op_mgmt:inventory:edit_rack"
+    url = "horizon:op_mgmt:inventory:editRack"
     classes = ("ajax-modal",)
     icon = "pencil"
-    def __init__(self, attrs=None, **kwargs):
-        super(EditRack, self).__init__(attrs, **kwargs)
+    rack_id = ""
 
-class RemoveRackAction(tables.DeleteAction):
-    @staticmethod
-    def action_present(count):
-        return ungettext_lazy(
-            u"Remove",
-            u"Remove",
-            count
-        )
+    # required to prime the edit rack dialog with the rack id
+    def get_link_url(self):
+        if self.rack_id != "":
+            return reverse(self.url, args=[self.rack_id])
+        else:
+            return self.url
 
-    @staticmethod
-    def action_past(count):
-        return ungettext_lazy(
-            u"Removed Rack",
-            u"Removed Rack",
-            count
-        )
 
-    # TODO:  Not getting called -- so we're not able to delete anything
-    def delete(self, request, obj_id):
-        logging.error(" in the delete method!")
-        #pdb.set_trace()
-        #api.nova.aggregate_delete(request, obj_id)
+class RemoveRackLink(tables.LinkAction):
+    name = "removeRack"
+    verbose_name = _("Remove Rack")
+    url = "horizon:op_mgmt:inventory:removeRack"
+    classes = ("ajax-modal", "btn-danger",)
+    icon = "trash"
+    rack_id = ""
+
+    # required to prime the remove rack dialog with the rack id
+    def get_link_url(self):
+        if self.rack_id != "":
+            return reverse(self.url, args=[self.rack_id])
+        else:
+            return self.url
+
+    def allowed(self, request, datum):
+        return False  # hide Remove function for now
+        __method__ = 'tables.RemoveRackLink.allowed'
+
+        # The Remove Rack button should always be displayed, but we want
+        # it to be disabled when there are any resources present.  For now
+        # assume button is NOT disabled.
+        disable_delete = False
+        if self.rack_id != "":
+            # list_devices(labels=None, isbriefly=False, device_types=None,
+            # deviceids=None, list_device_id=False, is_detail=False,
+            # racks=None)
+            # Retrieve the devices for the selected rack
+            logging.debug("%s: before retrieving devices for rack: %s",
+                          __method__, self.rack_id)
+
+            (rc, result_dict) = device_mgr.list_devices(None, False, None,
+                                                        None, False, False,
+                                                        [self.rack_id])
+
+            if rc != 0:
+                # Unexpected.  Unable to retrieve rack information for selected
+                # rack.  Log that fact, and allow the remove rack button to be
+                # active
+                msg = str('Unable to retrieve Operational Management inventory'
+                          ' information for resources.')
+                messages.error(request, msg)
+                logging.error('%s: Unable to retrieve Operational Management'
+                              ' inventory information. A Non-0 return code'
+                              ' returned from device_mgr.list_devices.'
+                              ' The return code is: %s', __method__, rc)
+            else:
+                devices = result_dict['devices']
+                # if the rack has any resources associated with it in the
+                # inventory don't allow the user to delete it
+                logging.debug("%s: got device info for rack %s.  Number of "
+                              "devices for this rack is: %s",
+                              __method__, self.rack_id, len(devices))
+                if len(devices) > 0:
+                    disable_delete = True
+
+        if disable_delete:
+            # Add the disabled class to the button (if it's not already
+            # there)
+            if 'disabled' not in self.classes:
+                self.classes = list(self.classes) + ['disabled']
+        else:
+            # Remove the disabled class from the button (if it's still there)
+            if 'disabled' in self.classes:
+                self.classes.remove('disabled')
+        return True
+
 
 class ResourceFilterAction(tables.FilterAction):
     def filter(self, table, devices, filter_string):
-        #pdb.set_trace()
         """Naive case-insensitive search."""
         q = filter_string.lower()
-        return [resource for resource in resources
+        return [resource for resource in devices
                 if q in resource.name.lower()]
 
-def get_link_value(device):
-    if not hasattr(device, 'web_url') or device.web_url is None:
-        return _("")
-    else:
-        return device.web_url
 
-def get_link_target(device):
-    return _(device.name)
+class NameLinkColumn(tables.Column):
+    # Will make the label column a link if there is a web_url associated with
+    # the resource. Also ensure the link opens to a new window (that is a
+    # unique window for that particular resource)
+    def get_link_url(self, datum):
+        if datum.web_url:
+            self.link_attrs['target'] = datum.name
+            return datum.web_url
+        else:
+            return None
+
+
 class ResourcesTable(tables.DataTable):
-    # TODO:  The reference to link target isn't working because the value of it is being set
-    # to the method call get_link_target(xx) instead of the value returned from that
-    # method....
-    name = tables.Column('name',
-                          form_field=forms.CharField(),
-                          verbose_name=_("Label"),
-                          link=get_link_value,
-                          link_attrs={'target': get_link_target})
-    type = tables.Column('type', \
-                        verbose_name=_("Type"))
-    rackLoc = tables.Column('rackLoc', \
-                                verbose_name=_("EIA Location"))
-    userid = tables.Column('userid', \
-                          verbose_name=_("Management User"))
-    mtm = tables.Column('mtm', \
-                       verbose_name=_("Machine Type/Model"))
-    sn = tables.Column('sn', \
-                      verbose_name=_("Serial Number"))
-    hostName = tables.Column('displayHost', \
-                      verbose_name=_("Host Name"))
-    version = tables.Column('version', \
-                      verbose_name=_("Installed Version"))
-    deviceId = tables.Column('deviceId', \
-                      hidden = True,
-                      verbose_name = _("Device ID"))
+    name = NameLinkColumn('name',
+                          verbose_name=_('Label'),
+                          link=True)
+    type = tables.Column('type',
+                         verbose_name=_("Type"))
+    rack_loc = tables.Column('rack_loc',
+                             verbose_name=_("EIA Location"))
+    userid = tables.Column('userid',
+                           verbose_name=_("Management User"))
+    mtm = tables.Column('mtm',
+                        verbose_name=_("Machine Type/Model"))
+    serial_num = tables.Column('sn',
+                               verbose_name=_("Serial Number"))
+    host_name = tables.Column('host_name',
+                              verbose_name=_("Host Name"))
+    version = tables.Column('version',
+                            verbose_name=_("Installed Version"))
+    device_id = tables.Column('device_id',
+                              hidden=True,
+                              verbose_name=_("Device ID"))
+
     class Meta(object):
         name = "resources"
         verbose_name = _("Resources")
-        rack_id = ""
-        row_actions = (EditResourceLink, ChangePasswordLink, DeleteResourcesAction)
-        table_actions = (ResourceFilterAction, AddResourceLink, DeleteResourcesAction)
+        multi_select = False
+        row_actions = (EditResourceLink, ChangePasswordLink,
+                       RemoveResourceLink)
+        table_actions = (ResourceFilterAction, AddResourceLink)
 
-class RackDetailsTable(tables.DataTable):  
-    detailTitle = tables.Column('detailTitle',
-                          attrs={'width': '150px',},
-                          verbose_name=_("Rack Property"))
-    detailvValue = tables.Column('detailValue', \
-                        attrs={'width': '400px',},
-                        verbose_name=_("Value"))
-    rackId = tables.Column('rackId', \
-                      hidden = True,
-                      verbose_name = _("Rack ID"))
+
+class RackDetailsTable(tables.DataTable):
+    detail_title = tables.Column('detail_title',
+                                 attrs={'width': '150px', },
+                                 verbose_name=_("Rack Property"))
+    detail_value = tables.Column('detail_value',
+                                 attrs={'width': '400px', },
+                                 verbose_name=_("Value"))
+
     class Meta(object):
-          name = "rack_details"
-          verbose_name = _("Rack Details")
-          multi_select = False
-          footer=False
-          filter = False
-          table_actions = (EditRack, RemoveRackAction)
+        name = "rack_details"
+        verbose_name = _("Rack Details")
+        multi_select = False
+        footer = False
+        filter = False
+        # Until we have AddRack function and remove All Resources
+        # functions, don't allow remove rack to be present
+        table_actions = (EditRackLink, RemoveRackLink)
