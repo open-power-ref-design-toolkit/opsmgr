@@ -18,6 +18,7 @@ nagios_packages_to_install:
     - build-essential
     - libapache2-mod-php5
     - libgd2-xpm-dev
+    - libssl-dev
     - php5-gd
     - sendmail
     - snmp

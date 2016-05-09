@@ -1,0 +1,280 @@
+#!/usr/bin/env python3
+
+import subprocess
+import argparse
+import time
+
+import paramiko
+
+SNMP_CONF_DEVICE_NAME = "Mellanox_Switch"
+
+CHECK_SNMP_CMD = "/usr/local/nagios/libexec/check_snmp"
+ENABLE_COMMAND = "\nenable\n"
+SHOW_TEMPERATURE_COMMAND = "show temperature\n"
+SHOW_CPU_STATS_COMMAND = "show stats cpu\n"
+SHOW_FAN_COMMAND = "show fan\n"
+SHOW_POWER_COMMAND = "show power\n"
+SYS_OID = ".1.3.6.1.2.1.1.3.0"
+
+CPU_UTILIZATION_TAG = "Utilization:"
+
+def check_me_snmp_status():
+    """
+    check the status of the mellanox switch
+    """
+    # cmd = CHECK_SNMP_CMD + "-H " + address + " -C public -o " + SYS_OID
+    word_list = [CHECK_SNMP_CMD, "-H", address, "-C", "public", "-o", SYS_OID]
+    cmd = " ".join(word_list)
+    output = subprocess.getoutput(cmd)
+
+    if ("SNMP OK" in output):
+        rc = 0
+        msg = "SNMP Status OK"
+    else:
+        rc = 2
+        msg = "SNMP Status Down"
+
+    return (rc, msg)
+
+def check_cpu_status(warning, critical):
+    """
+    Checking the cpu status of the switch
+    """
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(address, username=userid,
+                       password=password, timeout=30)
+        client_shell = client.invoke_shell()
+
+        client_shell.send(ENABLE_COMMAND)
+        time.sleep(2)  # waiting for command to complete
+        output = client_shell.recv(1000)
+
+        client_shell.send(SHOW_CPU_STATS_COMMAND)
+        time.sleep(5)
+        output = client_shell.recv(5000)
+        output_str = output.decode('ascii')
+
+        for line in output_str.splitlines():
+            if (CPU_UTILIZATION_TAG in line):
+                cpu_util = float(line.split()[1].strip("%"))
+                if (cpu_util >= critical):
+                    rc = 2
+                    msg = "CPU Utilization Critical: %0.1f%%" % cpu_util
+                elif (cpu_util >= warning):
+                    rc = 1
+                    msg = "CPU Utilization Warning: %0.1f%%" % cpu_util
+                elif (cpu_util < warning):
+                    rc = 0
+                    msg = "CPU Utilization OK: %0.1f%%" % cpu_util
+                else:
+                    rc = 3
+                    msg = "CPU Utilization Unknown"
+
+    except Exception as e:
+        rc = 3
+        msg = "CPU Utilization Unknown"
+    finally:
+        client.close()
+
+    return (rc, msg)
+
+
+def check_fan_status():
+    """
+    Checking the fan status of the switch
+    """
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(address, username=userid,
+                       password=password, timeout=30)
+        client_shell = client.invoke_shell()
+
+        client_shell.send(ENABLE_COMMAND)
+        time.sleep(2)  # waiting for command to complete
+        output = client_shell.recv(1000)
+
+        client_shell.send(SHOW_FAN_COMMAND)
+        time.sleep(5)
+        output = client_shell.recv(5000)
+        output_str = output.decode('ascii')
+
+        rc = 3
+        msg = "Fan Status Unknown"
+
+        for line in output_str.splitlines():
+            attributes = line.split()
+
+            if (len(attributes) < 4):
+                continue
+
+            if (attributes[1] == "FAN"):
+                fan_status = attributes[4]
+
+                if (fan_status == "NOT" and attributes[5] == "PRESENT"):
+                    continue
+
+                if (fan_status != "OK"):
+                    rc = 2
+                    msg = "Fan Status Critical: One or more fans is in critical state"
+                    break
+                else:
+                    rc = 0
+                    msg = "Fan Status OK"
+
+    except Exception as e:
+        rc = 3
+        msg = "Fan Status Unknown"
+    finally:
+        client.close()
+
+    return (rc, msg)
+
+
+def check_power_status():
+    """
+    Checking the power status of the switch
+    """
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(address, username=userid,
+                       password=password, timeout=30)
+        client_shell = client.invoke_shell()
+
+        client_shell.send(ENABLE_COMMAND)
+        time.sleep(2)  # waiting for command to complete
+        output = client_shell.recv(1000)
+
+        client_shell.send(SHOW_POWER_COMMAND)
+        time.sleep(5)
+        output = client_shell.recv(5000)
+        output_str = output.decode('ascii')
+
+        rc = 3
+        msg = "Power Status Unknown"
+
+        for line in output_str.splitlines():
+            attributes = line.split()
+
+            if (len(attributes) < 3):
+                continue
+
+            if (attributes[0].startswith("PS")):
+                power_status = attributes[2]
+
+                if (power_status == "NOT" and attributes[3] == "PRESENT"):
+                    continue
+
+                if (power_status != "OK"):
+                    rc = 2
+                    msg = "One or more Power supply is off"
+                    break
+                else:
+                    rc = 0
+                    msg = "Power Status OK"
+
+    except Exception as e:
+        rc = 3
+        msg = "Power Status Unknown"
+    finally:
+        client.close()
+
+    return (rc, msg)
+
+
+def check_temperature_status(warning, critical):
+    """
+    Checking the temperature status of the switch
+    """
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(address, username=userid,
+                       password=password, timeout=30)
+        client_shell = client.invoke_shell()
+
+        client_shell.send(ENABLE_COMMAND)
+        time.sleep(2)  # waiting for command to complete
+        output = client_shell.recv(1000)
+
+        client_shell.send(SHOW_TEMPERATURE_COMMAND)
+        time.sleep(5)
+        output = client_shell.recv(5000)
+        output_str = output.decode('ascii')
+
+        rc = 3
+        msg = "Temperature Status Unknown"
+
+        for line in output_str.splitlines():
+            if (line.startswith("Module")):
+                index = line.index("CurTemp")
+            if (line.startswith("MGMT") or line.startswith("CPU") or line.startswith("PS")):
+
+                temperature_value = float(line[index - 1:index + 4].strip())
+
+                if (temperature_value >= critical):
+                    rc = 2
+                    msg = "Temperature Status Critical: One or more temperature sensors is in critical state"
+                    break
+                elif (temperature_value >= warning):
+                    rc = 1
+                    msg = "Temperature Status Warning: One or more temperature sensors is in warning state"
+                elif (rc != 1 and temperature_value < warning):
+                    rc = 0
+                    msg = "Temperature Status OK"
+                else:
+                    # Do nothing, possibly we have a warning already and need to loop through all sensors to
+                    # no sensor is in critical state
+                    pass
+
+    except Exception as e:
+        rc = 3
+        msg = "Temperature Status Unknown"
+    finally:
+        client.close()
+
+    return (rc, msg)
+
+
+if __name__ == '__main__':
+
+    CMD = "check_mellanox_switch"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("operation")
+    parser.add_argument('-H', '--Host', required=True)
+    parser.add_argument('-w', '--warning', required=False, type=int)
+    parser.add_argument('-c', '--critical', required=False, type=int)
+    args = parser.parse_args()
+    operation = args.operation
+    address = args.Host
+    warning = args.warning
+    critical = args.critical
+
+    #(userid, password) = device_mgr.retrieveAccessInfoForDevice(address)
+
+    if (operation == "CPU" or operation == "TEMPERATURE"):
+        if (warning is None or critical is None):
+            rc = 3
+            msg = "Warning or Critical levels missing"
+            print(msg)
+            exit(rc)
+
+    if operation == "TEMPERATURE":
+        (rc, msg) = check_temperature_status(warning, critical)
+    elif operation == "FAN":
+        (rc, msg) = check_fan_status()
+    elif operation == "SNMP":
+        (rc, msg) = check_me_snmp_status()
+    elif operation == "POWER":
+        (rc, msg) = check_power_status()
+    elif operation == "CPU":
+        (rc, msg) = check_cpu_status(warning, critical)
+    else:
+        msg = "Unknown operation: " + operation
+        rc = 3
+
+    print(msg)
+    exit(rc)

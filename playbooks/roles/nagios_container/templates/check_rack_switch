@@ -1,0 +1,309 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+
+CHECK_SNMP_CMD = "/usr/local/nagios/libexec/check_snmp"
+TEMPERATURE_OID1 = ".1.3.6.1.4.1.26543.100.100.14.11.0"
+TEMPERATURE_OID2 = ".1.3.6.1.4.1.26543.100.100.14.12.0"
+TEMPERATURE_OID3 = ".1.3.6.1.4.1.26543.100.100.14.13.0"
+TEMPERATURE_OID4 = ".1.3.6.1.4.1.26543.100.100.14.32.0"
+POWER_OID1 = ".1.3.6.1.4.1.26543.100.100.14.20.0"
+POWER_OID2 = ".1.3.6.1.4.1.26543.100.100.14.21.0"
+FAN_OID1 = ".1.3.6.1.4.1.26543.100.100.14.14.0"
+FAN_OID2 = ".1.3.6.1.4.1.26543.100.100.14.15.0"
+FAN_OID3 = ".1.3.6.1.4.1.26543.100.100.14.16.0"
+FAN_OID4 = ".1.3.6.1.4.1.26543.100.100.14.17.0"
+FAN_OID5 = ".1.3.6.1.4.1.26543.100.100.14.18.0"
+FAN_OID6 = ".1.3.6.1.4.1.26543.100.100.14.27.0"
+FAN_OID7 = ".1.3.6.1.4.1.26543.100.100.14.40.0"
+FAN_OID8 = ".1.3.6.1.4.1.26543.100.100.14.41.0"
+SYS_OID = ".1.3.6.1.2.1.1.3.0"
+G8264_CPU_64_SEC_OID = ".1.3.6.1.4.1.26543.2.7.6.1.2.2.3.0"
+G8052_CPU_64_SEC_OID = ".1.3.6.1.4.1.26543.2.7.7.1.2.2.3.0"
+G8264_GLOBAL_HEALTH_OID = ".1.3.6.1.4.1.26543.2.7.6.1.3.1.15.0"
+G8052_GLOBAL_HEALTH_OID = ".1.3.6.1.4.1.26543.2.7.7.1.3.1.15.0"
+
+G8052_MODEL = "G8052"
+G8264_MODEL = "G8264"
+
+def find_model_of_device(ip_address):
+    """
+      Find the Model of the switch so that corresponding OIDs can be sent for query
+    """
+    # Use snmpget to determine device
+    word_list = ["snmpget", "-v1", "-c", "public", address, "sysDescr.0"]
+    cmd = " ".join(word_list)
+    output = subprocess.getoutput(cmd)
+    
+    if G8052_MODEL in output:
+        return G8052_MODEL
+    elif G8264_MODEL in output:
+        return G8264_MODEL
+    else:
+        return "Unsupported Type"
+
+def check_snmp_status():
+    """
+    Checking the snmp status of the switch
+    """
+
+    # cmd = CHECK_SNMP_CMD + "-H " + address + " -C public -o " + SYS_OID
+    word_list = [CHECK_SNMP_CMD, "-H", address, "-C", "public", "-o", SYS_OID]
+    cmd = " ".join(word_list)
+    output = subprocess.getoutput(cmd)
+
+    if ("SNMP OK" in output):
+        rc = 0
+        msg = "SNMP Status OK"
+    else:
+        rc = 2
+        msg = "SNMP Status Down"
+
+    return (rc, msg)
+
+
+def check_cpu_status(warning, critical):
+    """
+    Checking the cpu status of the switch
+    """
+    if (model == G8052_MODEL):
+        cpu_oid = G8052_CPU_64_SEC_OID
+    elif (model == G8264_MODEL):
+        cpu_oid = G8264_CPU_64_SEC_OID
+    else:
+        msg = "CPU Utilization Unknown"
+        rc = 3
+        return (rc, msg)
+
+    # cmd = CHECK_SNMP_CMD + "-H " + address + " -C public -o " + cpu_oid
+    word_list = [CHECK_SNMP_CMD, "-H", address, "-C", "public", "-o", cpu_oid]
+
+    cmd = " ".join(word_list)
+
+    output = subprocess.getoutput(cmd)
+    value = output.split()[3].strip('"')
+
+    cpu_util = float(value)
+
+    # OK:
+    # -All Power modules are on
+    # Critical:
+    # -One or more Power modules are off or absent
+
+    if cpu_util > critical:
+        msg = "CPU Utilization Critical: %0.1f%% " % cpu_util
+        rc = 2
+    elif cpu_util > warning:
+        msg = "CPU Utilization Warning: %0.1f%%" % cpu_util
+        rc = 1
+    elif cpu_util <= warning:
+        msg = "CPU Utilization OK: %0.1f%%" % cpu_util
+        rc = 0
+    else:
+        msg = "CPU Utilization Unknown"
+        rc = 3
+
+    return rc, msg
+
+
+def check_fan_status():
+    """
+    Checking the fan status of the switch
+    """
+    try:
+        # cmd = CHECK_SNMP_CMD + "-H " + address + " -C public -o " + FAN_OID1 + " -o " + FAN_OID2 + " -o " + FAN_OID3 + " -o " + FAN_OID4 + " -o " + FAN_OID5 + " -o " + FAN_OID6 + " -o " + FAN_OID7 + " -o " + FAN_OID8
+        word_list = [CHECK_SNMP_CMD, "-H", address, "-C", "public", "-o", FAN_OID1,
+                     "-o", FAN_OID2, "-o", FAN_OID3, "-o", FAN_OID4, "-o", FAN_OID5,
+                     "-o", FAN_OID6, "-o", FAN_OID7, "-o", FAN_OID8 ]
+        cmd = " ".join(word_list)
+        output = subprocess.getoutput(cmd)
+        value = output.split(' - ')[1].strip()
+        allFans = value.split()
+
+        fans = []
+        for i in range(8):
+            fans.append(int(allFans[i].strip('"')))
+
+        # OK:
+        # -All Fans are OK
+        # Critical:
+        # -One or more Fans re running less than 100 RPM
+
+        for fan_rpm in fans:
+            if fan_rpm != -1 and fan_rpm < 100:
+                msg = "Fans Status Critical: \n  -One or more fans are running < 100 RPM"
+                rc = 2
+                return (rc, msg)
+
+        msg = "Fan Status OK"
+        rc = 0
+
+    except Exception as e:
+        rc = 3
+        msg = "Fan Status Unknown"
+
+    return (rc, msg)
+
+
+def check_power_status():
+    """
+    Checking the power status of the switch
+    """
+    # cmd = CHECK_SNMP_CMD + "-H " + address + " -C public -o " + POWER_OID1 + " -o " + POWER_OID2
+    word_list = [CHECK_SNMP_CMD, "-H", address, "-C", "public", "-o", POWER_OID1, "-o", POWER_OID2]
+    cmd = " ".join(word_list)
+    output = subprocess.getoutput(cmd)
+    value = output.split('-')[1].strip()
+    allPowers = value.split()
+    power1 = int(allPowers[0].strip('"'))
+    power2 = int(allPowers[1].strip('"'))
+
+    # OK:
+    # -All Power modules are on
+    # Critical:
+    # -One or more Power modules are off or absent
+
+    if (power1 == 1 and power2 == 1):
+        msg = "All Power modules are On"
+        rc = 0
+    elif (power1 == 0 or power1 == 2 or power2 == 0 or power2 == 2):
+        msg = "One or more Power modules are off or absent"
+        rc = 2
+    else:
+        msg = "Power Status Unknown"
+        rc = 3
+
+    return (rc, msg)
+
+
+def check_temperature_status(warning, critical):
+    """
+    Checking the temperature status of the switch
+    """
+    # cmd = CHECK_SNMP_CMD + "-H " + address + " -C public -o " + TEMPERATURE_OID1 + " -o " + TEMPERATURE_OID2 + " -o " + TEMPERATURE_OID3 + " -o " + TEMPERATURE_OID4
+    word_list = [CHECK_SNMP_CMD, "-H", address, "-C", "public", "-o", TEMPERATURE_OID1,
+                 "-o", TEMPERATURE_OID2, "-o", TEMPERATURE_OID3, "-o", TEMPERATURE_OID4]
+    cmd = " ".join(word_list)
+
+    output = subprocess.getoutput(cmd)
+    value = output.split('-')[1].strip()
+    allTemp = value.split()
+    temp1 = float(allTemp[0].strip('"'))
+    temp2 = float(allTemp[1].strip('"'))
+    temp3 = float(allTemp[2].strip('"'))
+    temp4 = float(allTemp[3].strip('"'))
+
+    # OK:
+    # -All temperature sensors are below the warning threshold (eg. < 85 C);
+    # Warning:
+    # -One or more temperature sensors is in the warning range (eg. >=85 and < 100 C);
+    # Critical:
+    # -One or more temperature sensors is in the failure range (eg. >=100 C);
+
+    if (temp1 > critical or temp2 > critical or temp3 > critical or temp4 > critical):
+        msg = "Temperature Status Critical: \n  -One or more temperature sensors is in the failure range"
+        rc = 2
+    elif (temp1 > warning or temp2 > warning or temp3 > warning or temp4 > warning):
+        msg = "Temperature Status Warning: \n -One or more temperature sensors is in the warning range"
+        rc = 1
+    elif (temp1 <= warning and temp2 <= warning and temp3 <= warning and temp4 <= warning):
+        msg = "Temperature Status OK: \n    -All temperature sensors are below the warning threshold"
+        rc = 0
+    else:
+        msg = "Temperature Status Unknown"
+        rc = 3
+
+    return (rc, msg)
+
+
+def check_global_status():
+    """
+    Checking the global status of the switch. This method uses OID :
+    """
+
+    if (model == G8052_MODEL):
+        global_health_oid = G8052_GLOBAL_HEALTH_OID
+    elif (model == G8264_MODEL):
+        global_health_oid = G8264_GLOBAL_HEALTH_OID
+    else:
+        msg = "Global Health Status Unknown"
+        rc = 3
+        return (rc, msg)
+
+    # cmd = CHECK_SNMP_CMD + "-H " + address + " -C public -o " + global_health_oid
+    word_list = [CHECK_SNMP_CMD, "-H", address, "-C", "public", "-o", global_health_oid]
+    cmd = " ".join(word_list)
+    output = subprocess.getoutput(cmd)
+    value = output.split('=')[1].strip()
+
+    # OK:
+    # -All temperature sensors are below the warning threshold (eg. < 85 C);
+    # -All fans are running at >=100 RPMs;
+    # -Both power supplies are on;
+    # -No panic dump exists in flash.
+    # Warning:
+    # -One or more temperature sensors is in the warning range (eg. >=85 and < 100 C);
+    # -A panic dump exists in flash.
+    # Critical:
+    # -One or more temperature sensors is in the failure range (eg. >=100 C);
+    # -One or more fans are running < 100 RPM;
+    # -One power supply is off.
+
+    if (value == '1'):
+        msg = "Global Health Status OK: \n  -All temperature sensors are below the warning threshold \n  -All fans are running at >=100 RPMs \n  -Both power supplies are on \n   -No panic dump exists in flash"
+        rc = 0
+    elif (value == '2'):
+        msg = "Global Health Status Warning: \nwhich means one of the following:\n   -One or more temperature sensors is in the warning range \n -A panic dump exists in flash"
+        rc = 1
+    elif (value == '3'):
+        msg = "Global Health Status Critical: \nwhich means one of the following:\n   -One or more temperature sensors is in the failure range \n  -One or more fans are running < 100 RPM \n  -One power supply is off"
+        rc = 2
+    else:
+        msg = "Global Health Status Unknown"
+        rc = 3
+
+    return (rc, msg)
+
+
+if __name__ == '__main__':
+
+    CMD = "check_rack_switch"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("operation")
+    parser.add_argument('-H', '--Host', required=True)
+    parser.add_argument('-c', '--critical', required=False, type=int)
+    parser.add_argument('-w', '--warning', required=False, type=int)
+    args = parser.parse_args()
+    operation = args.operation
+    address = args.Host
+    warning = args.warning
+    critical = args.critical
+
+    model = find_model_of_device(address)
+
+    if (operation == "TEMPERATURE" or operation == "CPU"):
+        if (warning is None or critical is None):
+            rc = 3
+            msg = "Warning or Critical levels missing"
+            print(msg)
+            exit(rc)
+
+    if operation == "GLOBAL_STATUS":
+        (rc, msg) = check_global_status()
+    elif operation == "TEMPERATURE":
+        (rc, msg) = check_temperature_status(warning, critical)
+    elif operation == "FAN":
+        (rc, msg) = check_fan_status()
+    elif operation == "POWER":
+        (rc, msg) = check_power_status()
+    elif operation == "SNMP":
+        (rc, msg) = check_snmp_status()
+    elif operation == "CPU":
+        (rc, msg) = check_cpu_status(warning, critical)
+    else:
+        msg = "Unknown operation: " + operation
+        rc = 3
+
+    print(msg)
+    exit(rc)

@@ -84,6 +84,12 @@
               src: check_rack_switch
               dest: /usr/local/nagios/libexec
               mode: 0755
+
+        - name: Tell nagios to read the config files in our directory
+          lineinfile:
+              line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/"
+              dest: "/usr/local/nagios/etc/nagios.cfg"
+
    
         - name: Validate Nagios Config
           command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
