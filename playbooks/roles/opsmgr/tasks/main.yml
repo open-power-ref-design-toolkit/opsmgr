@@ -38,7 +38,7 @@
 
     - name: Edit the container config to mount the shared directory
       lineinfile:
-          line: "lxc.mount.entry = {{ host_directory_to_mount }} {{ container_directory_to_mount }}  none ro,bind 0.0"
+          line: "lxc.mount.entry = {{ host_directory_to_mount }} {{ container_directory_to_mount }}  none rw,bind 0.0"
           dest: "/var/lib/lxc/{{ container }}/config"
 
     - name: Start container, fix permissions, install python
@@ -49,8 +49,27 @@
             chown -R ubuntu:ubuntu /home/ubuntu
             apt-get install -y python
 
+    - name: Set container to autostart
+      lineinfile:
+          line: "lxc.start.auto = 1"
+          dest: "/var/lib/lxc/{{ container }}/config"
+
+    - name: nagios_http get iptables rules
+      shell: iptables -t nat -L
+      register: iptablesrules
+      always_run: yes
+
     - name: Create iptables rule to forward port 80
-      command: iptables -t nat -A PREROUTING -p tcp -d {{ ansible_nodename }} --dport 80 -j DNAT --to {{ nagios_ip }}:80
+      command: iptables -t nat -A PREROUTING -p tcp -d {{ ansible_nodename }} --dport 80 -j DNAT --to {{ nagios_ip }}:80 -m comment --comment "nagios_http"
+      when: iptablesrules.stdout.find("nagios_http") == -1
+ 
+    - name: Save the iptables change
+      shell: iptables-save > /etc/iptables.rules
+      
+    - name: Load iptables on boot
+      lineinfile:
+          line: "pre-up iptables-restore < /etc/iptables.rules"
+          dest: "/etc/network/interfaces"
 
 # The follow is only valid with ansible 2.1
 #
@@ -62,4 +81,4 @@
 #        destination_port: 80
 #        protocol: tcp
 #        table: nat
-#        to_destination: 10.0.3.10:80
+#        to_destination: {{ nagios_ip }}:80

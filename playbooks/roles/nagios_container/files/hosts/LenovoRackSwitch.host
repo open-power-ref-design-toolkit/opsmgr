@@ -1,0 +1,64 @@
+define host{
+        address                  #@#IP#@#
+        host_name                #@#HOSTNAME#@#
+        alias                    #@#LABEL#@#
+        action_url               https://#@#HOSTNAME#@#
+        use                      generic-switch
+        check_interval           5
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     SSH Status
+        check_command           check_ssh
+        check_interval          10
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     HTTPS Status
+        check_command           check_https
+        check_interval          30
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     SNMP Status
+        check_command           check_rackswitch_snmp_status
+        check_interval          10
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     Global Health Status
+        check_command           check_rackswitch_global_status
+        check_interval          15
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     Temperature Status
+        check_command           check_rackswitch_temperature_status!85!99
+        check_interval          15
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     Power Status
+        check_command           check_rackswitch_power_status
+        check_interval          30
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     CPU Utilization
+        check_command           check_rackswitch_cpu_status!90!99
+        check_interval          20
+}
+define service{
+        use                     generic-service
+        host_name               #@#HOSTNAME#@#
+        service_description     Fan Status
+        check_command           check_rackswitch_fan_status
+        check_interval          20
+}
