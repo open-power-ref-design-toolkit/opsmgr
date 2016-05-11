@@ -25,6 +25,9 @@
         - name: Create nagios user and add him to the nagcmd group
           user: name=nagios groups=nagcmd
 
+        - name: Add the apache user www-data to the nagcmd group
+          user: name=www-data groups=nagcmd append=yes
+
         - name: Extract nagios core
           unarchive: src=/tmp/{{ nagios_download_file }} dest={{ download_dir }}/ creates={{ nagios_tmp_dir }} copy=no
 
@@ -117,6 +120,9 @@
           lineinfile:
               line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/hosts"
               dest: "/usr/local/nagios/etc/nagios.cfg"
+
+        - name: Install paramiko and pyCrypto
+          command: pip3 install paramiko pyCrypto
    
         - name: Validate Nagios Config
           command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg

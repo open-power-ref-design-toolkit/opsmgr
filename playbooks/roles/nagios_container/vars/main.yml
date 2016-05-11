@@ -17,9 +17,11 @@ nagios_packages_to_install:
     - apache2-utils
     - build-essential
     - libapache2-mod-php5
+    - libffi-dev
     - libgd2-xpm-dev
     - libssl-dev
     - php5-gd
+    - python3-pip
     - sendmail
     - snmp
     - unzip

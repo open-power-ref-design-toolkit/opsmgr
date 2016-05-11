@@ -1,0 +1,15 @@
+define host{
+ address         #@#IP#@#
+ host_name       #@#HOSTNAME#@#
+ alias           #@#LABEL#@#
+ use             linux-server
+ check_interval  5
+}
+
+define service {
+   use                  generic-service
+   host_name            #@#HOSTNAME#@#
+   service_description  SSH
+   check_command        check_ssh
+   check_interval       10
+}
