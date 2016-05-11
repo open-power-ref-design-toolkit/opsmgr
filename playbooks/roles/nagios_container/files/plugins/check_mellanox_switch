@@ -7,6 +7,8 @@ import time
 import paramiko
 import opsmgr_util
 
+from io import StringIO
+
 SNMP_CONF_DEVICE_NAME = "Mellanox_Switch"
 
 CHECK_SNMP_CMD = "/usr/local/nagios/libexec/check_snmp"
@@ -22,7 +24,11 @@ CPU_UTILIZATION_TAG = "Utilization:"
 def _clientConnect():
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(address, username=userid, password=password, timeout=30)
+    if ssh_key:
+        private_key = paramiko.RSAKey.from_private_key(StringIO(ssh_key), password)
+        client.connect(address, username=userid, pkey=private_key, timeout=30, allow_agent=False)
+    else:
+        client.connect(address, username=userid, password=password, timeout=30, allow_agent=False)
     return client
 
 def check_me_snmp_status():

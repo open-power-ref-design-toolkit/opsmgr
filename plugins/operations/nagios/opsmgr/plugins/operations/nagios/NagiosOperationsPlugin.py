@@ -40,7 +40,10 @@ class NagiosPlugin(IManagerDeviceHook):
         key = device.key
         if key:
             key_string = key.value
-            password = persistent_mgr.decrypt_data(key.password)
+            if key.password is not None:
+                password = persistent_mgr.decrypt_data(key.password)
+            else:
+                password = None
         else:
             key_string = None
             password = persistent_mgr.decrypt_data(device.password)
