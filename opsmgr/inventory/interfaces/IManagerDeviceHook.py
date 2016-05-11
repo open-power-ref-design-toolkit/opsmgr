@@ -15,7 +15,7 @@ class IManagerDeviceHook(object):
 
     @staticmethod
     @abstractmethod
-    def change_device_pre_save(device):
+    def change_device_pre_save(device,old_device_info):
         pass
 
     @staticmethod
@@ -30,5 +30,5 @@ class IManagerDeviceHook(object):
 
     @staticmethod
     @abstractmethod
-    def change_device_post_save(device):
+    def change_device_post_save(device,old_device_info):
         pass

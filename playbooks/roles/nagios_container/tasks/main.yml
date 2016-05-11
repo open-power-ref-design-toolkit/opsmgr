@@ -107,9 +107,15 @@
           with_fileglob:
               - hosts/*
 
-        - name: Tell nagios to read the config files in our directory
+        - name: Tell nagios to read the commands files in our directory
           lineinfile:
-              line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/"
+              line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/commands"
+              dest: "/usr/local/nagios/etc/nagios.cfg"
+
+
+        - name: Tell nagios to read the hosts files in our directory
+          lineinfile:
+              line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/hosts"
               dest: "/usr/local/nagios/etc/nagios.cfg"
    
         - name: Validate Nagios Config

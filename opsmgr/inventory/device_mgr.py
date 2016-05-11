@@ -1124,6 +1124,8 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
             "Failed to change device properties, device (%s) is not found.") % (device_des)
         return 101, message
 
+    old_device_info = device.to_dict_obj()
+
     address_changed = False
     # check if we now need to handle an IP address change in the change properties
     ip_address = ""
@@ -1243,7 +1245,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     hook_name = 'unknown' #keeps pylint happy
     try:
         for hook_name, hook_plugin in hooks.items():
-            hook_plugin.change_device_pre_save(device)
+            hook_plugin.change_device_pre_save(device,old_device_info)
     except Exception as e:
         logging.exception(e)
         message = _("Error in plugin (%s). Unable to change device: Reason: %s") % (hook_name, e)
@@ -1262,7 +1264,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     #post_save hooks
     try:
         for hook_name, hook_plugin in hooks.items():
-            hook_plugin.change_device_post_save(device)
+            hook_plugin.change_device_post_save(device,old_device_info)
     except Exception as e:
         logging.exception(e)
         message = push_message(message, _("After device properties were changed, " \
