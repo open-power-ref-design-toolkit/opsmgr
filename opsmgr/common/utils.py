@@ -2,6 +2,7 @@ import functools
 import logging
 import logging.config
 import socket
+import subprocess
 import yaml
 import opsmgr.common.constants as constants
 
@@ -40,6 +41,27 @@ def get_strip_strings_array(strings):
         if string:
             result.append(string)
     return result
+
+def execute_command(command):
+    """ This function is to execute a command on the local system
+        if return code is 0 standard output is returned
+        if return code is non 0, standard error is returned
+        return (rc, command output)
+    """
+    p = subprocess.Popen(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    rc = p.wait()
+    message = []
+    if rc == 0:
+        for line in p.stdout.read().decode().splitlines():
+            message.append(line)
+    else:
+        for line in p.stderr.read().decode().splitlines():
+            message.append(line)
+    p.stdout.close()
+    p.stderr.close()
+    return (rc, message)
+
 
 def entry_exit(exclude_index=None, exclude_name=None, log_name=None, level=logging.INFO):
     """
