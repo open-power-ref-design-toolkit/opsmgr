@@ -1,0 +1,39 @@
+---
+# Copyright 2014, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Download Kibana
+  get_url:
+    url: "{{ kibana_url }}"
+    dest: "/tmp/kibana.tar.gz"
+    mode: "0644"
+    sha256sum: "{{ kibana_sha256sum }}"
+    force: yes
+  tags: kibana-install
+
+- name: Extract Kibana
+  unarchive:
+    copy: "no"
+    src: "/tmp/kibana.tar.gz"
+    dest: "/opt"
+  tags: kibana-install
+
+- name: Link Kibana Directory
+  file:
+    state: "link"
+    src: "/opt/{{ kibana_version }}"
+    dest: "{{ kibana_root }}"
+    owner: "{{ kibana_system_user }}"
+    group: "{{ kibana_system_group }}"
+  tags: kibana-install
