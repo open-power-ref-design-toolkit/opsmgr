@@ -39,6 +39,14 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_web_url(host):
         return "https://" + host
 
+    @staticmethod
+    def get_logging_capable():
+        return False
+
+    @staticmethod
+    def get_monitoring_capable():
+        return True
+
     def connect(self, host, userid, password=None, ssh_key_string=None):
         _method_ = "MLNXOSPlugin.connect"
         self.host = host

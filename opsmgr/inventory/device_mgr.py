@@ -466,7 +466,8 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     logging.debug("ENTRY %s", _method_)
     all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
                 'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'architecture',
-                'device-type', 'status', 'statusTime', 'web_url', 'auth_method']
+                'device-type', 'status', 'statusTime', 'web_url', 'auth_method',
+                'logging_capable', 'monitoring_capable']
     brief_tags = ['label']
     result = {}
 
@@ -546,6 +547,10 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
         plugin = plugins[device.device_type]
         web_url = plugin.get_web_url(device.address)
         device_output["web_url"] = web_url
+
+        # figure out the if it's logging and monitoring capable
+        device_output["logging_capable"] = plugin.get_logging_capable()
+        device_output["monitoring_capable"] = plugin.get_monitoring_capable()
 
         # add the auth_method for the device
         if device.key:

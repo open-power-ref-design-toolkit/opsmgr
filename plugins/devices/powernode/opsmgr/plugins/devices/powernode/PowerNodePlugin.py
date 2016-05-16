@@ -23,6 +23,14 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_web_url(host):
         return "https://" + host
 
+    @staticmethod
+    def get_logging_capable():
+        return False
+
+    @staticmethod
+    def get_monitoring_capable():
+        return True
+
     def connect(self, host, userid, password=None, ssh_key_string=None):
         """connect to the BMC and store the mtm and serial number
         """

@@ -155,7 +155,7 @@ def list_devices(args):
     if args.rack:
         rack_ids = []
         racks = get_strip_strings_array(str(args.rack))
-        racks, dummy_not_found_racks = persistent_mgr.get_racks_by_labels(racks)
+        racks, _not_found_racks = persistent_mgr.get_racks_by_labels(racks)
         for rack in racks:
             rack_ids.append(rack.rack_id)
 
@@ -208,6 +208,8 @@ def list_devices(args):
                 elif tag == 'statusTime':
                     line += str(device[tag])
                 elif tag == 'auth_method':
+                    line += str(device[tag])
+                elif 'capable' in tag:
                     line += str(device[tag])
                 else:
                     # normal handling

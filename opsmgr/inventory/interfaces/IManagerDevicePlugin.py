@@ -18,6 +18,21 @@ class IManagerDevicePlugin(object):
         :returns: String web url or None
         """
 
+    @staticmethod
+    @abstractmethod
+    def get_logging_capable():
+        """Return True if the device generates logs
+           that can be used to monitor the health of the device.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def get_monitoring_capable():
+        """Return True if the device health can be probed by
+           running periodic scripts
+        """
+
+
     @abstractmethod
     def connect(self, host, userid, password, ssh_key_string):
         """
@@ -58,4 +73,3 @@ class IManagerDevicePlugin(object):
 
     #@abstractmethod
     #def change_device_network(self, new_address, subnet=None, gateway=None):
-

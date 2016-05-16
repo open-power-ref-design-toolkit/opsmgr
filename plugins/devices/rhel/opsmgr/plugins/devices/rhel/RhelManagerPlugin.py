@@ -37,6 +37,14 @@ class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_web_url(host):
         return None
 
+    @staticmethod
+    def get_logging_capable():
+        return True
+
+    @staticmethod
+    def get_monitoring_capable():
+        return True
+
     def connect(self, host, userid, password=None, ssh_key_string=None):
         _method_ = "RhelPlugin.connect"
         self.userid = userid

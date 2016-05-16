@@ -38,6 +38,14 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         return "Ubuntu"
 
     @staticmethod
+    def get_logging_capable():
+        return True
+
+    @staticmethod
+    def get_monitoring_capable():
+        return True
+
+    @staticmethod
     def get_web_url(host):
         return None
 
