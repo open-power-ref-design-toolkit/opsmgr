@@ -50,6 +50,9 @@ class Device(Base):
     #Version of firmware/software device is running
     version = Column(String(64))
 
+    #architecture of the device
+    architecture = Column(String(10))
+
     #True if able to login to device and validate
     #the info used to discover it is correct.
     validated = Column(Boolean(False))
@@ -82,6 +85,7 @@ class Device(Base):
         result["userid"] = self.userid
         result["password"] = self.password
         result["version"] = self.version
+        result["architecture"] = self.architecture
         result["validated"] = self.validated
         result["device-type"] = self.device_type
         result["status"] = self.status

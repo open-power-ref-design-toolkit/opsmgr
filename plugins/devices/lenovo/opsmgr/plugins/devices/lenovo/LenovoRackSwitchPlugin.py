@@ -85,6 +85,9 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_version(self):
         return self.version
 
+    def get_architecture(self):
+        return None
+
     def change_device_password(self, new_password):
         _method_ = "RackSwitchPlugin.change_device_password"
         logging.info("ENTER %s::host=%s userid=%s", _method_, self.host, self.userid)
@@ -109,7 +112,7 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def _is_rack_switch(self):
         """Check if the Device type is Lenovo Rack Switch
         """
-        (dummy_stdin, stdout, dummy_stderr) = self.client.exec_command(self.SHOW_VERSION_COMMAND)
+        (_stdin, stdout, _stderr) = self.client.exec_command(self.SHOW_VERSION_COMMAND)
         output = stdout.read().decode()
         for line in output.splitlines():
             if self.VERSION_TAG in line:

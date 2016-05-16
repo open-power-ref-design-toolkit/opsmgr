@@ -76,18 +76,23 @@ class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
     def get_version(self):
         version = None
-        (dummy_stdin, stdout, dummy_stderr) = self.client.exec_command("cat " + RHEL_RELEASE_FILE)
+        (_stdin, stdout, _stderr) = self.client.exec_command("cat " + RHEL_RELEASE_FILE)
         for line in stdout.read().decode().splitlines():
             if line.startswith(RELEASE_TAG):
                 version = line.split(' ')[6]
                 break
         return version
 
+    def get_architecture(self):
+        (_stdin, stdout, _stderr) = self.client.exec_command("uname -m")
+        architecture = stdout.read().decode().strip()
+        return architecture
+
     def _is_guest_rhel(self):
         """Check the OS type is RHEL
         Return True if System is RHEL
         """
-        (dummy_stdin, stdout, dummy_stderr) = self.client.exec_command(
+        (_stdin, stdout, _stderr) = self.client.exec_command(
             "test -e " + RHEL_RELEASE_FILE)
         rc = stdout.channel.recv_exit_status()
         return True if rc == 0 else False

@@ -88,6 +88,9 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                 break
         return version
 
+    def get_architecture(self):
+        return None
+
     def change_device_password(self, new_password):
         _method_ = "MLNXOSPlugin.change_device_password"
         logging.info("ENTER %s::host=%s userid=%s", _method_, self.host, self.userid)

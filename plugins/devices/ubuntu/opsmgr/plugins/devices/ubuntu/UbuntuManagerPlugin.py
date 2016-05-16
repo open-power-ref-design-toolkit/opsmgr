@@ -14,10 +14,14 @@ import paramiko
 from opsmgr.common import exceptions
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
-UBUNTU_RELEASE_CMD = "lsb_release -a"
-RELEASE_TAG = "Release:"
-
 class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
+
+    UBUNTU_RELEASE_CMD = "lsb_release -a"
+    RELEASE_TAG = "Release:"
+
+    SYSTEM_INFO_CMD = "lscfg -p | grep -A 10 \"System VPD\""
+    MACHINE_TYPE_MODEL_TAG = "Machine Type"
+    SERIAL_NUMBER_TAG = "Serial Number"
 
     PASSWORD_CHANGE_COMMAND = "passwd\n"
     PASSWORD_CHANGED_MESSAGE = "password updated successfully"
@@ -69,9 +73,13 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             self.client.close()
 
     def get_machine_type_model(self):
+        if self.machine_type_model == "":
+            self._get_system_details()
         return self.machine_type_model
 
     def get_serial_number(self):
+        if self.serial_number == "":
+            self._get_system_details()
         return self.serial_number
 
     def get_version(self):
@@ -80,13 +88,13 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
         logging.info("ENTER %s", _method_)
 
-        (dummy_stdin, stdout, dummy_stderr) = self.client.exec_command(UBUNTU_RELEASE_CMD)
+        (_stdin, stdout, _stderr) = self.client.exec_command(self.UBUNTU_RELEASE_CMD)
         rc = stdout.channel.recv_exit_status()
         # get version if command executed successfully
         if rc == 0:
             for line in stdout.read().decode('ascii').splitlines():
                 # Parse the output for version
-                if RELEASE_TAG in line:
+                if self.RELEASE_TAG in line:
                     version = line.split(':')[1].strip()
                     return version
             logging.error("%s::Could not retrieve version", _method_)
@@ -95,11 +103,16 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.error("%s::Failed to retrieve version.", _method_)
             return None
 
+    def get_architecture(self):
+        (_stdin, stdout, _stderr) = self.client.exec_command("uname -m")
+        architecture = stdout.read().decode().strip()
+        return architecture
+
     def _is_ubuntu(self):
         """Check the OS type is RHEL
         Return True if System is RHEL
         """
-        (dummy_stdin, stdout, dummy_stderr) = self.client.exec_command("uname -a")
+        (_stdin, stdout, _stderr) = self.client.exec_command("uname -a")
         return_code = stdout.channel.recv_exit_status()
         if return_code == 0:
             if stdout.read().decode().lower().find("ubuntu") >= 0:
@@ -129,3 +142,20 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                       (self.userid, output)
             logging.warning(message)
             raise exceptions.DeviceException(message)
+
+    def _get_system_details(self):
+        found_serial_number_tag = False
+        (_stdin, stdout, _stderr) = self.client.exec_command(self.SYSTEM_INFO_CMD)
+        for line in stdout.read().decode().splitlines():
+            if found_serial_number_tag:
+                npos = line.rfind("...")
+                if npos >= 0:
+                    self.serial_number = line[npos + 3:]
+                found_serial_number_tag = False
+            elif self.SERIAL_NUMBER_TAG in line:
+                # Next line contains the serial number
+                found_serial_number_tag = True
+            elif self.MACHINE_TYPE_MODEL_TAG in line:
+                npos = line.rfind("...")
+                if npos >= 0:
+                    self.machine_type_model = line[npos + 3:]

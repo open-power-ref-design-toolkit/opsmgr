@@ -43,11 +43,16 @@ class IManagerDevicePlugin(object):
         """
         """
 
+    @abstractmethod
+    def get_architecture(self):
+        """
+        """
+
     #@abstractmethod
     #def get_fixes(self):
 
     @abstractmethod
-    def change_device_password(self, newPassword):
+    def change_device_password(self, new_password):
         """
         """
 

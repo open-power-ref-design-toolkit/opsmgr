@@ -129,7 +129,7 @@ def check_device_exist_by_props(device_type, mtm, serialnum):
         serialnum = ''
     if mtm is None:
         mtm = ''
-    (devices, dummy_not_found_types) = persistent_mgr.get_devices_by_device_type([device_type])
+    (devices, _not_found_types) = persistent_mgr.get_devices_by_device_type([device_type])
     found = False
     for device in devices:
         try:
@@ -274,11 +274,8 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     if rc != 0:
         return rc, message
 
-    mtm = ""
-    serialnum = ""
-    version = ""
     if not offline:
-        validate_ret, device_type, mtm, serialnum, version = validate(
+        (validate_ret, device_type, mtm, serialnum, version, architecture) = validate(
             ipv4, userid, password, device_type, ssh_key)
         if validate_ret != 0:
             logging.error(
@@ -329,6 +326,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     device_info.label = label
     device_info.device_type = device_type
     device_info.version = version
+    device_info.architecture = architecture
     device_info.status = constants.access_status.SUCCESS.value
     device_info.statusTime = datetime.utcnow()
     # we are adding the device after validation, set validated.
@@ -467,8 +465,8 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     _method_ = 'device_mgr.list_devices'
     logging.debug("ENTRY %s", _method_)
     all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
-                'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'device-type',
-                'status', 'statusTime', 'web_url', 'auth_method']
+                'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'architecture',
+                'device-type', 'status', 'statusTime', 'web_url', 'auth_method']
     brief_tags = ['label']
     result = {}
 
@@ -488,10 +486,10 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
 
     # get devices based on labels and device ids
     if deviceids is not None:
-        devices, dummy_not_found_values = persistent_mgr.get_devices_by_ids(
+        devices, _not_found_values = persistent_mgr.get_devices_by_ids(
             deviceids)
     elif labels is not None:
-        devices, dummy_not_found_values = persistent_mgr.get_devices_by_labels(
+        devices, _not_found_values = persistent_mgr.get_devices_by_labels(
             labels)
     else:
         devices = persistent_mgr.get_all_devices()
@@ -594,9 +592,9 @@ def list_racks(labels=None, isbriefly=False, rackids=None):
 
     # get rack based on labels and device ids
     if labels:
-        racks, dummy_not_found_racks = persistent_mgr.get_racks_by_labels(labels)
+        racks, _not_found_racks = persistent_mgr.get_racks_by_labels(labels)
     elif rackids:
-        racks, dummy_not_found_racks = persistent_mgr.get_racks_by_ids(rackids)
+        racks, _not_found_racks = persistent_mgr.get_racks_by_ids(rackids)
     else:
         racks = persistent_mgr.get_all_racks()
 
@@ -903,7 +901,9 @@ def validate(address, userid, password, device_type, ssh_key=None):
             mtm = plugin.get_machine_type_model()
             serialnum = plugin.get_serial_number()
             version = plugin.get_version()
-            return (constants.validation_codes.SUCCESS.value, device_type, mtm, serialnum, version)
+            architecture = plugin.get_architecture()
+            return (constants.validation_codes.SUCCESS.value, device_type, mtm,
+                    serialnum, version, architecture)
         except KeyError:
             logging.error("%s::plugin(%s) not found", _method_, device_type)
             return (constants.validation_codes.DEVICE_TYPE_ERROR.value,
@@ -927,6 +927,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
                 mtm = plugin.get_machine_type_model()
                 serialnum = plugin.get_serial_number()
                 version = plugin.get_version()
+                architecture = plugin.get_architecture()
                 device_type = plugin_device_type
                 break
             except Exception as e:
@@ -937,9 +938,10 @@ def validate(address, userid, password, device_type, ssh_key=None):
             finally:
                 plugin.disconnect()
         if device_type:
-            return (constants.validation_codes.SUCCESS.value, device_type, mtm, serialnum, version)
+            return (constants.validation_codes.SUCCESS.value, device_type, mtm,
+                    serialnum, version, architecture)
 
-    return (constants.validation_codes.DEVICE_TYPE_ERROR.value, None, None, None, None)
+    return (constants.validation_codes.DEVICE_TYPE_ERROR.value, None, None, None, None, None)
 
 def change_rack_properties(label=None, rackid=None, new_label=None, data_center=None,
                            location=None, notes=None):
@@ -1245,7 +1247,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     hook_name = 'unknown' #keeps pylint happy
     try:
         for hook_name, hook_plugin in hooks.items():
-            hook_plugin.change_device_pre_save(device,old_device_info)
+            hook_plugin.change_device_pre_save(device, old_device_info)
     except Exception as e:
         logging.exception(e)
         message = _("Error in plugin (%s). Unable to change device: Reason: %s") % (hook_name, e)
@@ -1264,7 +1266,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     #post_save hooks
     try:
         for hook_name, hook_plugin in hooks.items():
-            hook_plugin.change_device_post_save(device,old_device_info)
+            hook_plugin.change_device_post_save(device, old_device_info)
     except Exception as e:
         logging.exception(e)
         message = push_message(message, _("After device properties were changed, " \

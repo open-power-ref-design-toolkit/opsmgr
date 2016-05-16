@@ -79,6 +79,9 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                 break
         return self.version
 
+    def get_architecture(self):
+        return None
+
     def change_device_password(self, new_password):
         """Update the password of the ipmi default user on the BMC of the openpower server.
         """
