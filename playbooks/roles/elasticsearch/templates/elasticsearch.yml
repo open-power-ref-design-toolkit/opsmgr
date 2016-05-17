@@ -20,7 +20,7 @@ cluster.name: {{ elasticsearch_cluster }}
 #
 # Use a descriptive name for the node:
 #
-node.name: ${HOSTNAME}
+node.name: {{ hostvars[inventory_hostname]['container_name'] }}
 #
 # Add custom attributes to the node:
 #
@@ -63,7 +63,7 @@ bootstrap.mlockall: {{ elasticsearch_bootstrap_mlockall }}
 #
 network.bind_host: {{ hostvars[inventory_hostname]['container_address'] }}
 network.publish_host: {{ hostvars[inventory_hostname]['container_address'] }}
-transport.tcp.port: {{ elasticsearch_tcp_port }}
+# transport.tcp.port: {{ elasticsearch_tcp_port }}
 http.port: {{ elasticsearch_http_port }}
 #
 # --------------------------------- Discovery ----------------------------------

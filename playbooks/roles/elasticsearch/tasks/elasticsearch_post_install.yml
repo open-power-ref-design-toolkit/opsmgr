@@ -13,10 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- name: Create ElasticSearch configuration directory
+  file:
+    path: /usr/share/elasticsearch/config
+    state: directory 
+    owner: "root"
+    group: "root"
+    mode: 0755
+  tags:
+    - elasticsearch-post-install
+
+- name: Create ElasticSearch scripts directory
+  file:
+    path: /etc/elasticsearch/scripts
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: 0755
+  tags:
+    - elasticsearch-post-install
+
 - name: Deploy ElasticSearch configuration files
   template:
     src: "{{ item }}"
-    dest: "/etc/elasticsearch/{{ item }}"
+    dest: "/usr/share/elasticsearch/config/{{ item }}"
     owner: "root"
     group: "root"
   with_items:
