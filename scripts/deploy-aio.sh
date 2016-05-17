@@ -79,6 +79,9 @@ cp ${OPSMGRDIR}/etc/openstack_deploy/env.d/* /etc/openstack_deploy/env.d/
 
 cd ${OA_DIR}/playbooks/
 
+# Setup the haproxy load balancer
+run_ansible haproxy-install.yml
+
 # Setup the hosts and build the basic containers
 run_ansible setup-hosts.yml
 
