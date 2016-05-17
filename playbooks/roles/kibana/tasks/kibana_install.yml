@@ -27,6 +27,8 @@
     copy: "no"
     src: "/tmp/kibana.tar.gz"
     dest: "/opt"
+    owner: "{{ kibana_system_user }}"
+    group: "{{ kibana_system_group }}"
   tags: kibana-install
 
 - name: Link Kibana Directory
