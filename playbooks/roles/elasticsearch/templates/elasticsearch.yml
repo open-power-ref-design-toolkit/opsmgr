@@ -63,7 +63,7 @@ bootstrap.mlockall: {{ elasticsearch_bootstrap_mlockall }}
 #
 network.bind_host: {{ hostvars[inventory_hostname]['container_address'] }}
 network.publish_host: {{ hostvars[inventory_hostname]['container_address'] }}
-# transport.tcp.port: {{ elasticsearch_tcp_port }}
+transport.tcp.port: {{ elasticsearch_tcp_port }}
 http.port: {{ elasticsearch_http_port }}
 #
 # --------------------------------- Discovery ----------------------------------
