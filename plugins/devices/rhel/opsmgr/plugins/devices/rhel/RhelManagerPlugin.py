@@ -11,6 +11,7 @@ except ImportError:
 
 import paramiko
 
+from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
@@ -38,12 +39,9 @@ class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         return None
 
     @staticmethod
-    def get_logging_capable():
-        return True
+    def get_capabilities():
+        return [constants.LOGGING_CAPABLE, constants.MONITORING_CAPABLE]
 
-    @staticmethod
-    def get_monitoring_capable():
-        return True
 
     def connect(self, host, userid, password=None, ssh_key_string=None):
         _method_ = "RhelPlugin.connect"

@@ -1,5 +1,6 @@
 import logging
 import subprocess
+from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.common import utils
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
@@ -24,12 +25,8 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         return "https://" + host
 
     @staticmethod
-    def get_logging_capable():
-        return False
-
-    @staticmethod
-    def get_monitoring_capable():
-        return True
+    def get_capabilities():
+        return [constants.MONITORING_CAPABLE]
 
     def connect(self, host, userid, password=None, ssh_key_string=None):
         """connect to the BMC and store the mtm and serial number

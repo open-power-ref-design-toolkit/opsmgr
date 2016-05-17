@@ -11,6 +11,7 @@ except ImportError:
 
 import paramiko
 
+from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
@@ -38,12 +39,8 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         return "Ubuntu"
 
     @staticmethod
-    def get_logging_capable():
-        return True
-
-    @staticmethod
-    def get_monitoring_capable():
-        return True
+    def get_capabilities():
+        return [constants.LOGGING_CAPABLE, constants.MONITORING_CAPABLE]
 
     @staticmethod
     def get_web_url(host):

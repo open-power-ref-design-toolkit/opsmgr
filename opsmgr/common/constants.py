@@ -32,3 +32,6 @@ class auth_method(Enum):
 
 JSON_IDENTIFIER_ATTR = 'id'
 JSON_LABEL_ATTR = 'name'
+
+LOGGING_CAPABLE = 'Logging'
+MONITORING_CAPABLE = 'Monitoring'

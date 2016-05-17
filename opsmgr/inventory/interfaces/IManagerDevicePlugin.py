@@ -20,18 +20,10 @@ class IManagerDevicePlugin(object):
 
     @staticmethod
     @abstractmethod
-    def get_logging_capable():
-        """Return True if the device generates logs
-           that can be used to monitor the health of the device.
+    def get_capabilities():
+        """Return List of capabilities the device supports.
+           capabilities are defined in opsmgr.common.constants
         """
-
-    @staticmethod
-    @abstractmethod
-    def get_monitoring_capable():
-        """Return True if the device health can be probed by
-           running periodic scripts
-        """
-
 
     @abstractmethod
     def connect(self, host, userid, password, ssh_key_string):

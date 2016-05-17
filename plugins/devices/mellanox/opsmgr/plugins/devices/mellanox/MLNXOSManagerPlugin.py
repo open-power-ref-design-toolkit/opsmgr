@@ -11,6 +11,7 @@ except ImportError:
 
 import paramiko
 
+from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
@@ -40,12 +41,8 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         return "https://" + host
 
     @staticmethod
-    def get_logging_capable():
-        return False
-
-    @staticmethod
-    def get_monitoring_capable():
-        return True
+    def get_capabilities():
+        return [constants.MONITORING_CAPABLE]
 
     def connect(self, host, userid, password=None, ssh_key_string=None):
         _method_ = "MLNXOSPlugin.connect"
