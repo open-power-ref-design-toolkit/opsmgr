@@ -46,7 +46,7 @@
   command: ./plugin install {{ item }}
   args:
     chdir: /usr/share/elasticsearch/bin
-    creates: /usr/share/elasticsearch/plugins/HQ
+    creates: /usr/share/elasticsearch/plugins/hq
   with_items:
     - royrusso/elasticsearch-HQ/v2.0.3
   tags:
