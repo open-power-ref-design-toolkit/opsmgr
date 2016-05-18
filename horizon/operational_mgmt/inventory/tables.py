@@ -215,25 +215,3 @@ class RackDetailsTable(tables.DataTable):
         # Until we have AddRack function and remove All Resources
         # functions, don't allow remove rack to be present
         table_actions = (EditRackLink, RemoveRackLink)
-
-
-class ServerLinksTable(tables.DataTable):
-    app_name = tables.Column('app_name',
-                             attrs={'width': '150px', },
-                             verbose_name=_("Application"))
-    protocol = tables.Column('protocol',
-                             attrs={'width': '400px', },
-                             verbose_name=_("Protocol"))
-    port = tables.Column('port',
-                         attrs={'width': '400px', },
-                         verbose_name=_("port"))
-    path = tables.Column('path',
-                         attrs={'width': '400px', },
-                         verbose_name=_("Path"))
-
-    class Meta(object):
-        name = "application_links"
-        verbose_name = _("Application Links")
-        multi_select = False
-        footer = False
-        filter = False

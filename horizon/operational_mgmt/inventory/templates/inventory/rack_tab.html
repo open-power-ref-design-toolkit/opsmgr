@@ -25,7 +25,6 @@
     </div>
   </div>
 </div>
-<div class="panel-body" id="application_links_div"> {{ application_links_table.render }}</div>
 <script type="text/javascript">
    /* Retrieve the elements in the GUI whose IDs we need to adjust 
       to support multi-rack (elements for collapsable sections)
@@ -34,8 +33,6 @@
    var detailsLink = document.getElementById('rackDetailsLink');
    var resourcesSection = document.getElementById('rackResourcesSection');
    var resourcesLink = document.getElementById('rackResourcesLink');
-   var linksTab = document.getElementById("application_links");
-   var linksDiv = document.getElementById("application_links_div");
 
    // Generate a (mostly) unique id
    var id = guidGenerator();
@@ -49,15 +46,6 @@
    resourcesSection.id = "rackResources_" + id;
    resourcesLink.href = "#" + resourcesSection.id
    resourcesLink.id = "rackResourcesLink_" + id;
-
-   // Set unique IDs for server links table (and hide the table)
-   linksTab.id = "application_links_" + id;
-   linksTab.className += " " + "application_links";
-   linksTab.style.display = "none";
-   linksDiv.id = "application_lins_" + id;
-   linksDiv.style.display = "none";
-
-
    
 function guidGenerator() {
     var S4 = function() {
@@ -65,53 +53,6 @@ function guidGenerator() {
     };
     return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
 };
-
-function launchApplication(link) {
-   // The URL of the linked application will be built from data stored on
-   // the (hidden) application_links table.  The link passed in will tell
-   // us which item to pull from the table.  launchURL will hold the
-   // constructed URL
-   var launchURL = "";
-
-   // Retrieve the application_links table (just get the first one...
-   // There will be one on each rack, but at present, they are all
-   // the same
-   var refTab=document.getElementsByClassName('application_links')[0];
-
-   // Retrieve the appropriate row from the table
-   var row = refTab.rows.item(link);
-
-   // Get the protocol (required) and add it to our URL
-   var protocol = row.cells.item(1).innerText.trim();
-   launchURL += protocol
-
-   // Retrieve the browser host and add it to our URL
-   var host = top.location.host.split(':')[0];
-   // TODO:  Override the actual value (until we have an actual server
-   // we're running on)
-   host = '9.27.24.135'
-   launchURL += host
-
-   // Get the port (optional), and add it to our URL
-   var port = row.cells.item(2).innerText.trim();
-   if (port == "-") {
-      console.log("no port provided for the selected application")
-   } else {
-      launchURL += ":" + port;
-   }
-
-   // Get the path (optional), and add it to our URL
-   var path = row.cells.item(3).innerText.trim();
-   if (path == "-") {
-      console.log("no path provided for the selected application")
-   } else {
-      launchURL += path;
-   }
-
-   console.log("URL of application launch is: ", launchURL)
-   window.open(launchURL, 'Application_' + link);
-}
-
 </script>
 {% endblock %}
 
