@@ -1,17 +1,3 @@
-# Copyright 2013 Hewlett-Packard Development Company, L.P.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
-#
-#         http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
-
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import messages
@@ -24,18 +10,33 @@ from openstack_dashboard.dashboards.operational_mgmt import rack
 from openstack_dashboard.dashboards.operational_mgmt import resource
 
 import opsmgr.inventory.device_mgr as device_mgr
+import opsmgr.inventory.plugins as plugins
 
 
-class RackField(object):
+class RowEntry(object):
     # The class "constructor" - It's actually an initializer
-    def __init__(self, row_id, detail_title, detail_value):
+    def __init__(self, row_id, row_title, row_value):
         self.id = row_id
-        self.detail_title = detail_title
-        self.detail_value = detail_value
+        self.row_title = row_title
+        self.row_value = row_value
 
 
-def make_rack_field(row_id, detail_title, detail_value):
-    return RackField(row_id, detail_title, detail_value)
+def make_generic_row(row_id, row_title, row_value):
+    return RowEntry(row_id, row_title, row_value)
+
+
+class AppLinkEntry(object):
+    # The class "constructor" - It's actually an initializer
+    def __init__(self, row_id, app_name, protocol, port, path):
+        self.id = row_id
+        self.app_name = app_name
+        self.protocol = protocol
+        self.port = port
+        self.path = path
+
+
+def make_app_link_row(row_id, app_name, protocol, port, path):
+    return AppLinkEntry(row_id, app_name, protocol, port, path)
 
 
 def retrieve_rack_resources(self):
@@ -46,6 +47,7 @@ def retrieve_rack_resources(self):
 
     logging.debug("%s: before retrieving resources for rack: %s",
                   __method__, self.rack_id)
+
     (rc, result_dict) = device_mgr.list_devices(None, False, None, None,
                                                 False, False, [self.rack_id])
     if rc != 0:
@@ -87,23 +89,38 @@ def retrieve_rack_metadata(self):
         if len(result_dict['racks']) > 0:
             the_rack = rack.Rack(result_dict['racks'][0])
             counter = 0
-            rack_meta_data.append(make_rack_field(counter, "Label",
-                                                  the_rack.name))
+            rack_meta_data.append(make_generic_row(counter, "Label",
+                                                   the_rack.name))
             counter += 1
-            rack_meta_data.append(make_rack_field(counter, "Data Center",
-                                                  the_rack.data_center))
+            rack_meta_data.append(make_generic_row(counter, "Data Center",
+                                                   the_rack.data_center))
             counter += 1
-            rack_meta_data.append(make_rack_field(counter, "Location",
-                                                  the_rack.rack_loc))
+            rack_meta_data.append(make_generic_row(counter, "Location",
+                                                   the_rack.rack_loc))
             counter += 1
-            rack_meta_data.append(make_rack_field(counter, "Notes",
-                                                  the_rack.notes))
-
+            rack_meta_data.append(make_generic_row(counter, "Notes",
+                                                   the_rack.notes))
     return rack_meta_data
 
 
+def retrieve_application_links(self):
+    link_data = []
+
+    # Retrieve the applications' link information
+    applications = plugins.get_operations_plugins()
+
+    counter = 0
+    for app in applications:
+        link_data.append(make_app_link_row(counter, app.name, app.protocol,
+                                           app.port, app.path))
+        counter += 1
+
+    return link_data
+
+
 class RackTabBase(tabs.TableTab):
-    table_classes = (tables.RackDetailsTable, tables.ResourcesTable,)
+    table_classes = (tables.RackDetailsTable, tables.ResourcesTable,
+                     tables.ServerLinksTable)
     template_name = ("op_mgmt/inventory/rack_tab.html")
     preload = False
     _has_more = False
@@ -111,16 +128,21 @@ class RackTabBase(tabs.TableTab):
     rack_id = -1
 
     def get_resources_data(self):
-        # Store the rack_id of the current rack into each action that
-        # needs it
+        # Store the rack_id of the current rack into
+        # the AddResource action
         tables.AddResourceLink.rack_id = self.rack_id
-        tables.EditRackLink.rack_id = self.rack_id
-        tables.RemoveRackLink.rack_id = self.rack_id
         # Return the list of resources
         return retrieve_rack_resources(self)
 
     def get_rack_details_data(self):
+        # Store the rack_id of the current rack into each action that
+        # needs it
+        tables.EditRackLink.rack_id = self.rack_id
+        tables.RemoveRackLink.rack_id = self.rack_id
         return retrieve_rack_metadata(self)
+
+    def get_application_links_data(self):
+        return retrieve_application_links(self)
 
 
 class GenericTab(RackTabBase):
@@ -153,8 +175,8 @@ class InventoryRacksTabs(tabs.TabGroup):
         __method__ = 'tabs.InventoryRacksTabs.__init__'
         # This will instantiate the default tab (needed so generic tabs can
         # be created for each rack)
-        super(InventoryRacksTabs, self).__init__(*args, **kwargs)
 
+        super(InventoryRacksTabs, self).__init__(*args, **kwargs)
         # to create each generic tab, the tab group and request are needed
         tab_group = self
         request = self._tabs['default_tab'].request

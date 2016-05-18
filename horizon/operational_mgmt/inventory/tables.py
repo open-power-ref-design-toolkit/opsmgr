@@ -1,18 +1,5 @@
-# Copyright 2013 Hewlett-Packard Development Company, L.P.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
-#
-#         http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
-
 from django.core.urlresolvers import reverse
+from django.template import defaultfilters as filters
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import messages
@@ -175,6 +162,13 @@ class ResourcesTable(tables.DataTable):
                           link=True)
     type = tables.Column('type',
                          verbose_name=_("Type"))
+    arch = tables.Column('arch',
+                         verbose_name=("Architecture"))
+    capabilities = tables.Column(
+        lambda obj: getattr(obj, 'capabilities', []),
+        verbose_name=_("Capabilities"),
+        wrap_list=False,
+        filters=(filters.unordered_list,))
     rack_loc = tables.Column('rack_loc',
                              verbose_name=_("EIA Location"))
     userid = tables.Column('userid',
@@ -183,8 +177,11 @@ class ResourcesTable(tables.DataTable):
                         verbose_name=_("Machine Type/Model"))
     serial_num = tables.Column('sn',
                                verbose_name=_("Serial Number"))
-    host_name = tables.Column('host_name',
-                              verbose_name=_("Host Name"))
+    host_name = tables.Column(
+        lambda obj: getattr(obj, 'host_name', []),
+        verbose_name=_("Host Name"),
+        wrap_list=True,
+        filters=(filters.unordered_list,))
     version = tables.Column('version',
                             verbose_name=_("Installed Version"))
     device_id = tables.Column('device_id',
@@ -201,12 +198,13 @@ class ResourcesTable(tables.DataTable):
 
 
 class RackDetailsTable(tables.DataTable):
-    detail_title = tables.Column('detail_title',
-                                 attrs={'width': '150px', },
-                                 verbose_name=_("Rack Property"))
-    detail_value = tables.Column('detail_value',
-                                 attrs={'width': '400px', },
-                                 verbose_name=_("Value"))
+    # This is a generic table (id, label/title, value)
+    row_title = tables.Column('row_title',
+                              attrs={'width': '150px', },
+                              verbose_name=_("Rack Property"))
+    row_value = tables.Column('row_value',
+                              attrs={'width': '400px', },
+                              verbose_name=_("Value"))
 
     class Meta(object):
         name = "rack_details"
@@ -217,3 +215,25 @@ class RackDetailsTable(tables.DataTable):
         # Until we have AddRack function and remove All Resources
         # functions, don't allow remove rack to be present
         table_actions = (EditRackLink, RemoveRackLink)
+
+
+class ServerLinksTable(tables.DataTable):
+    app_name = tables.Column('app_name',
+                             attrs={'width': '150px', },
+                             verbose_name=_("Application"))
+    protocol = tables.Column('protocol',
+                             attrs={'width': '400px', },
+                             verbose_name=_("Protocol"))
+    port = tables.Column('port',
+                         attrs={'width': '400px', },
+                         verbose_name=_("port"))
+    path = tables.Column('path',
+                         attrs={'width': '400px', },
+                         verbose_name=_("Path"))
+
+    class Meta(object):
+        name = "application_links"
+        verbose_name = _("Application Links")
+        multi_select = False
+        footer = False
+        filter = False
