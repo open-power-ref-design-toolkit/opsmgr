@@ -21,7 +21,7 @@ export ANSIBLE_FORCE_COLOR=${ANSIBLE_FORCE_COLOR:-"true"}
 export BOOTSTRAP_OPTS=${BOOTSTRAP_OPTS:-""}
 
 # Assumes starts in the opsmgr directory
-if [ ! -e scripts/deploy-aio.sh ]; then
+if [ ! -e scripts/deploy-aio-1.sh ]; then
     echo "Assumes one starts in the opsmgr directory.  ie. /root/opsmgr"
     exit 1
 fi
