@@ -212,6 +212,7 @@ class RackDetailsTable(tables.DataTable):
         multi_select = False
         footer = False
         filter = False
-        # Until we have AddRack function and remove All Resources
+        # Until we have Add Rack and Remove All Resources
         # functions, don't allow remove rack to be present
+        # (Remove Rack is hidden via its 'allowed' function)
         table_actions = (EditRackLink, RemoveRackLink)

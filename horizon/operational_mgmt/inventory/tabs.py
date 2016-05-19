@@ -92,12 +92,13 @@ def retrieve_rack_metadata(self):
 
 def retrieve_application_links(self, request):
     __method__ = 'tabs.retrieve_application_links'
-    link_data = {}
+    app_link_data = {}
 
     # Retrieve the applications' link information
     applications = plugins.get_operations_plugins()
 
-    # Retrieve the host (from the request)
+    # Host is returned in the applications data, but we'd prefer
+    # to use the Host value from the request instead
     host_address = request.META.get('HTTP_HOST').split(':')[0]
 
     # TODO(jdwald):  override the hostAddress until functional
@@ -110,12 +111,16 @@ def retrieve_application_links(self, request):
             app_url += ":" + app.port
         if app.path is not None:
             app_url += app.path
-        link_data[app.function] = app_url
+
+        # We'll use "app function::app name" as the dictionary key.  This
+        # will end up being the attribute that is stored on the tab group.
+        dict_key = app.function + "::" + app.name
+        app_link_data[dict_key] = app_url
 
         logging.debug("%s: application URL for %s is: %s",
-                      __method__, app.function, app_url)
+                      __method__, dict_key, app_url)
 
-    return link_data
+    return app_link_data
 
 
 class RackTabBase(tabs.TableTab):
@@ -228,4 +233,4 @@ class InventoryRacksTabs(tabs.TabGroup):
 
         # Add the application URLs to the list of attributes of the tab group.
         # We need those attributes when launching various applications
-        self.attrs = retrieve_application_links(self, request)
+        self.attrs.update(retrieve_application_links(self, request))
