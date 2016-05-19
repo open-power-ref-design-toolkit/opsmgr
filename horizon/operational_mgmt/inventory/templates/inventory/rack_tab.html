@@ -1,56 +1,60 @@
 {% block main %}
-
 <div class="panel-group">
   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a class=" rackDetailsLink" data-toggle="collapse" href="toupdate">Rack Details</a>
+        <a data-toggle="collapse" href="toupdate" id="rackDetailsLink">Rack Details</a>
       </h4>
     </div>
-    <div class=" rackDetailsSection panel-collapse collapse">
+    <div class=" panel-collapse collapse" id="rackDetailsSection">
       <div class="panel-body"> {{ rack_details_table.render }}</div>
     </div>
   </div>
 </div>
 
 <div class="panel-group">
-  <div class="panel panel-default">
+   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a class=" rackResourcesLink" data-toggle="collapse" href="toupdate">Rack Resources</a>
+        <a data-toggle="collapse" href="toupdate" id="rackResourcesLink">Rack Resources</a>
       </h4>
     </div>
-    <div id="rack_resources" class=" rackResourcesSection panel-collapse collapse in">
-      <div class=" rackResourcesTable panel-body"> {{ resources_table.render }}</div>
+    <div class=" panel-collapse collapse in" id="rackResourcesSection" >
+      <div class=" rackResourcesTable panel-body" id="rackResourcesView">
+         {{ resources_table.render }}</div>
     </div>
   </div>
 </div>
 <script type="text/javascript">
-   var id = guidGenerator();
-   <!-- set unique IDs for rack details section -->
-   var section = document.getElementsByClassName('rackDetailsSection')[0];
-   var link = document.getElementsByClassName('rackDetailsLink')[0];
-   section.id = "rackDetails_" + id;
-   section.className=section.className.replace('rackDetailsSection',"");
-   link.href = "#" + section.id
-   link.className=link.className.replace('rackDetailsLink',"");
-   <!-- set unique IDs for rack resources section -->
-   section = document.getElementsByClassName('rackResourcesSection')[0];
-   link = document.getElementsByClassName('rackResourcesLink')[0];
-   var resourcesTable = document.getElementById('resources');
-   section.id = "rackResources_" + id;
-   section.className=section.className.replace('rackResourcesSection',"");
-   link.href = "#" + section.id
-   link.className=link.className.replace('rackResourcesLink',"");
-   resourcesTable.id = "rackResourcesTable_" + id;
+   /* Retrieve the elements in the GUI whose IDs we need to adjust 
+      to support multi-rack (elements for collapsable sections)
+   */
+   var detailsSection = document.getElementById('rackDetailsSection');
+   var detailsLink = document.getElementById('rackDetailsLink');
+   var resourcesSection = document.getElementById('rackResourcesSection');
+   var resourcesLink = document.getElementById('rackResourcesLink');
 
+   // Generate a (mostly) unique id
+   var id = guidGenerator();
+
+   // Set unique IDs for rack details section
+   detailsSection.id = "rackDetails_" + id;
+   detailsLink.href = "#" + detailsSection.id
+   detailsLink.id = "rackDetailsLink_" + id;
+
+   // Set unique IDs for the rack resources section
+   resourcesSection.id = "rackResources_" + id;
+   resourcesLink.href = "#" + resourcesSection.id
+   resourcesLink.id = "rackResourcesLink_" + id;
+   
 function guidGenerator() {
     var S4 = function() {
        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
     };
     return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-}
-
+};
 </script>
 {% endblock %}
+
+
 

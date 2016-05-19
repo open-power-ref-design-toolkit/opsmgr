@@ -7,12 +7,22 @@
 {% endblock page_header %}
 
 {% block main %}
-<p>The Operational Management Inventory panel lists preconfigured resources in your environment.  From this panel, you can add, edit, and remove resources from inventory.  
+<p>The Operational Management Inventory panel lists preconfigured resources in your environment.  From this panel, you can add, edit, and remove resources from inventory.  You can also open additional interfaces for monitoring and logging.
 <br />
-
+<br />
+      <button class="button" onClick="launchApplication('monitoring');"><span class="icon">Launch Monitor Application</span></button>
+      <button class="button" onClick="launchApplication('logging');"><span class="icon">Launch Logging Application</span></button>
 <div class="row">
    <div class="col-sm-12">
    {{ tab_group.render }}
    </div>
 </div>
+<script>
+function launchApplication(link) {
+   // The tab group contains the URL to launch as an 
+   // attribute
+   var refRacks = document.getElementById('inventoryRacks_tabs')
+   window.open(refRacks.getAttribute(link), 'Application_' + link);
+}
+</script>
 {% endblock %}
