@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Where is the openstack-ansible repo?
-oa_path: /opt/openstack-ansible
-
-# Set whether checks should be enabled or disabled
-ssl_check: false
-dell_check: false
-remote_check: true
-hp_check: false
-
-elasticsearch_heap_size_mb: 1024
+- name: Re-configure HAProxy for elasticsearch and kibana 
+  hosts: haproxy_hosts
+  user: root
+  roles:
+    - { role: "haproxy+" }
+  vars_files:
+    - "{{ oa_path }}/playbooks/vars/configs/haproxy_config.yml"
+  vars:
+    is_metal: "{{ properties.is_metal|default(false) }}"

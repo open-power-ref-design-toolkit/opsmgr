@@ -22,17 +22,12 @@ function run_ansible {
   openstack-ansible ${ANSIBLE_PARAMETERS} --forks ${FORKS} $@
 }
 
-# Install some prerequisite packages 
-apt-get -y install git
-apt-get -y install build-essential libssl-dev libffi-dev python-dev
-
 OA_DIR="/opt/openstack-ansible"
 
 # Checkout the openstack-ansible repository
 if [ ! -d /opt/openstack-ansible ]; then
-    git clone https://github.com/openstack/openstack-ansible $OA_DIR
-    cd $OA_DIR 
-    git checkout 13.1.0
+    echo "Need to run ./scripts/deploy-aio-2.sh first"
+    exit 1
 fi
 cd $OA_DIR 
 
@@ -40,7 +35,8 @@ BOOTSTRAP_OPTS="${BOOTSTRAP_OPTS} bootstrap_host_ubuntu_repo=http://us.archive.u
 BOOTSTRAP_OPTS="${BOOTSTRAP_OPTS} bootstrap_host_ubuntu_security_repo=http://security.ubuntu.com/ubuntu/" 
 
 if [ ! -d /etc/ansible ]; then
-    scripts/bootstrap-ansible.sh
+    echo "Need to run ./scripts/deploy-aio-2.sh first"
+    exit 1
 fi
 
 if [ ! -d /etc/openstack_deploy ]; then
@@ -79,9 +75,6 @@ cp ${OPSMGRDIR}/etc/openstack_deploy/env.d/* /etc/openstack_deploy/env.d/
 
 cd ${OA_DIR}/playbooks/
 
-# Setup the haproxy load balancer
-run_ansible haproxy-install.yml
-
 # Setup the hosts and build the basic containers
 run_ansible setup-hosts.yml
 
@@ -100,7 +93,7 @@ ansible neutron_agent -m command \
 ansible neutron_agent -m shell \
                       -a 'DEBIAN_FRONTEND=noninteractive apt-get install iptables-persistent'
 
-# setup openstack
+# Setup openstack
 run_ansible setup-openstack.yml
 
 if [[ "${DEPLOY_TEMPEST}" == "yes" ]]; then
@@ -108,8 +101,11 @@ if [[ "${DEPLOY_TEMPEST}" == "yes" ]]; then
     run_ansible os-tempest-install.yml
 fi
 
-# begin the OPSMGR installation
+# Begin the OPSMGR installation
 cd ${OPSMGRDIR}/playbooks/
 
-# configure everything for RPC support access
+# Configure ELK stack in separate containers
 run_ansible setup_logging.yml
+
+# Reconfigure haproxy for ELK containers 
+run_ansible haproxy.yml

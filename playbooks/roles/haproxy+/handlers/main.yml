@@ -1,5 +1,5 @@
 ---
-# Copyright 2014, Rackspace US, Inc.
+# Copyright 2015, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Where is the openstack-ansible repo?
-oa_path: /opt/openstack-ansible
-
-# Set whether checks should be enabled or disabled
-ssl_check: false
-dell_check: false
-remote_check: true
-hp_check: false
-
-elasticsearch_heap_size_mb: 1024
+- name: Restart HAProxy
+  service:
+    name: haproxy
+    state: restarted
+    pattern: haproxy
