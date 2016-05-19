@@ -106,6 +106,3 @@ cd ${OPSMGRDIR}/playbooks/
 
 # Configure ELK stack in separate containers
 run_ansible setup_logging.yml
-
-# Reconfigure haproxy for ELK containers 
-run_ansible haproxy.yml

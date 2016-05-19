@@ -17,8 +17,8 @@
   file:
     path: /etc/elasticsearch/scripts
     state: directory
-    owner: "root"
-    group: "root"
+    owner: "{{ elasticsearch_system_user }}"
+    group: "{{ elasticsearch_system_group }}"
     mode: 0755
   tags:
     - elasticsearch-post-install
@@ -27,8 +27,8 @@
   template:
     src: "{{ item }}"
     dest: "/etc/elasticsearch/{{ item }}"
-    owner: "root"
-    group: "root"
+    owner: "{{ elasticsearch_system_user }}"
+    group: "{{ elasticsearch_system_group }}"
   with_items:
     - elasticsearch.yml
     - logging.yml
@@ -41,8 +41,8 @@
   template:
     src: "{{ item }}"
     dest: "/etc/default/{{ item }}"
-    owner: "root"
-    group: "root"
+    owner: "{{ elasticsearch_system_user }}"
+    group: "{{ elasticsearch_system_group }}"
   with_items:
     - elasticsearch
   notify: 
@@ -64,8 +64,8 @@
   template:
     src: "mapping.sh.j2"
     dest: "/opt/mapping.sh"
-    owner: "root"
-    group: "root"
+    owner: "{{ elasticsearch_system_user }}"
+    group: "{{ elasticsearch_system_group }}"
     mode: "0755"
   tags:
     - elasticsearch-post-install
@@ -80,7 +80,7 @@
     name: "ElasticSearch Curator"
     minute: 0
     hour: 0
-    user: "root"
+    user: "{{ elasticsearch_system_user }}"
     job: "/usr/local/bin/curator --host {{ hostvars[inventory_hostname]['container_address'] }} delete indices --older-than {{ elasticsearch_prune_days }} --time-unit 'days' --timestring '%Y.%m.%d' --prefix 'logstash'"
     cron_file: "elasticsearch_curator"
   tags:

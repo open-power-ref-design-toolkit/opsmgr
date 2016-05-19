@@ -20,6 +20,10 @@
     mode: "0644"
     sha256sum: "{{ kibana_sha256sum }}"
     force: yes
+  register: download
+  until: download|success
+  retries: 5
+  delay: 2
   tags: kibana-install
 
 - name: Extract Kibana
@@ -29,6 +33,10 @@
     dest: "/opt"
     owner: "{{ kibana_system_user }}"
     group: "{{ kibana_system_group }}"
+  register: extract
+  until: extract|success
+  retries: 5
+  delay: 2
   tags: kibana-install
 
 - name: Link Kibana Directory

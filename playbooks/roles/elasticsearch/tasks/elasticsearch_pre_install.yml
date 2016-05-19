@@ -39,3 +39,26 @@
   tags:
     - elasticsearch-apt-repos
     - elasticsearch-pre-install
+
+- name: Create the ElasticSearch System Group
+  group:
+    name: "{{ elasticsearch_system_group }}"
+    state: "present"
+    system: "yes"
+  when: elasticsearch_system_group is defined
+  tags:
+    - elasticsearch-pre-install
+
+- name: Create the ElasticSearch System User
+  user:
+    name: "{{ elasticsearch_system_user }}"
+    shell: "/bin/bash"
+    group: "{{ elasticsearch_system_group }}"
+    groups: adm
+    home: "/usr/share/elasticsearch"
+    system: "yes"
+    createhome: "no"
+  when: elasticsearch_system_group is defined and elasticsearch_system_user is defined
+  tags:
+    - elasticsearch-pre-install
+

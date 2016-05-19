@@ -17,7 +17,7 @@
   hosts: haproxy_hosts
   user: root
   roles:
-    - { role: "haproxy+" }
+    - { role: "haproxy_elk" }
   vars_files:
     - "{{ oa_path }}/playbooks/vars/configs/haproxy_config.yml"
   vars:
