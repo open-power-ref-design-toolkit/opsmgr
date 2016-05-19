@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e -u -x
+set -e -x
 set -o pipefail
 
 ADMIN_PASSWORD="passw0rd"
@@ -26,7 +26,7 @@ OA_DIR="/opt/openstack-ansible"
 
 # Checkout the openstack-ansible repository
 if [ ! -d /opt/openstack-ansible ]; then
-    echo "Need to run ./scripts/deploy-aio-2.sh first"
+    echo "Need to run ./scripts/deploy-aio-1.sh first"
     exit 1
 fi
 cd $OA_DIR 
