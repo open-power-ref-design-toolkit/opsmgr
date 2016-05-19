@@ -5,7 +5,7 @@ from Crypto.Cipher import AES  # encryption library
 from Crypto.Hash import SHA512
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from opsmgr.inventory.data_model import Base, Device, Rack
+from opsmgr.inventory.data_model import Base, Device, DeviceRole, Rack
 
 session = None
 OPSMGR_CONF = "/etc/opsmgr/opsmgr.conf"
@@ -263,6 +263,14 @@ def get_all_racks():
     create_database_session_if_required()
     return session.query(Rack).order_by(Rack.rack_id).all()
 
+def get_device_roles_by_device_id(device_id):
+    """ get the roles associated with a device
+
+    Return:
+        [] List of DeviceRole classes
+    """
+    create_database_session_if_required()
+    return session.query(DeviceRole).filter(DeviceRole.device_id == device_id).all()
 
 def add_racks(racks):
     """ Adds the racks in the list to the data store
@@ -282,6 +290,9 @@ def add_devices(devices):
 
 def add_ssh_keys(ssh_keys):
     _add(ssh_keys)
+
+def add_device_roles(device_roles):
+    _add(device_roles)
 
 #TODO
 def update_rack(racks):

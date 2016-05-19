@@ -7,12 +7,11 @@ import socket
 from datetime import datetime
 from stevedore import extension
 
-import opsmgr.common.constants as constants
-import opsmgr.common.exceptions as exceptions
-import opsmgr.inventory.persistent_mgr as persistent_mgr
-
+from opsmgr.common import constants
+from opsmgr.common import exceptions
+from opsmgr.inventory import persistent_mgr
 from opsmgr.common.utils import entry_exit, is_valid_address
-from opsmgr.inventory.data_model import Rack, Device, Key
+from opsmgr.inventory.data_model import Device, Key, Rack
 
 I_MANAGER_DEVICE_PLUGIN = "opsmgr.inventory.interfaces.IManagerDevicePlugin"
 I_MANAGER_DEVICE_HOOK = "opsmgr.inventory.interfaces.IManagerDeviceHook"
@@ -466,7 +465,8 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     logging.debug("ENTRY %s", _method_)
     all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
                 'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'architecture',
-                'device-type', 'status', 'statusTime', 'web_url', 'auth_method', 'capabilities']
+                'device-type', 'status', 'statusTime', 'web_url', 'auth_method', 'capabilities',
+                'roles']
     brief_tags = ['label']
     result = {}
 
@@ -549,6 +549,12 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
 
         # figure out the if it's logging and monitoring capable
         device_output["capabilities"] = plugin.get_capabilities()
+
+        # figure out the roles this device plays
+        roles = []
+        for device_role in persistent_mgr.get_device_roles_by_device_id(device.device_id):
+            roles.append(device_role.role)
+        device_output["roles"] = roles
 
         # add the auth_method for the device
         if device.key:
@@ -1248,6 +1254,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     #pre_save hooks
     hooks = load_inventory_device_plugins()
     hook_name = 'unknown' #keeps pylint happy
+
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.change_device_pre_save(device, old_device_info)
@@ -1273,7 +1280,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     except Exception as e:
         logging.exception(e)
         message = push_message(message, _("After device properties were changed, " \
-                               "Error in plugin (%): %s") % (hook_name, e))
+                               "Error in plugin (%s): %s") % (hook_name, e))
 
     # return success
     logging.info("EXIT %s device properties changed", _method_)

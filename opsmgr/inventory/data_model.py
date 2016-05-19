@@ -105,3 +105,16 @@ class Key(Base):
     type = Column(String(10), nullable=False)
     value = Column(Text(), nullable=False)
     password = Column(String(255))
+
+class DeviceRole(Base):
+    __tablename__ = "device_role"
+    device_id = Column(Integer, ForeignKey('device.device_id'), primary_key=True, nullable=False)
+    role = Column(String(30), primary_key=True, nullable=False)
+
+    def __init__(self, device_id, role):
+        self.device_id = device_id
+        self.role = role
+
+    def __repr__(self):
+        return "<DeviceRole('%s', '%s')>" % (self.device_id, self.role)
+

@@ -209,7 +209,7 @@ def list_devices(args):
                     line += str(device[tag])
                 elif tag == 'auth_method':
                     line += str(device[tag])
-                elif tag == 'capabilities':
+                elif tag == 'capabilities' or tag == 'roles':
                     for item in device[tag]:
                         line += item + " "
                     line = line.rstrip()
