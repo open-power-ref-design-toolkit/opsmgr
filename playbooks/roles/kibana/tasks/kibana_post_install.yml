@@ -65,7 +65,7 @@
 - name: Kibana Config
   template:
     src: "{{ item }}"
-    dest: "{{ kibana_root }}/{{ item }}"
+    dest: "{{ kibana_root }}/config/{{ item }}"
     owner: "{{ kibana_system_user }}"
     group: "{{ kibana_system_group }}"
   with_items:

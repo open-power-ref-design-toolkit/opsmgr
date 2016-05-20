@@ -14,9 +14,17 @@
 # limitations under the License.
 
 kibana_root: /opt/kibana
-kibana_version: "kibana-4.5.0-linux-x64"
-kibana_url: "https://download.elasticsearch.org/kibana/kibana/{{ kibana_version }}.tar.gz"
-kibana_sha256sum: "fa3f675febb34c0f676f8a64537967959eb95d2f5a81bc6da17aa5c98b9c76ef"
+
+# the apt repository url to use for installing kibana from
+kibana_apt_repo_url: "http://packages.elasticsearch.org/kibana/4.5/debian"
+
+# the apt repository to use for installing logstash from
+kibana_apt_repos:
+  - { repo: "deb {{ kibana_apt_repo_url }} stable main", state: "present" }
+
+# the apt repository key url
+kibana_apt_keys:
+  - { url: "https://packages.elasticsearch.org/GPG-KEY-elasticsearch", state: "present" }
 
 elasticsearch_http_port: 9200
 elasticsearch_vip: "{{ internal_lb_vip_address }}"
@@ -25,6 +33,7 @@ elasticsearch_public_url: '"https://"+window.location.hostname+":8443/elasticsea
 kibana_apt_packages:
   - apache2
   - python-passlib
+  - kibana
 
 kibana_apache_modules:
   - rewrite
