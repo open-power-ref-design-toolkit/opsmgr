@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Add apt keys
+- name: Add Kibana apt keys
   apt_key:
     url: "{{ item.url }}"
     state: "{{ item.state }}"
@@ -27,7 +27,7 @@
     - kibana-apt-keys
     - kibana-pre-install
 
-- name: Add apt repositories
+- name: Add Kibana apt repositories
   apt_repository:
     repo: "{{ item.repo }}"
     state: "{{ item.state }}"
@@ -40,35 +40,13 @@
     - kibana-apt-repos
     - kibana-pre-install
 
-- name: Create the Kibana System Group
-  group:
-    name: "{{ kibana_system_group }}"
-    state: "present"
-    system: "yes"
-  when: kibana_system_group is defined
-  tags:
-    - kibana-pre-install
-
-- name: Create the Kibana System User
-  user:
-    name: "{{ kibana_system_user }}"
-    shell: "/bin/false"
-    group: "{{ kibana_system_group }}"
-    groups: adm
-    home: "/var/lib/{{ kibana_system_user }}"
-    system: "yes"
-    createhome: "yes"
-  when: kibana_system_group is defined and kibana_system_user is defined
-  tags:
-    - kibana-pre-install
-
-- name: Create Kibana Directories
-  file:
-    state: directory
-    path: "{{item.name}}"
-    mode: "{{item.mode}}"
-    owner: "{{kibana_system_user}}"
-    group: "{{kibana_system_group}}"
-  with_items: kibana_directories
-  tags:
-    - kibana-pre-install
+#- name: Create Kibana Directories
+#  file:
+#    state: directory
+#    path: "{{ item.name }}"
+#    mode: "{{ item.mode }}"
+#    owner: "{{ kibana_service_user }}"
+#    group: "{{ kibana_service_group }}"
+#  with_items: kibana_directories
+#  tags:
+#    - kibana-pre-install

@@ -27,3 +27,8 @@
   tags:
     - kibana-apt-packages
     - kibana-install
+
+- name: Enable Kibana Service
+  service:
+    name: kibana
+    enabled: yes

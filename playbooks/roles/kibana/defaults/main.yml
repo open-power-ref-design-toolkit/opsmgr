@@ -31,9 +31,9 @@ elasticsearch_vip: "{{ internal_lb_vip_address }}"
 elasticsearch_public_url: '"https://"+window.location.hostname+":8443/elasticsearch/"'
 
 kibana_apt_packages:
+  - kibana
   - apache2
   - python-passlib
-  - kibana
 
 kibana_apache_modules:
   - rewrite
@@ -44,18 +44,21 @@ kibana_apache_modules:
 kibana_debug: False
 kibana_verbose: True
 
+kibana_app_port: 5601
+kibana_ssl_port: 8443
+
+# This is the user:group that kibana runs as
+kibana_service_user: kibana
+kibana_service_group: root
+
 kibana_server_name: "{{ external_lb_vip_address }}"
 kibana_self_signed: true
-kibana_ssl_port: 8443
-kibana_system_user: www-user
-kibana_system_group: www-data
 kibana_log_level: info
 kibana_ssl_cert: '/etc/ssl/certs/apache.cert'
 kibana_ssl_key: '/etc/ssl/private/apache.key'
 kibana_ssl_cert_path: '/etc/ssl/certs'
 kibana_ssl_protocol: '{{ ssl_protocol|default("ALL -SSLv2 -SSLv3") }}'
 kibana_ssl_cipher_suite: '{{ ssl_cipher_suite|default("ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS") }}'
-
 
 # Directories to create
 kibana_directories:
