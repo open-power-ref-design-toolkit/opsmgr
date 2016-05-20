@@ -22,4 +22,6 @@ dell_check: false
 remote_check: true
 hp_check: false
 
+net_max_speed: 1024
+
 elasticsearch_heap_size_mb: 1024

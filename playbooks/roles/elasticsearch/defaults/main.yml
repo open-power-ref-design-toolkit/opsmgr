@@ -25,6 +25,7 @@ elasticsearch_system_user: elasticsearch
 elasticsearch_system_group: elasticsearch
 
 elasticsearch_apt_packages:
+  - python-pip
   - openjdk-7-jre-headless
   - elasticsearch
 
