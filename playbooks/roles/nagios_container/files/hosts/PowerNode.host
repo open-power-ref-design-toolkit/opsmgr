@@ -1,0 +1,35 @@
+define host{
+    address         #@#IP#@#
+    host_name       #@#HOSTNAME#@#
+    action_url      https://#@#HOSTNAME#@#
+    alias           #@#LABEL#@#
+    use             linux-server
+}
+
+define service {
+   	use                  generic-service
+   	host_name            #@#HOSTNAME#@#
+   	service_description  Sensor Data Repository
+   	check_command        check_ipmi_sdr_status
+}
+
+define service {
+   	use                  generic-service
+   	host_name            #@#HOSTNAME#@#
+   	service_description  Sensor Status
+   	check_command        check_ipmi_sensor_status
+}
+
+define service {
+   	use                  generic-service
+   	host_name            #@#HOSTNAME#@#
+   	service_description  Management Controller
+   	check_command        check_ipmi_mc_status
+}
+
+define service {
+   	use                  generic-service
+   	host_name            #@#HOSTNAME#@#
+   	service_description  Power Status
+   	check_command        check_ipmi_power_status
+}

@@ -1,5 +1,4 @@
 import logging
-import subprocess
 from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.common import utils
@@ -11,6 +10,7 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
     def __init__(self):
         self.host = None
+        self.userid = None
         self.password = None
         self.version = None
         self.machine_type_model = ""
@@ -31,34 +31,26 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def connect(self, host, userid, password=None, ssh_key_string=None):
         """connect to the BMC and store the mtm and serial number
         """
-        _method__ = "PowerNodePlugin.connect"
+        _method_ = "PowerNodePlugin.connect"
         self.host = host
+        self.userid = userid
         self.password = password
 
         if ssh_key_string is not None:
             raise exceptions.AuthenticationException("SSH Key Authentication "
                                                      "is not supported for PowerNode devices")
-        # the command will take a long time to dump device info if device id is not specified,
-        # so assume the mtm info should be stored in device 0
         cmd_parms = [self.IPMI_TOOL, "-I", "lanplus", "-H",
-                     host, "-P", password, "fru", "print", "0", "-v"]
-        (rc, message) = utils.execute_command(" ".join(cmd_parms))
-        if rc != 0:
-            logging.warning("%s::ipmi query failed with output %s", _method__, message)
-            # have to check the failure reason : password incorrect or ip incorrect
-            # 1 -- "Failed to connect the device."
-            #  2 -- "The userid/password combination is not valid."
-            for line in message:
-                if "HMAC is invalid" in line:
-                    raise exceptions.ConnectionException(
-                        "Unable to connect to the device using IPMI")
-                elif "Get Auth Capabilities error" in line:
-                    raise exceptions.AuthenticationException(
-                        "password is not valid")
-        for line in message:
-            if "Product Part Number" in line:
+                     host, "-U", userid, "-P", password, "fru", "print"]
+        (_rc, stdout, stderr) = utils.execute_command(" ".join(cmd_parms))
+        logging.warning("%s::ipmi query standard error output %s", _method_, stderr)
+        for line in stderr:
+            if "Unable to establish IPMI" in line:
+                raise exceptions.ConnectionException(
+                    "Unable to connect to the device using IPMI")
+        for line in stdout:
+            if "Chassis Part Number" in line:
                 self.machine_type_model = line.split(":")[1].strip()
-            elif "Product Serial" in line:
+            elif "Chassis Serial" in line:
                 self.serial_number = line.split(":")[1].strip()
 
     def disconnect(self):
@@ -72,13 +64,13 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
     def get_version(self):
         _method_ = "PowerNodePlugin.get_version"
-        cmd_parms = [self.IPMI_TOOL, "-I", "lanplus", "-H",
-                     self.host, "-P", self.password, "mc", "info"]
-        (rc, message) = utils.execute_command(" ".join(cmd_parms))
+        cmd_parms = [self.IPMI_TOOL, "-I", "lanplus", "-H", self.host,
+                     "-U", self.userid, "-P", self.password, "mc", "info"]
+        (rc, stdout, stderr) = utils.execute_command(" ".join(cmd_parms))
         if rc != 0:
-            logging.warning("%s::ipmi query failed with output %s", _method_, message)
-            raise exceptions.DeviceException("ipmi query failed with output %s" % message)
-        for line in message:
+            logging.warning("%s::ipmi query failed with output %s", _method_, stderr)
+            raise exceptions.DeviceException("ipmi query failed with output %s" % stderr)
+        for line in stdout:
             if "Firmware Revision" in line:
                 self.version = line.split(":")[1].strip()
                 break
@@ -91,17 +83,35 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         """Update the password of the ipmi default user on the BMC of the openpower server.
         """
         _method_ = "PowerNodePlugin.change_device_password"
-        try:
-            subprocess.check_output([self.IPMI_TOOL, "-I", "lanplus", "-H", self.host,
-                                     "-P", self.password, "user", "set", "password", "1",
-                                     new_password], stderr=subprocess.DEVNULL)
-            verify_result = subprocess.check_output([self.IPMI_TOOL, "-I", "lanplus",
-                                                     "-H", self.host, "-P", new_password, "user",
-                                                     "test", "1", "20", new_password],
-                                                    stderr=subprocess.DEVNULL)
-            verify_result = verify_result.decode().strip()
-            if verify_result.lower() != 'success':
-                raise exceptions.DeviceException("Failed to login to IPMI with new password. "
-                                                 "Error Message %s: " % verify_result)
-        except subprocess.CalledProcessError:
-            raise exceptions.DeviceException("Failed to change password on the device.")
+        user_number = self._get_user_number()
+        cmd_parms = [self.IPMI_TOOL, "-I", "lanplus", "-H", self.host, "-U", self.userid,
+                     "-P", self.password, "user", "set", "password", user_number, new_password]
+        (rc, _stdout, stderr) = utils.execute_command(" ".join(cmd_parms))
+        if rc != 0:
+            logging.error("%s::ipmi password change failed with output %s", _method_, stderr)
+            raise exceptions.DeviceException("ipmi password change failed with output %s" % stderr)
+
+    def _get_user_number(self):
+        """Each user in IPMI has a number associated with that is used on the command line
+           when modifying a user. This method will find the number associated with the userid
+        """
+        _method_ = "PowerNodePlugin._get_user_number"
+        user_id = None
+        cmd_parms = [self.IPMI_TOOL, "-I", "lanplus", "-H", self.host, "-U", self.userid,
+                     "-P", self.password, "user", "list"]
+        (rc, stdout, stderr) = utils.execute_command(" ".join(cmd_parms))
+        if rc != 0:
+            logging.warning("%s::ipmi query failed with output %s", _method_, stderr)
+            raise exceptions.DeviceException("ipmi query failed with output %s" % stderr)
+        for line in stdout:
+            ids = line.split()[0]
+            user = line.split()[1]
+            if user == self.userid:
+                user_id = ids
+                break
+        if user_id:
+            return user_id
+        else:
+            raise exceptions.DeviceException("Failed to determine the id for the user: %s" %
+                                             self.userid)
+
