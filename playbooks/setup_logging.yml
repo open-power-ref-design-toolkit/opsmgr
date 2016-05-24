@@ -1,5 +1,6 @@
 ---
 - include: elasticsearch.yml
-- include: logstash.yml
 - include: kibana.yml
+- include: logstash.yml
+- include: rsyslog_elk.yml
 - include: haproxy_elk.yml
