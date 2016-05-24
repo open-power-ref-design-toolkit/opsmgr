@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Re-configure HAProxy for elasticsearch and kibana 
+- name: Configure HAProxy for elasticsearch and kibana
   hosts: haproxy_hosts
   user: root
   roles:
