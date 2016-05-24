@@ -916,13 +916,13 @@ def validate(address, userid, password, device_type, ssh_key=None):
         except KeyError:
             logging.error("%s::plugin(%s) not found", _method_, device_type)
             return (constants.validation_codes.DEVICE_TYPE_ERROR.value,
-                    None, None, None, None)
+                    None, None, None, None, None)
         except exceptions.ConnectionException:
             return (constants.validation_codes.FAILED_TO_CONNECT.value,
-                    None, None, None, None)
+                    None, None, None, None, None)
         except exceptions.AuthenticationException:
             return (constants.validation_codes.CREDENTIALS_INVALID.value,
-                    None, None, None, None)
+                    None, None, None, None, None)
         except Exception as e:
             logging.exception(e)
             logging.warning("%s:plugin(%s). Exception running validate: %s",

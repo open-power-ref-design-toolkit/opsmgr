@@ -340,7 +340,9 @@ def delete_devices(devices):
         key = device.key
         if key:
             keys.append(key)
+    roles = get_device_roles_by_device_id(device.device_id)
     _delete(keys)
+    _delete(roles)
     _delete(devices)
 
 def delete_keys(keys):
