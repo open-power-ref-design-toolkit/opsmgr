@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+"""
+ipmitools examples:
+ipmitool -I lanplus -H 9.114.104.227 -U "" -P passw0rd sdr
+ipmitool -I lanplus -H 9.114.104.227 -U "" -P passw0rd power status
+ipmitool -I lanplus -H 9.114.104.227 -U "" -P passw0rd mc info
+ipmitool -I lanplus -H 9.114.104.227 -U "" -P passw0rd sensor
+ipmitool -I lanplus -H 9.114.104.227 -U "" -P passw0rd sensor get "Ambient Temp"
+"""
+import argparse
+import subprocess
+import sys
+
+import opsmgr_util
+
+# we will support IPMI 2.0 first
+IPMI_CMD = "/usr/local/bin/ipmitool -I lanplus"
+
+def check_sdr_status(host_ip, ipmi_user, ipmi_password):
+    """
+    this method will check sdr status using ipmitool
+    """
+    command_list = [
+        IPMI_CMD, "-H", host_ip, "-U", ipmi_user, "-P", ipmi_password, "sdr"]
+    command = " ".join(command_list)
+    (function_rc, message) = execute_cmd_on_local(command)
+
+    if function_rc != 0:
+        function_rc = 2
+        function_msg = "Can not check sensor data repository entries' \
+        and readings' status, please check if ipmitool is installed."
+        return function_rc, function_msg
+
+    function_rc = 0
+    function_msg = ""
+    for line in message:
+        (name, unit_num, status) = line.split("|")
+        if "ok" in status:
+            pass
+        else:
+            function_rc = 2
+            word_list = [
+                name, "is", unit_num, ",status is not OK", ",please check that.\n"]
+            msg_temp = " ".join(word_list)
+            function_msg += msg_temp
+    if function_msg == "":
+        function_msg = "All sensor data repository entries' and readings' status is ok."
+    return function_rc, function_msg
+
+def check_sensor_status(host_ip, ipmi_user, ipmi_password):
+    """
+    this method will check sensor status using ipmitool
+    """
+    command_list = [IPMI_CMD, "-H", host_ip, "-U",
+                    ipmi_user, "-P", ipmi_password, "sensor"]
+    (function_rc, message) = execute_cmd_on_local(" ".join(command_list))
+
+    if function_rc != 0:
+        function_rc = 2
+        function_msg = "Can not check sensors' status, please check if ipmitool is installed."
+        return function_rc, function_msg
+
+    function_rc = 0
+    function_msg = ""
+    for line in message:
+        name, num, unit, status, _unused = line.split("|", 4)
+        if "ok" in status or "discrete" in unit:
+            pass
+        else:
+            function_rc = 2
+            word_list = [
+                name, "is", num, unit, ",status is not OK", ",please check that.\n"]
+            msg_temp = " ".join(word_list)
+            function_msg += msg_temp
+    if function_msg == "":
+        function_msg = "All sensors' status is ok."
+    return function_rc, function_msg
+
+def check_mc_status(host_ip, ipmi_user, ipmi_password):
+    """
+    this method will check mc status using ipmitool
+    """
+    command_list = [IPMI_CMD, "-H", host_ip, "-U",
+                    ipmi_user, "-P", ipmi_password, "mc", "info"]
+    command = " ".join(command_list)
+    (function_rc, message) = execute_cmd_on_local(command)
+
+    if function_rc != 0:
+        function_rc = 2
+        function_msg = "Can not check mc's status, please check if ipmitool is installed."
+        return function_rc, function_msg
+
+    function_rc = -1
+    for line in message:
+        if line.find("Device Available") != -1:
+            (_name, status) = line.split(":")
+            if "yes" in status:
+                function_rc = 0
+                function_msg = "Device Available."
+            else:
+                function_rc = 3
+                function_msg = "Device is not available."
+
+    if function_rc == -1:
+        function_rc = 2
+        function_msg = "Can not check if the device is available, please check manually."
+
+    return function_rc, function_msg
+
+def check_power_status(host_ip, ipmi_user, ipmi_password):
+    """
+    this method will check power status using ipmitool
+    """
+    command_list = [IPMI_CMD, "-H", host_ip, "-U",
+                    ipmi_user, "-P", ipmi_password, "power", "status"]
+    command = " ".join(command_list)
+    (function_rc, message) = execute_cmd_on_local(command)
+
+    if function_rc != 0:
+        function_rc = 2
+        function_msg = "Can not check power's status, please check if ipmitool is installed."
+        return function_rc, function_msg
+
+    for line in message:
+        if "on" in line or "ON" in line:
+            function_rc = 0
+            function_msg = "Chassis Power is on"
+        else:
+            function_rc = 2
+            function_msg = "Chassis Power is off or unknown"
+
+    return function_rc, function_msg
+
+def execute_cmd_on_local(command):
+    """
+    the funcjtion is to execute command on local server
+
+    return 0 - success
+    return other - failed
+    """
+    p = subprocess.Popen(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    function_rc = p.wait()
+    message = []
+    if function_rc == 0:
+        for line in p.stdout.read().decode('ascii').splitlines():
+            message.append(line)
+    else:
+        for line in p.stderr.read().decode('ascii').splitlines():
+            message.append(line)
+    p.stdout.close()
+    p.stderr.close()
+
+    return function_rc, message
+
+def main(argv=sys.argv[1:]):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("operation")
+    parser.add_argument('-H', '--Host', required=True)
+    args = parser.parse_args(argv)
+    operation = args.operation
+    host = args.Host
+
+    (userid, password, _ssh_key) = opsmgr_util.retrieveAccessInfoForDevice(host)
+
+    if operation == "SDR":
+        (rc, msg) = check_sdr_status(host, userid, password)
+    elif operation == "SENSOR":
+        (rc, msg) = check_sensor_status(host, userid, password)
+    elif operation == "MC":
+        (rc, msg) = check_mc_status(host, userid, password)
+    elif operation == "POWER":
+        (rc, msg) = check_power_status(host, userid, password)
+    else:
+        msg = "UNKNOWN OPERATION:" + operation
+        rc = 3
+    print(msg)
+    exit(rc)
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
+

@@ -13,24 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Prevent logstash-web from starting on boot
-  copy:
-    dest: "/etc/init/logstash-web.override"
-    content: "manual\n"
-    owner: "root"
-    group: "root"
-    mode: 0644
+- name: Create patterns directory
+  file:
+    path: /opt/logstash/patterns
+    state: directory
+    owner: "logstash"
+    group: "logstash"
+    mode: 0755
   tags:
-    - logstash-web-disable
-    - logstash-post-install
-
-- name: Stop logstash-web
-  service:
-    name: logstash-web
-    state: stopped
-    enabled: no
-  tags:
-    - logstash-web-disable
+    - logstash-patterns
     - logstash-post-install
 
 - name: Logstash Extra Patterns

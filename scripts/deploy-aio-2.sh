@@ -4,6 +4,7 @@ set -e -x
 set -o pipefail
 
 ADMIN_PASSWORD="passw0rd"
+NET_MAX_SPEED=1000
 
 export ANSIBLE_PARAMETERS=${ANSIBLE_PARAMETERS:-""}
 export ANSIBLE_FORCE_COLOR=${ANSIBLE_FORCE_COLOR:-"true"}
@@ -61,17 +62,13 @@ OS_SECRETS="${OPSMGRDIR}/etc/openstack_deploy/user_extras_secrets.yml"
 sed -i "s/kibana_password:.*/kibana_password: ${ADMIN_PASSWORD}/" ${OS_SECRETS}
 
 # Set network speed for vms
-echo "net_max_speed: 1000" >>${OS_VARS}
-
-cp ${OS_SECRETS} /etc/openstack_deploy/
-cp ${OS_VARS} /etc/openstack_deploy/
+sed -i "s/net_max_speed:.*/net_max_speed: ${NET_MAX_SPEED}/" ${OS_VARS}
 
 # Ensure all needed passwords and tokens are generated
 ./scripts/pw-token-gen.py --file /etc/openstack_deploy/user_secrets.yml
 ./scripts/pw-token-gen.py --file ${OS_SECRETS}
 
-# Copy container definitions for elk
-cp ${OPSMGRDIR}/etc/openstack_deploy/env.d/* /etc/openstack_deploy/env.d/
+cp -r ${OPSMGRDIR}/etc/openstack_deploy /etc
 
 cd ${OA_DIR}/playbooks/
 
@@ -106,6 +103,3 @@ cd ${OPSMGRDIR}/playbooks/
 
 # Configure ELK stack in separate containers
 run_ansible setup_logging.yml
-
-# Reconfigure haproxy for ELK containers 
-run_ansible haproxy.yml

@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # the apt repository url to use for installing logstash from
-logstash_apt_repo_url: "http://packages.elasticsearch.org/logstash/1.4/debian"
+logstash_apt_repo_url: "https://packages.elasticsearch.org/logstash/2.3/debian"
 
 # the apt repository to use for installing logstash from
 logstash_apt_repos:
@@ -37,6 +37,5 @@ elasticsearch_cluster: openstack
 
 # the apt packages to install
 logstash_apt_packages:
-  - logstash
-  - logstash-contrib
   - openjdk-7-jre-headless
+  - logstash
