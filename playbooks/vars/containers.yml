@@ -1,0 +1,18 @@
+---
+
+containers:
+  - name: lxc1
+    role: nagios
+    release: trusty
+    user: ubuntu
+    password: passw0rd
+    address: 10.255.255.231
+    netmask: 255.255.255.0
+    broadcast: 10.255.255.255
+    gateway: 10.255.255.1
+    nameserver: 10.255.255.1
+    hport: 8081
+    cport: 80
+    mount: usr/local/nagios/opsmgr/nagios_config
+
+

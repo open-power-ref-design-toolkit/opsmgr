@@ -1,13 +1,13 @@
 ---
-ansible_ssh_user: userid
-ansible_become_pass: PASSW0RD
-container: nagios
-nagios_ip: 10.0.3.10
-#Directory shared between the host and container
-#container directory should not include the / at the start
-host_directory_to_mount: /etc/opsmgr/nagios_config
-container_directory_to_mount: usr/local/nagios/opsmgr/nagios_config
-container_packages_to_install:
-          - lxc
-          - lxc-dev
-          - python2.7-dev
+
+apt_packages:
+  - lxc
+  - lxc-dev
+  - python2.7-dev
+  - python-pip
+
+pip_packages:
+  - lxc-python2
+
+lxc_shared: /etc/opsmgr/nagios_config
+

@@ -1,0 +1,7 @@
+[opsmgr]
+controller1
+
+[nrpe]
+controller1
+compute1
+

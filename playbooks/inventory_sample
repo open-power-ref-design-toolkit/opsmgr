@@ -1,6 +1,0 @@
-[opsmgr_host]
-opsmgr ansible_ssh_host=9.114.206.207
-
-[nagios_container]
-nagios ansible_ssh_host=10.0.3.10
-

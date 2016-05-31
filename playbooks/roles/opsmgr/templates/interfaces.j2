@@ -1,3 +1,5 @@
+# {{ ansible_managed }}
+#
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
 
@@ -8,8 +10,8 @@ iface lo inet loopback
 # The primary network interface
 auto eth0
 iface eth0 inet static
-address {{ nagios_ip }}
-netmask 255.255.255.0
-broadcast 10.0.3.255
-gateway 10.0.3.1
-dns-nameservers 10.0.3.1
+address {{ item.address }}
+netmask {{ item.netmask }}
+broadcast {{ item.broadcast }}
+gateway {{ item.gateway }}
+dns-nameservers {{ item.nameserver }}

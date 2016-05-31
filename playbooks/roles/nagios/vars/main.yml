@@ -1,0 +1,33 @@
+---
+
+nagios_download_site: https://assets.nagios.com/downloads/nagioscore/releases
+nagios_download_file: nagios-4.1.1.tar.gz
+plugin_download_site: http://nagios-plugins.org/download
+plugin_download_file: nagios-plugins-2.1.1.tar.gz
+temp_dir: /tmp
+
+nagios_user: nagios
+nagios_pass: nagios
+
+apt_packages:
+  - apache2
+  - apache2-utils
+  - build-essential
+  - libapache2-mod-php5
+  - libffi-dev
+  - libgd2-xpm-dev
+  - libssl-dev
+  - php5-gd
+  - lxc-dev
+  - python-dev
+  - python-pip
+  - sendmail
+  - snmp
+  - unzip
+  - wget
+
+pip_packages:
+  - lxc-python2
+  - paramiko
+  - pyCrypto
+

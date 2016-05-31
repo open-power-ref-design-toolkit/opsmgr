@@ -1,0 +1,14 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - bootstrap
+
+- hosts: localhost
+  become: false
+  connection: local
+  vars_files:
+    - vars/containers.yml
+  roles:
+    - local
+

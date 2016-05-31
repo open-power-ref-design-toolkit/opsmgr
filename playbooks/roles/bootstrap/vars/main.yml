@@ -1,0 +1,4 @@
+---
+sudoers_filename: opsmgr
+sudoers_remove: false
+

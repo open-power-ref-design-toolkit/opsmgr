@@ -1,8 +1,7 @@
 ---
-- hosts: opsmgr
+- hosts: nrpe
   become: true
   vars_files:
     - vars/containers.yml
   roles:
-    - opsmgr
-
+    - nrpe
