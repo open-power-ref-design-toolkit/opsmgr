@@ -176,7 +176,7 @@ class AddResourceForm(forms.SelfHandlingForm):
             else:
                 msg = str('Resource ' + data['label'] + ' successfully'
                           ' added.')
-                messages.info(request, msg)
+                messages.success(request, msg)
             return True
         except Exception as e:
             logging.error("%s: Exception received trying to add a resource.  "
@@ -393,7 +393,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                 # label for message
                 msg = str('Resource ' + data['label'] +
                           ' successfully edited.')
-                messages.info(request, msg)
+                messages.success(request, msg)
             return True
         except Exception as e:
             logging.error("%s: Exception received trying to edit resource."
@@ -450,7 +450,7 @@ class ChangePasswordForm(PasswordMixin, forms.SelfHandlingForm):
                 msg = str('Password changed successfully for'
                           ' user ' + data['userID'] + ' on'
                           ' resource ' + data['label'])
-                messages.info(request, msg)
+                messages.success(request, msg)
             return True
         except Exception as e:
             logging.error("%s: Exception received trying to change the"
@@ -504,7 +504,7 @@ class EditRackForm(forms.SelfHandlingForm):
             else:
                 # must have a 0 rc -- display completion msg
                 msg = str('Rack details successfully updated.')
-                messages.info(request, msg)
+                messages.success(request, msg)
             return True
         except Exception as e:
             logging.error("%s: Exception received trying to edit the "
@@ -543,7 +543,7 @@ class RemoveRackForm(forms.SelfHandlingForm):
             else:
                 # must have a 0 rc -- display completion msg
                 msg = str('Rack successfully removed.')
-                messages.info(request, msg)
+                messages.success(request, msg)
             return True
         except Exception as e:
             logging.error("%s: Exception received trying to remove the "
@@ -585,7 +585,7 @@ class RemoveResourceForm(forms.SelfHandlingForm):
                 # must have a 0 rc -- display completion msg -- use current
                 # label for message
                 msg = str('Resource ' + data['label'] + ' removed.')
-                messages.info(request, msg)
+                messages.success(request, msg)
             return True
         except Exception as e:
             logging.error("%s: Exception received trying to remove resource."
