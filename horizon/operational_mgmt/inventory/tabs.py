@@ -80,8 +80,12 @@ def retrieve_rack_metadata(self):
                                                the_rack.data_center))
 
             counter += 1
-            rack_meta_data.append(RackProperty(counter, "Location",
-                                               the_rack.rack_loc))
+            rack_meta_data.append(RackProperty(counter, "Room",
+                                               the_rack.room))
+
+            counter += 1
+            rack_meta_data.append(RackProperty(counter, "Row",
+                                               the_rack.row))
 
             counter += 1
             rack_meta_data.append(RackProperty(counter, "Notes",

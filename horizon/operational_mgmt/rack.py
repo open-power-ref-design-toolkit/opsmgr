@@ -4,5 +4,6 @@ class Rack(object):
         self.id = device['rackid']
         self.name = device['label']
         self.data_center = device['data-center']
-        self.rack_loc = device['location']
+        self.room = device['room']
+        self.row = device['row']
         self.notes = device['notes']

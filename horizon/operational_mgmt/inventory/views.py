@@ -253,7 +253,8 @@ class EditRackView(forms.ModalFormView):
             return {'rack_id': rack['rackid'],
                     'label': rack['label'],
                     'data_center': rack['data-center'],
-                    'location': rack['location'],
+                    'room': rack['room'],
+                    'row': rack['row'],
                     'notes': rack['notes']}
         else:
             return

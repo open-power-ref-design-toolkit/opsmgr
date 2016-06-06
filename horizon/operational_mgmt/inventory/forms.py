@@ -467,9 +467,10 @@ class EditRackForm(forms.SelfHandlingForm):
                             required=True)
     data_center = forms.CharField(label=_("Data Center"),
                                   max_length=255)
-    location = forms.CharField(label=_("Location"),
-                               max_length=255,
-                               required=True)
+    room = forms.CharField(label=_("Room"),
+                                  max_length=255)
+    row = forms.CharField(label=_("Row"),
+                                  max_length=255)
     notes = forms.CharField(label=_("Notes"),
                             max_length=255)
 
@@ -479,20 +480,21 @@ class EditRackForm(forms.SelfHandlingForm):
             # pass in "None" for rack label -- we'll instead pass in the
             # rack ID so the API knows which rack to act on
             logging.debug("%s: Attempting to edit rack %s using"
-                          " label: %s, data center: %s, location: %s,"
+                          " label: %s, data center: %s, room: %s, row: %s, "
                           " notes: %s", __method__, self.initial['label'],
                           data['label'], data['data_center'],
-                          data['location'], data['notes'])
+                          data['room'], data['row'], data['notes'])
             (rc, result_dict) = device_mgr.change_rack_properties(
                 None, data['rack_id'], data['label'], data['data_center'],
-                data['location'], data['notes'])
+                data['room'], data['row'], data['notes'])
             if rc is not 0:
                 logging.error("%s: Attempt to edit rack %s using"
-                              " label: %s, data center: %s, location: %s,"
+                              #" label: %s, data center: %s, location: %s,"
+                              " label: %s, data center: %s, "
                               " notes: %s, was not successful.", __method__,
                               self.initial['label'], data['label'],
-                              data['data_center'], data['location'],
-                              data['notes'])
+                              data['data_center'], data['room'], 
+                              data['row'], data['notes'])
                 logging.error(
                     '%s: Unable to edit rack "%s".  Return '
                     'code "%s" received.  Details of the failure: "%s"',
