@@ -17,8 +17,8 @@ class SSHUtility(object):
         global _pass
      
         ip_address = '127.0.0.1'
-        user = 'ubuntu'
-        _pass = 'tpmPassw0rd'
+        user = 'userid'
+        _pass = 'PASSW0RD'
 
         global ssh_session
         if not ssh_session:
@@ -49,33 +49,28 @@ class Test_1(unittest.TestCase):
         x.execute_command('opsmgr add_device -l rhel -u root -p PASSW0RD -a 9.27.24.68')
         line = x.execute_command('opsmgr list_devices | tee >(wc -l) | tail -c 2 ')
         ip =x.execute_command('''opsmgr list_devices | egrep -o  '([0-9]{1,3}\.){3}[0-9]{1,3}' ''')
-        print ip
         x.execute_command('opsmgr add_device -l v7000 -u superuser -p stor1virt -a 9.114.44.11')
         line = x.execute_command('opsmgr list_devices | tee >(wc -l) | tail -c 2 ')
 
     def test_add_device(self):
         x = SSHUtility()
         x.execute_command('opsmgr remove_device --all')
-        print x.execute_command('opsmgr add_device -l rhel -u root -p PASSW0RD -a 9.27.24.68')
+        print(x.execute_command('opsmgr add_device -l rhel -u root -p PASSW0RD -a 9.27.24.68'))
 
     def test_list_racks(self):
         x = SSHUtility()
         x.execute_command('opsmgr remove_device --all')
-        print x.execute_command('opsmgr list_racks')
+        print(x.execute_command('opsmgr list_racks'))
 
 
     def test_remove_device(self):
         x = SSHUtility()
-        print x.execute_command('opsmgr remove_device --all')
+        print(x.execute_command('opsmgr remove_device --all'))
 
     def test_remove_rack(self):
         x = SSHUtility()
-        print x.execute_command('opsmgr remove_device --all')
-        print x.execute_command('opsmgr remove_rack -l Default')
-
-
-
-
+        print(x.execute_command('opsmgr remove_device --all'))
+        print(x.execute_command('opsmgr remove_rack -l Default'))
 
 if __name__ == '__main__':
     unittest.main()

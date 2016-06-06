@@ -22,9 +22,10 @@ def get_racktag_text_id(tag_name):
         'rackid': _('id'),
         'label': _('label'),
         'mgrRackId': _('manager rack'),
-        'location': _('rack location'),
         'role': _('role'),
         'data-center': _('data center'),
+        'room': _('room'),
+        'row': _('row'),
         'notes': _('notes'),
     }
     if tag_name in racktag_id:
@@ -138,13 +139,14 @@ def check_device_exist_by_props(device_type, mtm, serialnum):
             continue
     return found
 
-def add_rack(label, data_center='', location='', notes=''):
+def add_rack(label, data_center='', room='', row='', notes=''):
     """add rack to the list of racks in the configuration managed
 
     Args:
         label: label for rack
         data_center: data center location (free form)
-        location: location in the data center (free form)
+        room: Room in the data center of the rack (free form)
+        row: Row in the room of the rack (free form)
         notes: freeform notes associated with this rack to describe its use, mgmt, etc.
     Returns:
         RC: integer return code
@@ -166,7 +168,8 @@ def add_rack(label, data_center='', location='', notes=''):
 
     rack_info = Rack()
     rack_info.label = label
-    rack_info.location = location
+    rack_info.room = room
+    rack_info.row = row
     rack_info.data_center = data_center
     rack_info.notes = notes
 
@@ -589,7 +592,7 @@ def list_racks(labels=None, isbriefly=False, rackids=None):
                 column_titles: array of column titles
                 racks: list of rack information packed in a dictionary structure
     """
-    all_tags = ['label', 'rackid', 'data-center', 'location', 'notes']
+    all_tags = ['label', 'rackid', 'data-center', 'room', 'row', 'notes']
     brief_tags = ['label']
     result = {}
 
@@ -953,7 +956,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
     return (constants.validation_codes.DEVICE_TYPE_ERROR.value, None, None, None, None, None)
 
 def change_rack_properties(label=None, rackid=None, new_label=None, data_center=None,
-                           location=None, notes=None):
+                           room=None, row=None, notes=None):
     ''' Change the rack properties in the data store
 
     Arguments:
@@ -961,7 +964,8 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
         rackid: rackid for the rack
         new_label: new label to set for the rack
         data_center: free form field to describe the data center
-        location: free form location to describe the location of data center in the rack
+        room: free form field for the room in the data center
+        row: free form field for the row in the room
         notes: free form set of notes about the rack
 
     Returns:
@@ -973,9 +977,10 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
     logging.info("ENTRY %s", _method_)
 
     message = None
+
     # check if no properties changed
-    if new_label is None and data_center is None and \
-            location is None and notes is None:
+    properties = [new_label, data_center, room, row, notes]
+    if all(prop is None for prop in properties):
         logging.info("EXIT %s Nothing to change", _method_)
         return 0, ""
 
@@ -1008,8 +1013,10 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
 
     if data_center is not None:
         rack.data_center = data_center
-    if location is not None:
-        rack.location = location
+    if room is not None:
+        rack.room = room
+    if row is not None:
+        rack.row = row
     if notes is not None:
         rack.notes = notes
 
@@ -1027,7 +1034,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
 
     try:
         for hook_name, hook_plugin in hooks.items():
-            hook_plugin.add_rack_post_save(rack_info)
+            hook_plugin.change_rack_post_save(rack)
     except Exception as e:
         logging.exception(e)
         message = _("After rack properties were changed, Error in plugin (%s): %s") % (hook_name, e)

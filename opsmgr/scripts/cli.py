@@ -72,7 +72,7 @@ def add_device(args):
                                  password, rack_id, args.rack_location, ssh_key_string)
 
 def add_rack(args):
-    return device_mgr.add_rack(args.label, args.data_center, args.location, args.notes)
+    return device_mgr.add_rack(args.label, args.data_center, args.room, args.row, args.notes)
 
 def change_device(args):
     ssh_key_string = None
@@ -137,12 +137,13 @@ def change_device_password(args):
                                              new_password=new_password)
 
 def change_rack(args):
-    if not args.new_label and not args.data_center and not args.location and not args.notes:
+    if not args.new_label and not args.data_center and not args.room \
+           and not args.row and not args.notes:
         message = _("You must specify at least one property to be modified.")
         return -1, message
     return device_mgr.change_rack_properties(label=args.label, new_label=args.new_label,
-                                             data_center=args.data_center,
-                                             location=args.location, notes=args.notes)
+                                             data_center=args.data_center, room=args.room,
+                                             row=args.row, notes=args.notes)
 
 def list_devices(args):
     labels = None
@@ -343,7 +344,8 @@ def main(argv=sys.argv[1:]):
     par.add_argument('-l', '--label', required=True, help='Label for the rack being added')
     par.add_argument('--data-center',
                      help='Descriptive name of the data center where the rack resides')
-    par.add_argument('--location', help='Location within the data center of the rack')
+    par.add_argument('--room', help='Room within the data center where the rack resides')
+    par.add_argument('--row', help='Row within the room where the rack resides')
     par.add_argument('-n', '--notes',
                      help='Text notes with any additional information about the rack')
 
@@ -372,8 +374,9 @@ def main(argv=sys.argv[1:]):
     pcr.add_argument('-l', '--label', required=True, help='Label for the rack being modified')
     pcr.add_argument('--new-label', help='New label for the rack.')
     pcr.add_argument('--data-center',
-                     help='Decriptive name of the data cneter where the rack resides')
-    pcr.add_argument('--location', help='Location within the data center of the rack')
+                     help='Decriptive name of the data center where the rack resides')
+    pcr.add_argument('--room', help='Room within the data center where the rack resides')
+    pcr.add_argument('--row', help='Row within the room where the rack resides')
     pcr.add_argument('-n', '--notes',
                      help='Text notes with any additional information about the rack')
 

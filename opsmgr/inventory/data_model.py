@@ -12,7 +12,8 @@ class Rack(Base):
     label = Column(String(255), nullable=False, unique=True)
 
     data_center = Column(String(255))
-    location = Column(String(255))
+    room = Column(String(255))
+    row = Column(String(255))
     notes = Column(Text())
 
     devices = relationship("Device", back_populates="rack")
@@ -21,7 +22,8 @@ class Rack(Base):
         result = {}
         result["rackid"] = self.rack_id
         result["label"] = self.label
-        result["location"] = self.location
+        result["room"] = self.room
+        result["row"] = self.row
         result["data-center"] = self.data_center
         result["notes"] = self.notes
         return result
