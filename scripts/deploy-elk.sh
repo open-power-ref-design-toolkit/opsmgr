@@ -78,7 +78,7 @@ cd ${OA_DIR}/playbooks/
 run_ansible setup-hosts.yml
 
 # Begin the OPSMGR installation
-cd ${OPSMGRDIR}/playbooks/
+cd ${OPSMGRDIR}/playbooks_elk/
 
 # Configure ELK stack in separate containers
-run_ansible setup_logging.yml
+run_ansible elk.yml

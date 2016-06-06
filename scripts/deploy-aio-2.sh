@@ -99,7 +99,7 @@ if [[ "${DEPLOY_TEMPEST}" == "yes" ]]; then
 fi
 
 # Begin the OPSMGR installation
-cd ${OPSMGRDIR}/playbooks/
+cd ${OPSMGRDIR}/playbooks_elk/
 
 # Configure ELK stack in separate containers
-run_ansible setup_logging.yml
+run_ansible elk.yml

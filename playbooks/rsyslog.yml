@@ -1,8 +1,0 @@
----
-- name: Configure rsyslog server to send data to logstash
-  hosts: rsyslog_all
-  user: root
-  roles:
-    - { role: "rsyslog_elk" }
-  vars:
-    is_metal: "{{ properties.is_metal|default(false) }}"
