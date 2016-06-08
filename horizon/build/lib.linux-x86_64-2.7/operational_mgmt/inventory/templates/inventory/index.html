@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Inventory" %}{% endblock %}
+
+{% block page_header %}
+    {% include "horizon/common/_page_header.html" with title=_("Inventory") %}
+{% endblock page_header %}
+
+{% block main %}
+<p>The Operational Management Inventory panel lists preconfigured resources in your environment.  From this panel, you can add, edit, and remove resources from inventory.  You can also open additional interfaces by launching related applications.
+<br />
+<br />
+    <table>
+        <tr class="odd gradeX">
+            <td class="col-lg-3">
+                <label>Application:</label>
+        </td>
+        <td>        
+                <select id="applicationSelector" class="form-control" name="appSelector">
+                    <option class='select' value="" default>Select application</option>
+                </select>
+        </td>
+        <td>
+                &nbsp;&nbsp;<button id="appLaunchButton" class="button" onClick="launchApplication();"><span class="icon">Launch Application</span></button>
+        </td>
+    </table>
+<br />
+<div class="row">
+    <div class="col-sm-12">
+        {{ tab_group.render }}
+    </div>
+</div>
+<script>
+// Populate the application selector with application options
+var refRacks = document.getElementById('inventoryRacks_tabs');
+var refSelector = document.getElementById('applicationSelector')
+for (var i = 0, atts = refRacks.attributes, n = atts.length; i < n; i++){
+    var attrib = atts[i].nodeName;
+
+    // All of the 'application URL' attributes' nodeName will have two parts
+    // (separated by '::').  The first part is the application function
+    // (e.g. monitoring), and the second part is the name of the application
+    // (e.g. nagios).
+    if(attrib.indexOf('::') > -1) {
+        var optionParts = attrib.split('::');
+        var optName = optionParts[0];
+        var optVal = attrib;
+        var appName = optionParts[1];
+
+        // Create new option for the application
+        var opt = document.createElement('option');
+        opt.value = optVal;
+        // We want the displayable part of the option to be:
+        // 'function (app name)' (e.g. "Monitoring (nagios)")
+        opt.innerHTML = optName.substring(0,1).toUpperCase() + optName.substring(1) + " (" + appName + ")";
+        refSelector.appendChild(opt);
+    }
+}
+
+function launchApplication(link) {
+    // Retrieve the selected application to launch
+    selApp = document.getElementById('applicationSelector').value
+
+    // The tab group contains the URL to launch as an attribute
+    var refRacks = document.getElementById('inventoryRacks_tabs')
+    if (selApp != "") {
+        // Open a window to the application
+        window.open(refRacks.getAttribute(selApp), 'Application_' + link);
+    }
+}
+</script>
+{% endblock %}

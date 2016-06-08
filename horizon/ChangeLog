@@ -1,0 +1,100 @@
+CHANGES
+=======
+
+* Update to support room/row
+* 220843 Replace rack location with room & row
+* 220942 move LICENSE file to the elk playbook
+* 220942 Integration of beaver into ELK
+* Fix Success Messages
+* Redesign of opsmgr playbooks and roles
+* Deploy elk on a pre-existing cluster
+* Remove spurrious playbook directory
+* Configure rsyslog container to send syslog records to logstash container
+* Configure rsyslog container to send syslog records to logstash container
+* Fixes found while getting ready to demo
+* Final unit testing of PowerNode Plugin with check_ipmi_power_system nagios plugin
+* Push upstream changes for kibana 4.5
+* Upgrade logstash version and kibana versions
+* Cleanup deployment script
+* Add elasticsearch user, rename haproxy playbook to haproxy_elk, add some retry logic
+* 220493 Associate Roles with a device
+* Fix current directory test in deploy-aio-2.sh
+* Fix current directory test in deploy-aio-1.sh
+* GUI changes to complete Sprint 2
+* Allow DEPLOY_TEMPEST not to be specified by user for deploy-aio-2.sh
+* Configure haproxy for elk containers
+* GUI changes to complete Sprint 2
+* GUI changes to complete Sprint 2
+* Updates to capabilities and additional a application plugin for the UI
+* Add HAProxy playbook
+* Remove logic to remove old logstash config files
+* Fix hq plugin so that the elasticsearch playbook is reentrant Comment out save of the event dashboard in Kibana as I don't know where to save it. Location has changed from previous kibana release
+* Fix file acls for unarchive kibana tar
+* Fix sha256 checksum for kibana download
+* Set config directory to /etc/elasticsearch in spite of the documentation Must be tied to services, /etc/init.rd/elasticsearch
+* Added a deployer script and provided a couple of config fixes for elasticsearch
+* Add logging capable and monitoring capable to list devices
+* Addition of architecture column in data model, removal of powerkvm plugin
+* Add playbooks for elk containers
+* Testing git review
+* First drop of PowerKVM and PowerNode device support
+* Add ssh key support to check_mellanox plugin
+* updated mellanox plugin to read userid and password to access switch. Fixes unit testing
+* Plugin to monitor devices with Nagios
+* Fixed issue with container and iptables on reboot. Added our customer monitoring to nagios playbook
+* Forgot to checkin plugins, fix for check https not working
+* Updates for logging/debug/trace
+* Updates for logging/debug/trace
+* Initial Sprint 2 GUI code drop
+* Initial Sprint 2 GUI code drop
+* Initial Sprint 2 GUI code drop
+* 220638 Figure out packaging structure for nagios config files within a container - mount host directory in container, check mellanox and rack switch plugins
+* Demo Gerrit Workflow
+* Fix formatting problems with READme.md for installing nagios
+* 220531 Create LXC Container for Nagios, add README file
+* 220531 Create LXC Container for Nagios, fix unit test errors
+* 220531 Create LXC Container for Nagios
+* Issue #11 change_device_password doesn't accept None for label
+* Issue #11 change_device_password doesn't accept None for label
+* Issue #9 Trying to add a device with an invalid key hangs the command line
+* Issue #8 Wrong userid list when changing from password authentication to ssh key authentication
+* forgot about another debug print statement - fixing here
+* Issue #6 opsmgr change_device -l rhel --rack-location 8U error with Traceback
+* Issue #5 In list_devices, need to add a parameter to specify if using userid/password authentication of userid/ssh key authentication -- Also cleaned up some pylint messages
+* Issue #7 Need to add allow_agents = False to all device plugins
+* Fixes so the recent changes work on python3
+* forgot to remove a debug print from device_mgr... this change removes it
+* Added discovery service and refactored some common files
+* GUI changes to complete Sprint 1
+* Initial check-in of Ops Mgr GUI
+* Issue #4 lenovo add device fails, need to add look_for_keys=False
+* Issue #3 Need list_devices or some other function to return web_url
+* Changes for devops - developer build
+* Issue #2 Need to add deviceid to list_devices output like list_racks
+* 220268 add_device using ssh fails sometimes
+* 220007 Support the ability to change the password on a device
+* 220007 Support the ability to change the password on a device
+* 220103 Add Lenovo Plugin
+* 220102 Add Mellanox Plugin
+* 220109 change_device support of ssh key - part 2 of 2
+* 220109 change_device support of ssh key - first drop - clean up of change_device_properties
+* 220108 remote_access support of ssh key
+* 220108 delete key when device is removed
+* 22006 Support the ability to manage devices using hostname instead of IP address
+* 220107 add_device support of ssh key
+* 22006 Support the ability to manage devices using hostname instead of IP address
+* Issue #1 post_install_script didn't work with python 2.7
+* Update README.md with instructions to install the Opsmgr Inventory Code
+* 220101 Check sprint 1 plugins into gitlab - figure out namespace issues
+* 220013 Create default rack automatically if required
+* 22006 Support the ability to manage devices using hostname instead of IP address
+* 220106 Script to take care of installing the config files
+* 220006 Support the ability to manage devices using hostname instead of IP address
+* 220015 Issues found while testing backport to python 2.7, added enum and configparser packages, verified 3.4 still works
+* 220104 Add pre-reqs packages into setup.py
+* 220066 Install opsmgr in /usr/local/bin as part of setup.py
+* add ELK configuration files
+* initial code drop for ELK dockerfile
+* Inital Drop of PPIM to Open Source conversion
+* Inital Drop of PPIM to Open Source conversion
+* add README
