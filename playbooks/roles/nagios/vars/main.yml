@@ -6,8 +6,7 @@ plugin_download_site: http://nagios-plugins.org/download
 plugin_download_file: nagios-plugins-2.1.1.tar.gz
 temp_dir: /tmp
 
-nagios_user: nagios
-nagios_pass: nagios
+nagios_pass: nagiosadmin
 
 apt_packages:
   - apache2

@@ -11,10 +11,6 @@
   with_items: "{{ pip_packages }}"
 
 # provision opsmgr lxc containers
-
-- name: validate the shared directory on the host is created
-  file: path={{ lxc_shared }} state=directory mode=0755
-
 - name: create containers
   lxc_container:
       name: "{{ item.name }}"
@@ -24,17 +20,7 @@
           --release {{ item.release }}
           --user {{ item.user }}
           --password {{ item.password }}
-      container_command: |
-          mkdir -p /{{ item.mount }}
-      container_config:
-          - "lxc.mount.entry = {{ lxc_shared }} {{ item.mount }}  none rw,bind 0 0"
   with_items: "{{ containers }}"
-
-#- name: config container to mount the shared directory
-#  lineinfile:
-#      line: "lxc.mount.entry = {{ lxc_shared }} {{ item.mount }}  none rw,bind 0 0"
-#      dest: "/var/lib/lxc/{{ item.name }}/config"
-#  with_items: "{{ containers }}"
 
 - name: add static interface
   template:

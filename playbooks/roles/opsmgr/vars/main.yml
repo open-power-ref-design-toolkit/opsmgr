@@ -8,6 +8,3 @@ apt_packages:
 
 pip_packages:
   - lxc-python2
-
-lxc_shared: /etc/opsmgr/nagios_config
-

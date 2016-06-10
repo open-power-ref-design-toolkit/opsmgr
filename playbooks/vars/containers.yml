@@ -1,7 +1,7 @@
 ---
 
 containers:
-  - name: lxc1
+  - name: lxc_nagios
     role: nagios
     release: trusty
     user: ubuntu
@@ -13,6 +13,3 @@ containers:
     nameserver: 10.255.255.1
     hport: 8081
     cport: 80
-    mount: usr/local/nagios/opsmgr/nagios_config
-
-

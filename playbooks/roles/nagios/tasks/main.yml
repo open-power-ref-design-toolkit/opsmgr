@@ -78,7 +78,7 @@
   command: /usr/bin/install -c -m 644 sample-config/httpd.conf /etc/apache2/sites-enabled/nagios.conf chdir={{ nagios_dir }}
 
 - name: create default nagios ui user and password
-  command: htpasswd -c -b /usr/local/nagios/etc/htpasswd.users {{ nagios_user }} {{ nagios_pass }}
+  command: htpasswd -c -b /usr/local/nagios/etc/htpasswd.users nagiosadmin {{ nagios_pass }}
 
 - name: allow urls rewrites
   command: a2enmod rewrite
@@ -130,38 +130,38 @@
 
 - name: ensures commands directory exists
   file:
-      path: /usr/local/nagios/opsmgr/nagios_config/commands
+      path: /usr/local/nagios/opsmgr/commands
       state: directory
 
 - name: copy custom commands
   copy:
       src: "{{ item }}"
-      dest: /usr/local/nagios/opsmgr/nagios_config/commands
+      dest: /usr/local/nagios/opsmgr/commands
       mode: 0644
   with_fileglob:
       - commands/*
 
 - name: ensures hosts directory exists
   file:
-      path: /usr/local/nagios/opsmgr/nagios_config/hosts
+      path: /usr/local/nagios/opsmgr/hosts
       state: directory
 
 - name: copy custom hosts
   copy:
       src: "{{ item }}"
-      dest: /usr/local/nagios/opsmgr/nagios_config/hosts
+      dest: /usr/local/nagios/opsmgr/hosts
       mode: 0644
   with_fileglob:
       - hosts/*
 
 - name: tell nagios to read the commands files in our directory
   lineinfile:
-      line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/commands"
+      line: "cfg_dir=/usr/local/nagios/opsmgr/commands"
       dest: "/usr/local/nagios/etc/nagios.cfg"
 
 - name: tell nagios to read the hosts files in our directory
   lineinfile:
-      line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/hosts"
+      line: "cfg_dir=/usr/local/nagios/opsmgr/hosts"
       dest: "/usr/local/nagios/etc/nagios.cfg"
 
 - name: validate nagios Config
