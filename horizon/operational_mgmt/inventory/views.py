@@ -1,3 +1,17 @@
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator  # noqa
@@ -7,11 +21,13 @@ from django.views.decorators.debug import sensitive_post_parameters  # noqa
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
+from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
 
 import logging
 
+from operational_mgmt import resource
 from operational_mgmt.inventory import forms as project_forms
 from operational_mgmt.inventory import tables as project_tables
 from operational_mgmt.inventory import tabs as inventoryRacks_tabs
@@ -324,7 +340,7 @@ class RemoveRackView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
-        __method__ = 'views.RemovewRackView.get_object'
+        __method__ = 'views.RemoveRackView.get_object'
         failure_message = str("Unable to retrieve rack information" +
                               " for the rack being removed.")
         if "rack_id" in self.kwargs:
@@ -390,7 +406,7 @@ class RemoveResourceView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_object(self):
-        __method__ = 'views.RemovewResourceView.get_object'
+        __method__ = 'views.RemoveResourceView.get_object'
         failure_message = str("Unable to retrieve resource information" +
                               " for the resource being removed.")
         if "resource_id" in self.kwargs:
@@ -433,3 +449,83 @@ class RemoveResourceView(forms.ModalFormView):
         args = (self.get_object()['deviceid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
         return context
+
+
+class RemoveResourcesView(tables.DataTableView, forms.ModalFormView):
+    table_class = project_tables.RemoveResourcesTable
+    modal_header = _("Remove Resources")
+    modal_id = "remove_resources_modal"
+    template_name = 'op_mgmt/inventory/removeResources.html'
+    submit_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+    submit_label = _("Close")
+    page_title = _("Remove Resources")
+
+    @memoized.memoized_method
+    def get_object(self):
+        __method__ = 'views.RemoveResourcesView.get_object'
+        failure_message = str("Unable to retrieve rack information" +
+                              " for the resources being removed.")
+        if "rack_id" in self.kwargs:
+            try:
+                (rc, result_dict) = device_mgr.list_racks(
+                    None, False, [self.kwargs["rack_id"]])
+            except Exception as e:
+                logging.error("%s: Exception received trying to retrieve"
+                              " resource information.  Exception is: %s",
+                              __method__, e)
+                exceptions.handle(self.request, failure_message)
+                return
+        else:
+            # This is unexpected.  RemoveResourceView called with no context
+            # of what to edit.  Need to display an error message because
+            # the dialog will not be primed with required data
+            logging.error("%s: RemoveResourceView called with no context.",
+                          __method__)
+            messages.error(self.request, failure_message)
+            return
+
+        if rc != 0:
+            messages.error(self.request, failure_message)
+            return
+        else:
+            # We should have at least one rack in the results...just
+            # return the first value
+            if len(result_dict['racks']) > 0:
+                return result_dict['racks'][0]
+            else:
+                logging.error("%s: list_racks returned no information for"
+                              " rack with rack id %s",
+                              __method__, self.kwargs["rack_id"])
+                messages.error(self.request, failure_message)
+                return
+
+    # Used to populate the table of resources to remove (for the given rack)
+    def get_data(self):
+        __method__ = 'views.RemoveResourcesView.get_data'
+        resources = []
+        rack_id = int(self.kwargs["rack_id"])
+
+        logging.debug("%s: before retrieving resources for rack: %s",
+                      __method__, rack_id)
+
+        # retrieve resources for the rack id passed in (rack_id may be -1 on
+        # the initial pass)
+        (rc, result_dict) = device_mgr.list_devices(None, False, None, None,
+                                                    False, False, [rack_id])
+        if rc != 0:
+            messages.error(self.request, _('Unable to retrieve Operational'
+                                           ' Management inventory information'
+                                           ' for resources.'))
+            logging.error('%s: Unable to retrieve Operational Management'
+                          'inventory information. A Non-0 return code returned'
+                          ' from device_mgr.list_devices.  The return code is:'
+                          ' %s', __method__, rc)
+        else:
+            all_devices = result_dict['devices']
+            for raw_device in all_devices:
+                resources.append(resource.Resource(raw_device))
+
+        logging.debug("%s: Found %s resources",
+                      __method__, len(resources))
+
+        return resources

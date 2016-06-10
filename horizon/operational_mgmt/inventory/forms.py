@@ -1,3 +1,17 @@
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import collections
 from django.forms import ValidationError  # noqa
 from django.utils.translation import ugettext_lazy as _
@@ -468,9 +482,9 @@ class EditRackForm(forms.SelfHandlingForm):
     data_center = forms.CharField(label=_("Data Center"),
                                   max_length=255)
     room = forms.CharField(label=_("Room"),
-                                  max_length=255)
+                           max_length=255)
     row = forms.CharField(label=_("Row"),
-                                  max_length=255)
+                          max_length=255)
     notes = forms.CharField(label=_("Notes"),
                             max_length=255)
 
@@ -489,11 +503,10 @@ class EditRackForm(forms.SelfHandlingForm):
                 data['room'], data['row'], data['notes'])
             if rc is not 0:
                 logging.error("%s: Attempt to edit rack %s using"
-                              #" label: %s, data center: %s, location: %s,"
                               " label: %s, data center: %s, "
                               " notes: %s, was not successful.", __method__,
                               self.initial['label'], data['label'],
-                              data['data_center'], data['room'], 
+                              data['data_center'], data['room'],
                               data['row'], data['notes'])
                 logging.error(
                     '%s: Unable to edit rack "%s".  Return '

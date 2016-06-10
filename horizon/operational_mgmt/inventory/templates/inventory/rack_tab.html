@@ -46,6 +46,14 @@
    resourcesSection.id = "rackResources_" + id;
    resourcesLink.href = "#" + resourcesSection.id
    resourcesLink.id = "rackResourcesLink_" + id;
+
+   // Make sure update view function is defined -- we've seen cases where
+   // it's not (when page is first displayed in multi-rack environment
+   // and you're not on the initial rack tab)
+   if (typeof(updateView) == "function") 
+   {  // Update the table based on capabilities view selected
+      updateView();
+   }
    
 function guidGenerator() {
     var S4 = function() {

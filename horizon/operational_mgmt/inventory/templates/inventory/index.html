@@ -13,15 +13,15 @@
     <table>
         <tr class="odd gradeX">
             <td class="col-lg-3">
-                <label>Application:</label>
+                <label>Capabilities View:</label>
         </td>
         <td>        
-                <select id="applicationSelector" class="form-control" name="appSelector">
-                    <option class='select' value="" default>Select application</option>
+                <select id="capabilitiesSelector" class="form-control" name="capSelector" onclick="updateView()" >
+                    <option class='select' value="" default>Show all resources</option>
                 </select>
         </td>
         <td>
-                &nbsp;&nbsp;<button id="appLaunchButton" class="button" onClick="launchApplication();"><span class="icon">Launch Application</span></button>
+                &nbsp;&nbsp;<button id="capLaunchButton" class="button" onClick="launchApplication();"><span class="icon">Launch Selected Capability</span></button>
         </td>
     </table>
 <br />
@@ -31,42 +31,60 @@
     </div>
 </div>
 <script>
-// Populate the application selector with application options
+// Populate the capabilities view selector with capabilities options
 var refRacks = document.getElementById('inventoryRacks_tabs');
-var refSelector = document.getElementById('applicationSelector')
+var refSelector = document.getElementById('capabilitiesSelector')
 for (var i = 0, atts = refRacks.attributes, n = atts.length; i < n; i++){
     var attrib = atts[i].nodeName;
 
     // All of the 'application URL' attributes' nodeName will have two parts
-    // (separated by '::').  The first part is the application function
+    // (separated by '::').  The first part is the capability function
     // (e.g. monitoring), and the second part is the name of the application
-    // (e.g. nagios).
+    // (e.g. nagios) that is applicable to that capability
     if(attrib.indexOf('::') > -1) {
         var optionParts = attrib.split('::');
         var optName = optionParts[0];
         var optVal = attrib;
         var appName = optionParts[1];
 
-        // Create new option for the application
+        // Create new option for the capability
         var opt = document.createElement('option');
         opt.value = optVal;
         // We want the displayable part of the option to be:
-        // 'function (app name)' (e.g. "Monitoring (nagios)")
+        // 'capability (app name)' (e.g. "Monitoring (nagios)")
         opt.innerHTML = optName.substring(0,1).toUpperCase() + optName.substring(1) + " (" + appName + ")";
         refSelector.appendChild(opt);
     }
 }
 
 function launchApplication(link) {
-    // Retrieve the selected application to launch
-    selApp = document.getElementById('applicationSelector').value
+    // Retrieve the selected capability to determine the application to launch
+    selCap = document.getElementById('capabilitiesSelector').value;
 
     // The tab group contains the URL to launch as an attribute
-    var refRacks = document.getElementById('inventoryRacks_tabs')
-    if (selApp != "") {
-        // Open a window to the application
-        window.open(refRacks.getAttribute(selApp), 'Application_' + link);
+    var refRacks = document.getElementById('inventoryRacks_tabs');
+    if (selCap != "") {
+        // Open a window to the capability's application
+        window.open(refRacks.getAttribute(selCap), 'Application_' + selCap);
     }
+}
+
+function updateView() {
+    // Retrieve the selected capability view (first part of the option (e.g. monitoring::nagios))
+    var selView = (document.getElementById('capabilitiesSelector').value).split('::')[0]
+
+    // Retrieve all input fields on the page
+    var all_input_fields = document.getElementsByTagName("input")
+
+    // Identify the resource filter input fields and do our filtering
+    for(var x=0; len = all_input_fields.length, input_field = all_input_fields[x], x < len; x++)
+    { // This input field is for the resource input field
+       if (input_field && (input_field.name).indexOf("resource_filter") > 0) 
+       {
+          input_field.value = selView.toLowerCase();
+          input_field.click()
+       } 
+    } 
 }
 </script>
 {% endblock %}

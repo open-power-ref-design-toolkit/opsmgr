@@ -1,3 +1,17 @@
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import messages
@@ -101,15 +115,14 @@ def retrieve_application_links(self, request):
     # Retrieve the applications' link information
     applications = plugins.get_operations_plugins()
 
-    # Host is returned in the applications data, but we'd prefer
-    # to use the Host value from the request instead
+    # Since the server could have multiple IP addresses, for
+    # now we will use the host value from the request instead.
     host_address = request.META.get('HTTP_HOST').split(':')[0]
-
-    # TODO(jdwald):  override the hostAddress until functional
-    host_address = "9.27.24.135"
 
     for app in applications:
         # build the list of URLs
+        # use host value from the request instead
+        # app_url = app.protocol + host
         app_url = app.protocol + host_address
         if app.port is not None:
             app_url += ":" + app.port
@@ -139,6 +152,8 @@ class RackTabBase(tabs.TableTab):
         # Store the rack_id of the current rack into
         # the AddResource action
         tables.AddResourceLink.rack_id = self.rack_id
+        # ... and the RemoveResources action
+        tables.RemoveResourcesLink.rack_id = self.rack_id
         # Return the list of resources
         return retrieve_rack_resources(self)
 

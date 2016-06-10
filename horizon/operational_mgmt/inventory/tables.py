@@ -1,7 +1,23 @@
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy
 from django.template import defaultfilters as filters
 from django.utils.translation import ugettext_lazy as _
-
+from django.utils.translation import ungettext_lazy
+from horizon import exceptions
 from horizon import messages
 from horizon import tables
 
@@ -26,6 +42,76 @@ class AddResourceLink(tables.LinkAction):
             return self.url
 
 
+class RemoveResourcesLink(tables.LinkAction):
+    # Link opens custom dialog to remove multiple resources from
+    # a rack definition
+    name = "removeResources"
+    verbose_name = _("Remove Resources")
+    url = "horizon:op_mgmt:inventory:removeResources"
+    classes = ("ajax-modal", "btn-danger")
+    icon = "trash"
+    rack_id = ""
+
+    # required to prime the remove resources dialog with the rack id
+    def get_link_url(self):
+        if self.rack_id != "":
+            return reverse(self.url, args=[self.rack_id])
+        else:
+            return self.url
+
+    def allowed(self, request, datum):
+        return False  # hide Remove Resources function for now
+
+
+class RemoveResourcesAction(tables.DeleteAction):
+    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Remove Resource",
+            u"Remove Resources",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Removed Resource",
+            u"Removed Resources",
+            count
+        )
+
+    def delete(self, request, obj_id):
+        __method__ = 'tables.RemoveResourcesAction.delete'
+        device_ids = []
+        device_ids.append(obj_id)
+
+        try:
+            (rc, result_dict) = device_mgr.remove_device(None, False,
+                                                         device_ids)
+            if rc != 0:
+                # Log details of the unsuccessful attempt.
+                logging.error("%s: Attemp to remove device with id: %s "
+                              " failed.", __method__, obj_id)
+                logging.error(
+                    "%s: Unable to remove resource with id %s."
+                    " The return code is: %s.  Details of the attempt: "
+                    " %s", __method__, obj_id, rc, result_dict)
+                msg = str('Attempt to remove resources was not successful. '
+                          'Details of the attempt: ' + result_dict)
+                messages.error(request, msg)
+            else:
+                return  # allow the base class to display the success message
+        except Exception as e:
+            redirect = reverse('horizon:op_mgmt:inventory:index')
+            logging.error("%s: Exception received trying to remove  "
+                          "resource with id %s.  Exception is: %s",
+                          __method__, obj_id, e)
+            exceptions.handle(request, _('Unable to remove resources.'),
+                              redirect=redirect)
+
+
 class EditResourceLink(tables.LinkAction):
     name = "edit"
     verbose_name = _("Edit Resource")
@@ -42,6 +128,8 @@ class ChangePasswordLink(tables.LinkAction):
     icon = "pencil"
 
 
+# Link opens default remove/delete dialog to individual resources
+# from a rack definition
 class RemoveResourceLink(tables.LinkAction):
     name = "removeResource"
     verbose_name = _("Remove Resource")
@@ -84,7 +172,7 @@ class RemoveRackLink(tables.LinkAction):
             return self.url
 
     def allowed(self, request, datum):
-        return False  # hide Remove function for now
+        return False  # hide Remove Rack function for now
         __method__ = 'tables.RemoveRackLink.allowed'
 
         # The Remove Rack button should always be displayed, but we want
@@ -137,6 +225,8 @@ class RemoveRackLink(tables.LinkAction):
 
 
 class ResourceFilterAction(tables.FilterAction):
+    name = "resource_filter"
+
     def filter(self, table, devices, filter_string):
         """Naive case-insensitive search."""
         q = filter_string.lower()
@@ -167,6 +257,7 @@ class ResourcesTable(tables.DataTable):
     capabilities = tables.Column(
         lambda obj: getattr(obj, 'capabilities', []),
         verbose_name=_("Capabilities"),
+        hidden=True,
         wrap_list=False,
         filters=(filters.unordered_list,))
     rack_loc = tables.Column('rack_loc',
@@ -194,7 +285,8 @@ class ResourcesTable(tables.DataTable):
         multi_select = False
         row_actions = (EditResourceLink, ChangePasswordLink,
                        RemoveResourceLink)
-        table_actions = (ResourceFilterAction, AddResourceLink)
+        table_actions = (ResourceFilterAction, AddResourceLink,
+                         RemoveResourcesLink)
 
 
 class RackDetailsTable(tables.DataTable):
@@ -212,7 +304,26 @@ class RackDetailsTable(tables.DataTable):
         multi_select = False
         footer = False
         filter = False
-        # Until we have Add Rack and Remove All Resources
-        # functions, don't allow remove rack to be present
-        # (Remove Rack is hidden via its 'allowed' function)
+        # Until we have Add Rack function, we don't allow
+        # remove rack to be present (Remove Rack is hidden
+        # via its 'allowed' function)
         table_actions = (EditRackLink, RemoveRackLink)
+
+
+class RemoveResourcesTable(tables.DataTable):
+    name = NameLinkColumn('name',
+                          verbose_name=_('Label'))
+    type = tables.Column('type',
+                         verbose_name=_("Type"))
+    hostname = tables.Column('hostname',
+                             verbose_name=_("Host Name"))
+    ip_address = tables.Column('ip_address',
+                               verbose_name=_("IP Address"))
+
+    class Meta(object):
+        name = "removeResources"
+        verbose_name = _("Remove Resources")
+        multi_select = True
+        # Allow resource filtering, and the ability to remove
+        # multiple resources as table actions
+        table_actions = (ResourceFilterAction, RemoveResourcesAction)
