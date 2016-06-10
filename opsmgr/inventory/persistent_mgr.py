@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from opsmgr.inventory.data_model import Base, Device, DeviceRole, Rack
 
-session = None
 OPSMGR_CONF = "/etc/opsmgr/opsmgr.conf"
 
 def encrypt_data(str_to_encrypt):
@@ -98,40 +97,38 @@ def read_database_connection():
         pass
         #TODO raise an exception here
 
-def create_database_session_if_required():
+def create_database_session():
     """ creates a database session if one is not already created.
     """
-    global session
-    if not session:
-        engine = create_engine(read_database_connection())
-        Base.metadata.bind = engine
-        db_session = sessionmaker(bind=engine)
-        session = db_session()
-    return session
+    engine = create_engine(read_database_connection())
+    Base.metadata.bind = engine
+    db_session = sessionmaker(bind=engine)
+    return db_session()
 
-def get_device_by_label(label):
+def get_device_by_label(session, label):
     """get Device by label
     Args:
+        session: Active database session
         label: label to get device that matches
     Returns:
         device found or None
     """
-    create_database_session_if_required()
     return session.query(Device).filter(Device.label == label).one_or_none()
 
-def get_device_by_id(device_id):
+def get_device_by_id(session, device_id):
     """get Device by id
     Args:
+        session: Active database session
         device_id: id of the device
     Returns:
         device found or None
     """
-    create_database_session_if_required()
     return session.query(Device).filter(Device.device_id == device_id).one_or_none()
 
-def get_devices_by_labels(labels):
+def get_devices_by_labels(session, labels):
     """get Devices by labels
     Args:
+        session: Active database session
         labels: list of labels to get device that matches
     Returns:
         [] Device list of devices found
@@ -141,16 +138,17 @@ def get_devices_by_labels(labels):
     not_found_labels = []
     labels = [] if labels is None else labels
     for label in labels:
-        device = get_device_by_label(label)
+        device = get_device_by_label(session, label)
         if device is None:
             not_found_labels.append(label)
         else:
             devices.append(device)
     return (devices, not_found_labels)
 
-def get_devices_by_ids(device_ids):
+def get_devices_by_ids(session, device_ids):
     """get Devices by ids
     Args:
+        session: Active database session
         device_ids: list of ids of the devices
     Returns:
         [] Device list of devices found
@@ -160,22 +158,22 @@ def get_devices_by_ids(device_ids):
     not_found_ids = []
     device_ids = [] if device_ids is None else device_ids
     for device_id in device_ids:
-        device = get_device_by_id(device_id)
+        device = get_device_by_id(session, device_id)
         if device is None:
             not_found_ids.append(device_id)
         else:
             devices.append(device)
     return (devices, not_found_ids)
 
-def get_devices_by_device_type(device_types):
+def get_devices_by_device_type(session, device_types):
     """get Devices by device_type
     Args:
+        session: Active database session
         device_types: list of device_types
     Returns:
         [] Device list of devices found
         [] list of device_types not found
     """
-    create_database_session_if_required()
     all_devices = []
     not_found_device_types = []
     device_types = [] if device_types is None else device_types
@@ -187,38 +185,39 @@ def get_devices_by_device_type(device_types):
             all_devices.append(devices)
     return (all_devices, not_found_device_types)
 
-def get_all_devices():
+def get_all_devices(session):
     """get all devices from the data store
-
+    Args:
+        session: Active database session
     Returns:
         [] List of Device classes
     """
-    create_database_session_if_required()
     return session.query(Device).order_by(Device.device_id).all()
 
-def get_rack_by_label(label):
+def get_rack_by_label(session, label):
     """get rack by label
     Args:
+        session: Active database session
         label: label to get rack that matches
     Returns:
         rack found or None
     """
-    create_database_session_if_required()
     return session.query(Rack).filter(Rack.label == label).one_or_none()
 
-def get_rack_by_id(rack_id):
+def get_rack_by_id(session, rack_id):
     """get rack by id
     Args:
+        session: Active database session
         rack_id: id of the rack
     Returns:
         rack found or None
     """
-    create_database_session_if_required()
     return session.query(Rack).filter(Rack.rack_id == rack_id).one_or_none()
 
-def get_racks_by_labels(labels):
+def get_racks_by_labels(session, labels):
     """get racks by labels
     Args:
+        session: Active database session
         labels: list of labels to get racks that matches
     Returns:
         [] Rack list of racks found
@@ -228,16 +227,17 @@ def get_racks_by_labels(labels):
     not_found_labels = []
     labels = [] if labels is None else labels
     for label in labels:
-        rack = get_rack_by_label(label)
+        rack = get_rack_by_label(session, label)
         if rack is None:
             not_found_labels.append(label)
         else:
             racks.append(rack)
     return (racks, not_found_labels)
 
-def get_racks_by_ids(rack_ids):
+def get_racks_by_ids(session, rack_ids):
     """get racks by ids
     Args:
+        session: Active database session
         rack_ids: list of ids of the racks
     Returns:
         [] Rack list of racks found
@@ -247,125 +247,133 @@ def get_racks_by_ids(rack_ids):
     not_found_ids = []
     rack_ids = [] if rack_ids is None else rack_ids
     for rack_id in rack_ids:
-        rack = get_rack_by_id(rack_id)
+        rack = get_rack_by_id(session, rack_id)
         if rack is None:
             not_found_ids.append(rack_id)
         else:
             racks.append(rack)
     return (racks, not_found_ids)
 
-def get_all_racks():
+def get_all_racks(session):
     """get all racks from the data store
-
+    Args:
+        session: Active database session
     Returns:
         [] List of Rack classes
     """
-    create_database_session_if_required()
     return session.query(Rack).order_by(Rack.rack_id).all()
 
-def get_device_roles_by_device_id(device_id):
+def get_device_roles_by_device_id(session, device_id):
     """ get the roles associated with a device
-
+    Args:
+        session: Active database session
+        device_id: id of the device
     Return:
         [] List of DeviceRole classes
     """
-    create_database_session_if_required()
     return session.query(DeviceRole).filter(DeviceRole.device_id == device_id).all()
 
-def add_racks(racks):
+def add_racks(session, racks):
     """ Adds the racks in the list to the data store
 
     Args:
+        session: Active database session
         racks:  list of Rack classes
     """
-    _add(racks)
+    _add(session, racks)
+    session.commit()
 
-def add_devices(devices):
+def add_devices(session, devices):
     """ Adds the devices in the list to the data store
 
     Args:
+        session: Active database session
         devices:  list of Device classes
     """
-    _add(devices)
+    _add(session, devices)
+    session.commit()
 
-def add_ssh_keys(ssh_keys):
-    _add(ssh_keys)
+def add_ssh_keys(session, ssh_keys):
+    _add(session, ssh_keys)
+    session.commit()
 
-def add_device_roles(device_roles):
-    _add(device_roles)
+def add_device_roles(session, device_roles):
+    _add(session, device_roles)
+    session.commit()
 
-#TODO
-def update_rack(racks):
+def update_rack(session):
     """ Updates racks in data store
 
     args:
-        racks:  list of Rack classes
+        session: Active database session
     returns:
         nothing
     """
     session.commit()
 
-#TODO
-def update_device(devices):
+def update_device(session):
     """ Updates devices in data store
 
     args:
-        devices:  list of Device classes
+        session: Active database session
     returns:
         nothing
     """
     session.commit()
 
-def delete_racks(racks):
-    """Removes list of Rack classes from data store
+def delete_racks(session, racks):
+    """Removes list of Rack objects from data store
 
     args:
-        racks:  list of Rack classes
+        session: Active database session
+        racks:  list of Rack objects
     returns:
         nothing
     """
-    _delete(racks)
+    _delete(session, racks)
+    session.commit()
 
-def delete_devices(devices):
-    """ Removes list of Device classes from data store
+def delete_devices(session, devices):
+    """ Removes list of Device objects from data store
         Removes any key associated with a device
     args:
-        devices:  list of Device classes
+        session: Active database session
+        devices: list of Device objects
     returns:
         nothing
     """
     keys = []
+    device_roles = []
     devices = [] if devices is None else devices
     for device in devices:
         key = device.key
         if key:
             keys.append(key)
-    roles = get_device_roles_by_device_id(device.device_id)
-    _delete(keys)
-    _delete(roles)
-    _delete(devices)
+        roles = get_device_roles_by_device_id(session, device.device_id)
+        device_roles.extend(roles)
+    _delete(session, keys)
+    _delete(session, device_roles)
+    _delete(session, devices)
+    session.commit()
 
-def delete_keys(keys):
+def delete_keys(session, keys):
     """Removes list of key classes from data store
 
     args:
+        session: Active database session
         keys:  list of key classes
     returns:
         nothing
     """
-    _delete(keys)
+    _delete(session, keys)
+    session.commit()
 
-
-def _add(items):
-    create_database_session_if_required()
+def _add(session, items):
     items = [] if items is None else items
     for item in items:
         session.add(item)
-    session.commit()
 
-def _delete(items):
-    create_database_session_if_required()
+def _delete(session, items):
     items = [] if items is None else items
     for item in items:
         session.delete(item)
-    session.commit()

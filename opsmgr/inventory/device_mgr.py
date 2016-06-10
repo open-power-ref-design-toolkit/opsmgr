@@ -113,8 +113,8 @@ def get_labels_message(items, is_return_deviceid=False, id_attr_name="device_id"
                 obj, id_attr_name)
     return labels_message
 
-def _check_device_exist(address):
-    devices = persistent_mgr.get_all_devices()
+def _check_device_exist(session, address):
+    devices = persistent_mgr.get_all_devices(session)
     if not devices:
         return False
     for device in devices:
@@ -122,14 +122,14 @@ def _check_device_exist(address):
             return True
     return False
 
-def check_device_exist_by_props(device_type, mtm, serialnum):
+def _check_device_exist_by_props(session, device_type, mtm, serialnum):
     if device_type is None:
         return False
     if serialnum is None:
         serialnum = ''
     if mtm is None:
         mtm = ''
-    (devices, _not_found_types) = persistent_mgr.get_devices_by_device_type([device_type])
+    (devices, _not_found_types) = persistent_mgr.get_devices_by_device_type(session, [device_type])
     found = False
     for device in devices:
         try:
@@ -156,8 +156,10 @@ def add_rack(label, data_center='', room='', row='', notes=''):
     label = label.strip()
     message = None
 
+    session = persistent_mgr.create_database_session()
+
     # get existing rack info for next set of checks
-    racks_info = persistent_mgr.get_all_racks()
+    racks_info = persistent_mgr.get_all_racks(session)
 
     for rack in racks_info:
         if rack.label == label:
@@ -183,7 +185,7 @@ def add_rack(label, data_center='', room='', row='', notes=''):
         message = _("Error in plugin (%s). Unable to add rack: Reason: %s") % (hook_name, e)
         return 102, message
 
-    persistent_mgr.add_racks([rack_info])
+    persistent_mgr.add_racks(session, [rack_info])
 
     try:
         for hook_name, hook_plugin in hooks.items():
@@ -195,6 +197,8 @@ def add_rack(label, data_center='', room='', row='', notes=''):
     logging.info("%s::add rack(%s) success", _method_, label)
     if not message:
         message = _("Added rack successfully.")
+
+    session.close()
     return 0, message
 
 def validate_address(address):
@@ -213,10 +217,15 @@ def validate_address(address):
         logging.error("%s::IP address is invalid (%s).", _method_, address)
         message = _("IP address is invalid (%s).") % (address)
         return 111, message
-    if _check_device_exist(address):
-        error_message = _("The IP address '%s' that is specified is already being used by"
-                          " another device or virtual machine in the network.") % (address)
-        return 108, error_message
+
+    try:
+        session = persistent_mgr.create_database_session()
+        if _check_device_exist(session, address):
+            error_message = _("The IP address '%s' that is specified is already being used by"
+                              " another device or virtual machine in the network.") % (address)
+            return 108, error_message
+    finally:
+        session.close()
     return 0, ""
 
 
@@ -232,13 +241,17 @@ def validate_label(label):
         message: error message associated with failure
 
     """
-    devices_info = persistent_mgr.get_all_devices()
-    for device in devices_info:
-        if device.label == label:
-            error_message = _("The label '%s' that is specified is already being used by another"
-                              " device or virtual machine in the network.") % (label)
-            return 101, error_message
-    return 0, ""
+    try:
+        session = persistent_mgr.create_database_session()
+        devices_info = persistent_mgr.get_all_devices(session)
+        for device in devices_info:
+            if device.label == label:
+                error_message = _("The label '%s' that is specified is already being used by "
+                                  "another device or virtual machine in the network.") % (label)
+                return 101, error_message
+        return 0, ""
+    finally:
+        session.close()
 
 def _check_address(address):
     ipv4 = ""
@@ -262,6 +275,8 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     _method_ = 'device_mgr._add_resource'
     label = label.strip()
     address = address.strip()
+    session = persistent_mgr.create_database_session()
+
     if not offline:
         ipv4, hostname = _check_address(address)
     else:
@@ -294,7 +309,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
                 error_message = _("Connect timeout.")
             return validate_ret, error_message
         else:
-            if check_device_exist_by_props(device_type, mtm, serialnum):
+            if _check_device_exist_by_props(session, device_type, mtm, serialnum):
                 logging.error("%s::failed to add device, device(machine-type-model=%s, "
                               "serial-number=%s) is already managed.", _method_, mtm, serialnum)
                 error_message = _("The device is not added, a device with the same serial number "
@@ -303,17 +318,17 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
 
     # figure out the rack ID to add the device under
     if rackid:
-        rack = persistent_mgr.get_rack_by_id(rackid)
+        rack = persistent_mgr.get_rack_by_id(session, rackid)
     else:
         # don't have a rack id. find first the rack and assign it there
         try:
-            racks_info = persistent_mgr.get_all_racks()
+            racks_info = persistent_mgr.get_all_racks(session)
             rack = racks_info[0]
         except IndexError:
             #No rack exist, create one
             rack = Rack()
             rack.label = "Default"
-            persistent_mgr.add_racks([rack])
+            persistent_mgr.add_racks(session, [rack])
 
     device_info = Device()
     device_info.rack = rack
@@ -344,7 +359,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
         message = _("Error in plugin (%s). Unable to add device: Reason: %s") % (hook_name, e)
         return 102, message
 
-    persistent_mgr.add_devices([device_info])
+    persistent_mgr.add_devices(session, [device_info])
 
     if ssh_key:
         key_info = Key()
@@ -353,7 +368,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
         key_info.value = ssh_key
         if password:
             key_info.password = persistent_mgr.encrypt_data(password)
-        persistent_mgr.add_ssh_keys([key_info])
+        persistent_mgr.add_ssh_keys(session, [key_info])
 
     try:
         for hook_name, hook_plugin in hooks.items():
@@ -364,20 +379,22 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
 
     if not message:
         message = _("Added device successfully.")
+    session.close()
     return 0, message
 
 def change_device_password(label=None, deviceid=None, old_password=None, new_password=None):
 
     method_ = 'device_mgr.device_change_password'
     message = None
+    session = persistent_mgr.create_database_session()
 
     # gain access to the device object for the targeted item.
     if deviceid is not None:
-        device = persistent_mgr.get_device_by_id(deviceid)
+        device = persistent_mgr.get_device_by_id(session, deviceid)
         device_des = deviceid
     elif label is not None:
         label = label.strip()
-        device = persistent_mgr.get_device_by_label(label)
+        device = persistent_mgr.get_device_by_label(session, label)
         device_des = label
     else:
         logging.error("Deviceid and label are None.")
@@ -404,7 +421,7 @@ def change_device_password(label=None, deviceid=None, old_password=None, new_pas
             # Commit the change
             logging.info(
                 "%s: commit device changes now. device info: %s", method_, device)
-            persistent_mgr.update_device([device])
+            persistent_mgr.update_device(session)
         except KeyError:
             logging.error("%s::plugin(%s) not found", method_, device_type)
             message = _(
@@ -420,6 +437,7 @@ def change_device_password(label=None, deviceid=None, old_password=None, new_pas
 
     if not message:
         message = _("Changed device password successfully.")
+    session.close()
     return 0, message
 
 def add_device(label, device_type, address, userid, password, rackid='', rack_location='',
@@ -473,6 +491,9 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     brief_tags = ['label']
     result = {}
 
+
+    session = persistent_mgr.create_database_session()
+
     # get the list of device types requested as an array
     device_types_array = device_types
     # get the rack ids requested as an array
@@ -490,12 +511,12 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     # get devices based on labels and device ids
     if deviceids is not None:
         devices, _not_found_values = persistent_mgr.get_devices_by_ids(
-            deviceids)
+            session, deviceids)
     elif labels is not None:
         devices, _not_found_values = persistent_mgr.get_devices_by_labels(
-            labels)
+            session, labels)
     else:
-        devices = persistent_mgr.get_all_devices()
+        devices = persistent_mgr.get_all_devices(session)
 
     # check if labels returned anything if specified
     if len(devices) == 0 and labels:
@@ -555,7 +576,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
 
         # figure out the roles this device plays
         roles = []
-        for device_role in persistent_mgr.get_device_roles_by_device_id(device.device_id):
+        for device_role in persistent_mgr.get_device_roles_by_device_id(session, device.device_id):
             roles.append(device_role.role)
         device_output["roles"] = roles
 
@@ -574,6 +595,7 @@ def list_devices(labels=None, isbriefly=False, device_types=None, deviceids=None
     message = ""
     result['message'] = message
     logging.debug("EXIT %s normal", _method_)
+    session.close()
     return 0, result
 
 def list_racks(labels=None, isbriefly=False, rackids=None):
@@ -596,6 +618,7 @@ def list_racks(labels=None, isbriefly=False, rackids=None):
     brief_tags = ['label']
     result = {}
 
+    session = persistent_mgr.create_database_session()
     # decide the set of data to return
     if isbriefly:
         tags = brief_tags
@@ -604,11 +627,11 @@ def list_racks(labels=None, isbriefly=False, rackids=None):
 
     # get rack based on labels and device ids
     if labels:
-        racks, _not_found_racks = persistent_mgr.get_racks_by_labels(labels)
+        racks, _not_found_racks = persistent_mgr.get_racks_by_labels(session, labels)
     elif rackids:
-        racks, _not_found_racks = persistent_mgr.get_racks_by_ids(rackids)
+        racks, _not_found_racks = persistent_mgr.get_racks_by_ids(session, rackids)
     else:
-        racks = persistent_mgr.get_all_racks()
+        racks = persistent_mgr.get_all_racks(session)
 
     # check if labels returned anything if specified
     if len(racks) == 0 and labels:
@@ -642,6 +665,7 @@ def list_racks(labels=None, isbriefly=False, rackids=None):
 
     message = ""
     result['message'] = message
+    session.close()
     return 0, result
 
 
@@ -659,16 +683,19 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
         message message if provided with return code
     '''
     _method_ = 'device_mgr.remove_rack'
+
+    session = persistent_mgr.create_database_session()
+
     if labels or rackids:
         all_racks = False
 
     # get the right set of racks based on input
     if rackids is not None:
-        racks, not_found_rack_values = persistent_mgr.get_racks_by_ids(rackids)
+        racks, not_found_rack_values = persistent_mgr.get_racks_by_ids(session, rackids)
     elif labels is not None:
-        racks, not_found_rack_values = persistent_mgr.get_racks_by_labels(labels)
+        racks, not_found_rack_values = persistent_mgr.get_racks_by_labels(session, labels)
     elif all_racks:
-        racks = persistent_mgr.get_all_racks()
+        racks = persistent_mgr.get_all_racks(session)
     else:
         message = \
             "Error: remove_rack called without specifying to remove either a label, id or all"
@@ -676,7 +703,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
 
 
 
-    devices = persistent_mgr.get_all_devices()
+    devices = persistent_mgr.get_all_devices(session)
 
     hooks = load_inventory_rack_plugins()
     hook_name = 'unknown' #keeps pylint happy
@@ -722,7 +749,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
     ret = 0
     is_return_rackid = False
     if len(remove_racks) > 0:
-        persistent_mgr.delete_racks(remove_racks)
+        persistent_mgr.delete_racks(session, remove_racks)
         labels_message = get_labels_message(
             remove_racks, is_return_rackid, 'rack_id')
         message = push_message(message, _("racks removed: %s") % labels_message)
@@ -751,6 +778,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
         message = push_message(message, _("racks not found: %s") % labels_message)
         ret = 101
     message = push_message(message, result_message)
+    session.close()
     return ret, message
 
 
@@ -770,17 +798,20 @@ def remove_device(labels=None, all_devices=False, deviceids=None):
         ret    return code
         message message if provided with return code
     '''
-    #_method_ = 'device_mgr.remove_device'
+    _method_ = 'device_mgr.remove_device'
     not_found_values = []
+
+    session = persistent_mgr.create_database_session()
+
     if labels or deviceids:
         all_devices = False
     # get devices based on labels and device ids
     if deviceids is not None:
-        devices, not_found_values = persistent_mgr.get_devices_by_ids(deviceids)
+        devices, not_found_values = persistent_mgr.get_devices_by_ids(session, deviceids)
     elif labels is not None:
-        devices, not_found_values = persistent_mgr.get_devices_by_labels(labels)
+        devices, not_found_values = persistent_mgr.get_devices_by_labels(session, labels)
     elif all_devices:
-        devices = persistent_mgr.get_all_devices()
+        devices = persistent_mgr.get_all_devices(session)
     else:
         message = \
             ("Error: remove_device called without specifying to remove either a label, id or all")
@@ -808,7 +839,7 @@ def remove_device(labels=None, all_devices=False, deviceids=None):
     ret = 0
     is_return_deviceid = False
     if len(remove_devices) > 0:
-        persistent_mgr.delete_devices(remove_devices)
+        persistent_mgr.delete_devices(session, remove_devices)
         labels_message = get_labels_message(remove_devices, is_return_deviceid)
         message = push_message(message, _("devices removed: %s.") % labels_message)
 
@@ -831,6 +862,7 @@ def remove_device(labels=None, all_devices=False, deviceids=None):
         message = push_message(message, _("devices not found: %s") % labels_message)
         ret = 101
 
+    session.close()
     return ret, message
 
 
@@ -977,6 +1009,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
     logging.info("ENTRY %s", _method_)
 
     message = None
+    session = persistent_mgr.create_database_session()
 
     # check if no properties changed
     properties = [new_label, data_center, room, row, notes]
@@ -985,9 +1018,9 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
         return 0, ""
 
     if rackid:
-        rack = persistent_mgr.get_rack_by_id(rackid)
+        rack = persistent_mgr.get_rack_by_id(session, rackid)
     else:
-        rack = persistent_mgr.get_rack_by_label(label)
+        rack = persistent_mgr.get_rack_by_label(session, label)
 
     device_des = label if rackid is None else rackid
     if not rack:
@@ -1002,7 +1035,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
         # trying to change rack label
         if new_label != rack.label:
             # have a different label need to check if already exists....
-            rack_new_label = persistent_mgr.get_rack_by_label(new_label)
+            rack_new_label = persistent_mgr.get_rack_by_label(session, new_label)
             if rack_new_label is not None:
                 # found the new label exists
                 error_message = _("Failed to change rack properties. The new rack label "
@@ -1030,7 +1063,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
         message = _("Error in plugin (%s). Unable to change rack: Reason: %s") % (hook_name, e)
         return 102, message
 
-    persistent_mgr.update_rack([rack])
+    persistent_mgr.update_rack(session)
 
     try:
         for hook_name, hook_plugin in hooks.items():
@@ -1042,6 +1075,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
     logging.info("EXIT %s rack properties changed", _method_)
     if not message:
         message = _("Changed rack property successfully.")
+    session.close()
     return 0, message
 
 def _change_device_key(device, address, userid, ssh_key_string, password):
@@ -1123,6 +1157,8 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     _method_ = 'device_mgr.change_device_properties'
     message = None
 
+    session = persistent_mgr.create_database_session()
+
     # no properties changed
     properties = [new_label, userid, password, address, rackid, rack_location, ssh_key]
     if all(prop is None for prop in properties):
@@ -1130,10 +1166,10 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
 
     # gain access to the device object for the targeted item.
     if deviceid is not None:
-        device = persistent_mgr.get_device_by_id(deviceid)
+        device = persistent_mgr.get_device_by_id(session, deviceid)
         device_des = deviceid
     else:
-        device = persistent_mgr.get_device_by_label(label)
+        device = persistent_mgr.get_device_by_label(session, label)
         device_des = label
     if not device:
         logging.error("%s::Failed to change device properties device (%s) is not found.",
@@ -1273,12 +1309,12 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     # commit the change.
     logging.info(
         "%s: commit device changes now. device info: %s", _method_, device)
-    persistent_mgr.update_device([device])
+    persistent_mgr.update_device(session)
 
     if old_auth == "key" and new_auth == "userpass":
         # Need to delete ssh key from database
         key_info = device.key
-        persistent_mgr.delete_keys([key_info])
+        persistent_mgr.delete_keys(session, [key_info])
 
     #post_save hooks
     try:
@@ -1292,6 +1328,7 @@ def change_device_properties(label=None, deviceid=None, new_label=None,
     # return success
     logging.info("EXIT %s device properties changed", _method_)
     message = push_message(message, _("Changed device successfully."))
+    session.close()
     return 0, message
 
 def get_rackid(rack_label):
