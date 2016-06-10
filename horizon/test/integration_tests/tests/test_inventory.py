@@ -1,17 +1,20 @@
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# Copyright 2016, IBM US, Inc.
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from openstack_dashboard.test.integration_tests import helpers
 from openstack_dashboard.test.integration_tests.regions import messages
+
 
 class TestInventory(helpers.OpsMgrTestCase):
     """These are the test scenarios:
@@ -24,12 +27,12 @@ class TestInventory(helpers.OpsMgrTestCase):
     * > adds a resource by IP address
     * > changes the password of a user on a resource
     * > edits a resource to change authentication
-    * > checks that a launching into each application is possible 
+    * > checks that a launching into each application is possible
     """
     RESOURCE_NAME = helpers.gen_random_resource_name("resource")
 
-    # Additional test constants that will need to be updated manually based 
-    # on the test environment setup.
+    # Additional test constants that will need to be changed based
+    # on the test environment
     HOST_RESOURCE_NAME = "hostname_" + RESOURCE_NAME
     IP_RESOURCE_NAME = "ip_" + RESOURCE_NAME
     HOST_NAME = "localhost"
@@ -83,70 +86,99 @@ jYeOtp0Xk/uU2g03fizO0NIg09CenygUCkoncidU0Ze/RGV8+W2SGYMqoyCOFXxp
 
     def test_inventory(self):
         # Go to inventory page
-        inventory_page = self.home_pg.go_to_operationalmanagement_inventorypage()
+        inv_page = self.home_pg.go_to_operationalmanagement_inventorypage()
         return    #  Just skip over the location-specific tests
 
         # Open rack details and edit them
-        inventory_page.edit_rack(self.NEW_RACK_NAME, self.NEW_DATA_CENTER, self.NEW_ROOM, self.NEW_ROW, self.NEW_NOTES)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.SUCCESS))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.ERROR))
+        inv_page.edit_rack(self.NEW_RACK_NAME, self.NEW_DATA_CENTER,
+                           self.NEW_ROOM, self.NEW_ROW, self.NEW_NOTES)
+        self.assertTrue(inv_page.find_message_and_dismiss(
+                        messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(
+                         messages.ERROR))
 
         # Attempt to add a resource by localhost (should succeed)
-        inventory_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA, self.HOST_NAME,
-                                    self.HOST_USERID, self.INITIAL_PASSWORD)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.SUCCESS))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.ERROR))
+        inv_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA,
+                              self.HOST_NAME, self.HOST_USERID,
+                              self.INITIAL_PASSWORD)
+        self.assertTrue(inv_page.find_message_and_dismiss(
+                        messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(
+                         messages.ERROR))
 
         # Verify the resource exists
-        self.assertTrue(inventory_page.is_resource_present(self.HOST_RESOURCE_NAME))
+        self.assertTrue(inv_page.is_resource_present(
+                        self.HOST_RESOURCE_NAME))
 
         # Attempt to add the resource a second time (should fail)
-        inventory_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA, self.HOST_NAME,
-                                    self.HOST_USERID, self.INITIAL_PASSWORD)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.ERROR))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.SUCCESS))
+        inv_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA,
+                              self.HOST_NAME, self.HOST_USERID,
+                              self.INITIAL_PASSWORD)
+        self.assertTrue(inv_page.find_message_and_dismiss(
+                        messages.ERROR))
+        self.assertFalse(inv_page.find_message_and_dismiss(
+                         messages.SUCCESS))
 
         # Attempt to remove the resource (should succeed)
-        inventory_page.remove_resource(self.HOST_RESOURCE_NAME)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.SUCCESS))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.ERROR))
+        inv_page.remove_resource(self.HOST_RESOURCE_NAME)
+        self.assertTrue(inv_page.find_message_and_dismiss(
+                        messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(
+                         messages.ERROR))
 
         # Verify the resource no longer exists
-        self.assertFalse(inventory_page.is_resource_present(self.HOST_RESOURCE_NAME))
+        self.assertFalse(inv_page.is_resource_present(
+                         self.HOST_RESOURCE_NAME))
 
-        # Attempt to add a resource a resource by IP address (should succeed)
-        inventory_page.add_resource(self.IP_RESOURCE_NAME, self.IP_EIA, self.IP_ADDRESS,
-                                    self.IP_USERID, self.INITIAL_PASSWORD)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.SUCCESS))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.ERROR))
+        # Attempt to add a resource a resource by IP address
+        # (should succeed)
+        inv_page.add_resource(self.IP_RESOURCE_NAME, self.IP_EIA,
+                              self.IP_ADDRESS, self.IP_USERID,
+                              self.INITIAL_PASSWORD)
+        self.assertTrue(inv_page.find_message_and_dismiss(
+                        messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(
+                         messages.ERROR))
 
         # Verify the resource exists
-        self.assertTrue(inventory_page.is_resource_present(self.IP_RESOURCE_NAME))
-    
-        # Attempt to change the password for the user on that resource (should succeed)
-        inventory_page.change_password(self.IP_RESOURCE_NAME, self.IP_USERID, self.INITIAL_PASSWORD,
-                                       self.NEW_PASSWORD, self.NEW_PASSWORD)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.SUCCESS))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.ERROR))
+        self.assertTrue(inv_page.is_resource_present(
+                        self.IP_RESOURCE_NAME))
 
-        # Attempt to edit the resource (change auth method -- so sshkey/passphrase)
-        inventory_page.edit_resource(self.IP_RESOURCE_NAME, self.NEW_RESOURCE_NAME, self.IP_EIA2, self.IP_ADDRESS, 
-                            self.SSH_AUTH_METHOD, self.IP_USERID2, "", self.SSH_KEY, self.PASSPHRASE)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.SUCCESS))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.ERROR))
+        # Attempt to change the password for the user on that resource
+        # (should succeed)
+        inv_page.change_password(self.IP_RESOURCE_NAME, self.IP_USERID,
+                                 self.INITIAL_PASSWORD, self.NEW_PASSWORD,
+                                 self.NEW_PASSWORD)
+        self.assertTrue(inv_page.find_message_and_dismiss
+                        (messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss
+                         (messages.ERROR))
+
+        # Attempt to edit the resource
+        # (change auth method: so sshkey/passphrase)
+        inv_page.edit_resource(self.IP_RESOURCE_NAME,
+                               self.NEW_RESOURCE_NAME,
+                               self.IP_EIA2, self.IP_ADDRESS,
+                               self.SSH_AUTH_METHOD, self.IP_USERID2,
+                               "", self.SSH_KEY, self.PASSPHRASE)
+        self.assertTrue(inv_page.find_message_and_dismiss
+                        (messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss
+                         (messages.ERROR))
 
         # Verify the resource exists (by its new name)
-        self.assertTrue(inventory_page.is_resource_present(self.NEW_RESOURCE_NAME))
+        self.assertTrue(inv_page.is_resource_present
+                        (self.NEW_RESOURCE_NAME))
 
         # Attempt to remove the updated resource (should succeed)
-        inventory_page.remove_resource(self.NEW_RESOURCE_NAME)
-        self.assertTrue(inventory_page.find_message_and_dismiss(messages.SUCCESS))
-        self.assertFalse(inventory_page.find_message_and_dismiss(messages.ERROR))
-        
+        inv_page.remove_resource(self.NEW_RESOURCE_NAME)
+        self.assertTrue(inv_page.find_message_and_dismiss
+                        (messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss
+                         (messages.ERROR))
+
         # Attempt to launch logging application
-        inventory_page.launch_application("logging::elk")
+        inv_page.launch_application("logging::elk")
 
         # Attempt to launch monitoring application
-        inventory_page.launch_application("monitoring::nagios")
-
-
+        inv_page.launch_application("monitoring::nagios")

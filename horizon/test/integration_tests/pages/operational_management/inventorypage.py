@@ -1,14 +1,16 @@
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# Copyright 2016, IBM US, Inc.
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from openstack_dashboard.test.integration_tests.pages import basepage
 from openstack_dashboard.test.integration_tests.regions import forms
@@ -17,17 +19,17 @@ from selenium.webdriver.common import by
 from selenium.webdriver.support.ui import Select
 
 
-# Defines the form fields and actions that are associated with the 
-# the resources table on the Inventory page
 class ResourcesTable(tables.TableRegion):
+    # Defines the form fields and actions that are associated with the
+    # the resources table on the Inventory page
     name = 'resources'
     ADD_RESOURCE_FORM_FIELDS = ("label", "eiaLocation", "ip_address",
-                               "userID", "password")
+                                "userID", "password")
     EDIT_RESOURCE_FORM_FIELDS = ("label", "eiaLocation", "ip_address",
-                               "auth_method", "userID", "password", "sshKey",
-                               "passphrase")
+                                 "auth_method", "userID", "password", "sshKey",
+                                 "passphrase")
     CHANGE_PASSWORD_FORM_FIELDS = ("userID", "label", "oldpassword",
-                               "password", "confirm_password")
+                                   "password", "confirm_password")
     EDIT_RACK_FORM_FIELDS = ("label", "data_center", "room", "row", "notes")
 
     @tables.bind_table_action('addResource')
@@ -50,19 +52,14 @@ class ResourcesTable(tables.TableRegion):
     @tables.bind_row_action('changePassword')
     def change_password(self, change_password_button, row):
         change_password_button.click()
-        return forms.FormRegion(self.driver, self.conf,
-                                field_mappings=self.CHANGE_PASSWORD_FORM_FIELDS)
-
-    @tables.bind_row_action('editRack')
-    def edit_rack(self, edit_button):
-        edit_button.click()
-        return forms.BaseFormRegion(self.driver, self.conf,
-                                    field_mappings=self.EDIT_RACK_FORM_FIELDS)
+        return forms.FormRegion(
+            self.driver, self.conf,
+            field_mappings=self.CHANGE_PASSWORD_FORM_FIELDS)
 
 
-# Defines the form fields and actions that are associated with the 
-# the resources table on the Inventory page
 class RackDetailsTable(tables.TableRegion):
+    # Defines the form fields and actions that are associated with the
+    # the resources table on the Inventory page
     name = 'rack_details'
     EDIT_RACK_FORM_FIELDS = ("label", "data_center", "room", "row", "notes")
 
@@ -75,10 +72,10 @@ class RackDetailsTable(tables.TableRegion):
 
 class InventoryPage(basepage.BaseNavigationPage):
     RESOURCES_TABLE_NAME_COLUMN = 'name'
-    _application_selector_locator = (by.By.ID, 'applicationSelector')
-    _application_launch_button_locator = (by.By.ID, 'appLaunchButton')
-    # rack details link id starts with "rackDetailsLink" -- and then 
-    # has a uniqifier at the end.  So use the correct syntax to get 
+    _application_selector_locator = (by.By.ID, 'capabilitiesSelector')
+    _application_launch_button_locator = (by.By.ID, 'capLaunchButton')
+    # rack details link id starts with "rackDetailsLink" -- and then
+    # has a uniqifier at the end.  So use the correct syntax to get
     # the item whose id starts with 'rackDetailsLink'
     _rack_details_locator = (by.By.CSS_SELECTOR, 'a[id^="rackDetailsLink"]')
 
@@ -109,7 +106,7 @@ class InventoryPage(basepage.BaseNavigationPage):
         edit_rack_form.submit()
 
     def add_resource(self, name, eiaLocation, ip_address,
-                    userID, password):
+                     userID, password):
         # Perform the add resource
         add_resource_form = self.resources_table.add_resource()
         add_resource_form.label.text = name
@@ -120,7 +117,7 @@ class InventoryPage(basepage.BaseNavigationPage):
         add_resource_form.submit()
 
     def edit_resource(self, name, new_name, eiaLocation, ip_address,
-             auth_method, userID, password, sshKey, passphrase):
+                      auth_method, userID, password, sshKey, passphrase):
         # find the resource that needs to be edited
         row = self._get_row_with_resource_name(name)
         # perform edit resource
@@ -132,7 +129,7 @@ class InventoryPage(basepage.BaseNavigationPage):
         # based on authentication method selected, fill in the
         # visible fields
         if (auth_method == u'1'):
-            edit_form.userID.text = userID   
+            edit_form.userID.text = userID
             edit_form.sshKey.text = sshKey
             edit_form.passphrase.text = passphrase
         else:
@@ -144,10 +141,11 @@ class InventoryPage(basepage.BaseNavigationPage):
         # find the resource that needs to be removed
         row = self._get_row_with_resource_name(name)
         # perform the remove
-        confirm_delete_resource_form = self.resources_table.remove_resource(row)
-        confirm_delete_resource_form.submit()
+        conf_dlt_resource_form = self.resources_table.remove_resource(row)
+        conf_dlt_resource_form.submit()
 
-    def change_password(self, name, userID, oldpassword, password, confirm_password):
+    def change_password(self, name, userID, oldpassword, password,
+                        confirm_password):
         # find the resource where the user's password needs to be changed
         row = self._get_row_with_resource_name(name)
         # perform the change password
@@ -159,7 +157,8 @@ class InventoryPage(basepage.BaseNavigationPage):
 
     def launch_application(self, application):
         # find the launch application button to activate
-        appLaunchButton = self._get_element(*self._application_launch_button_locator)
+        appLaunchButton = self._get_element(
+            *self._application_launch_button_locator)
         # find the application selector at the top of the page
         appSelector = self._get_element(*self._application_selector_locator)
         # Access the app selector
@@ -169,9 +168,9 @@ class InventoryPage(basepage.BaseNavigationPage):
         # Perform the launch
         appLaunchButton.click()
 
-
     def is_resource_present(self, name):
         return bool(self._get_row_with_resource_name(name))
 
     def _get_row_with_resource_name(self, name):
-        return self.resources_table.get_row(self.RESOURCES_TABLE_NAME_COLUMN, name)
+        return self.resources_table.get_row(self.RESOURCES_TABLE_NAME_COLUMN,
+                                            name)
