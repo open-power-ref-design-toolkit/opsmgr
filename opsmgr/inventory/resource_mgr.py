@@ -10,7 +10,7 @@ from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.inventory import persistent_mgr
 from opsmgr.common.utils import entry_exit, is_valid_address, push_message, load_plugin_by_namespace
-from opsmgr.inventory.data_model import Device, Key, Rack, DeviceRole
+from opsmgr.inventory.data_model import Resource, Key, Rack, ResourceRole
 
 I_MANAGER_DEVICE_PLUGIN = "opsmgr.inventory.interfaces.IManagerDevicePlugin"
 I_MANAGER_DEVICE_HOOK = "opsmgr.inventory.interfaces.IManagerDeviceHook"
@@ -93,7 +93,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
             rack.label = "Default"
             persistent_mgr.add_racks(session, [rack])
 
-    device_info = Device()
+    device_info = Resource()
     device_info.rack = rack
     device_info.eia_location = rack_location
     device_info.machine_type_model = mtm
@@ -104,7 +104,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     if password and not ssh_key:
         device_info.password = persistent_mgr.encrypt_data(password)
     device_info.label = label
-    device_info.device_type = device_type
+    device_info.resource_type = device_type
     device_info.version = version
     device_info.architecture = architecture
     device_info.status = constants.access_status.SUCCESS.value
@@ -169,7 +169,7 @@ def change_resource_password(label=None, deviceid=None, old_password=None, new_p
         message = _(
             "Failed to change device password, device (%s) is not found.") % (device_des)
         return 101, message
-    device_type = device.device_type
+    device_type = device.resource_type
 
     plugins = _load_device_plugins()
 
@@ -310,7 +310,7 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
         else:
             new_auth = None
 
-        device_type = device.device_type
+        device_type = device.resource_type
         if userid:
             temp_userid = userid
         else:
@@ -426,9 +426,9 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
     """
     _method_ = 'resource_mgr.list_resource'
     logging.debug("ENTRY %s", _method_)
-    all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
+    all_tags = ['resourceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
                 'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'architecture',
-                'device-type', 'status', 'statusTime', 'web_url', 'auth_method', 'capabilities',
+                'resource-type', 'status', 'statusTime', 'web_url', 'auth_method', 'capabilities',
                 'roles']
     brief_tags = ['label']
     result = {}
@@ -448,7 +448,7 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
         tags = brief_tags
     # include deviceid info in returned data if requested.
     if list_device_id:
-        tags.insert(0, 'deviceid')
+        tags.insert(0, 'resourceid')
 
     # get devices based on labels and device ids
     if deviceids is not None:
@@ -473,7 +473,7 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
     filtered_result_devices = []
     if device_types_array:
         for device in devices:
-            if device.device_type in device_types_array:
+            if device.resource_type in device_types_array:
                 filtered_result_devices.append(device)
     else:
         filtered_result_devices = devices
@@ -509,7 +509,7 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
             device_output[tag] = tag_value
 
         # add the web url for the device
-        plugin = plugins[device.device_type]
+        plugin = plugins[device.resource_type]
         web_url = plugin.get_web_url(device.address)
         device_output["web_url"] = web_url
 
@@ -518,7 +518,8 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
 
         # figure out the roles this device plays
         roles = []
-        for device_role in persistent_mgr.get_device_roles_by_device_id(session, device.device_id):
+        for device_role in persistent_mgr.get_device_roles_by_device_id(session,
+                                                                        device.resource_id):
             roles.append(device_role.role)
         device_output["roles"] = roles
 
@@ -657,7 +658,7 @@ def get_resource_id_by_label(resource_label):
     session = persistent_mgr.create_database_session()
     resource = persistent_mgr.get_device_by_label(session, resource_label)
     if resource:
-        resource_id = resource.device_id
+        resource_id = resource.resource_id
     session.close()
     return resource_id
 
@@ -668,7 +669,7 @@ def add_resource_roles(resource_id, roles):
     roles_to_add = []
     session = persistent_mgr.create_database_session()
     for role in roles:
-        roles_to_add.append(DeviceRole(resource_id, role))
+        roles_to_add.append(ResourceRole(resource_id, role))
     persistent_mgr.add_device_roles(session, roles_to_add)
     session.close()
 
@@ -796,7 +797,7 @@ def _validate(address, userid, password, device_type, ssh_key=None):
 
 def _get_devicetag_text_id(tag_name):
     devicetag_id = {
-        'deviceid': _('id'),
+        'resourceid': _('id'),
         'label': _('label'),
         'rackid': _('rack id'),
         'rack-eia-location': _('rack location'),
@@ -806,7 +807,7 @@ def _get_devicetag_text_id(tag_name):
         'hostname': _('hostname'),
         'userid': _('userid'),
         'password': _('password'),
-        'device-type': _('device type'),
+        'resource-type': _('resource type'),
         'auth-method': _('authentication method'),
         'status': _('access status'),
         'statusTime': _('access timestamp')
@@ -831,7 +832,7 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
         rc, message - if rc 0, updated device object
         if rc non 0, message with failure
     """
-    rc, message = _validate(address, userid, password, device.device_type, ssh_key_string)
+    rc, message = _validate(address, userid, password, device.resource_type, ssh_key_string)
     if rc == 0:
         # Update the device and key object for the new ssh_key
         if device.key: #existing key to update
@@ -863,7 +864,7 @@ def _change_device_userpass(device, address, userid, password):
         rc, message - if rc 0, updated device object
         if rc non 0, message with failure
     """
-    rc, message = _validate(address, userid, password, device.device_type, None)
+    rc, message = _validate(address, userid, password, device.resource_type, None)
     if rc == 0:
         #Update the device object for the new userid/password
         device.userid = userid

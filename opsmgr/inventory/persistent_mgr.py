@@ -5,7 +5,7 @@ from Crypto.Cipher import AES  # encryption library
 from Crypto.Hash import SHA512
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from opsmgr.inventory.data_model import Base, Device, DeviceRole, Rack
+from opsmgr.inventory.data_model import Base, Resource, ResourceRole, Rack
 
 OPSMGR_CONF = "/etc/opsmgr/opsmgr.conf"
 
@@ -113,7 +113,7 @@ def get_device_by_label(session, label):
     Returns:
         device found or None
     """
-    return session.query(Device).filter(Device.label == label).one_or_none()
+    return session.query(Resource).filter(Resource.label == label).one_or_none()
 
 def get_device_by_id(session, device_id):
     """get Device by id
@@ -123,7 +123,7 @@ def get_device_by_id(session, device_id):
     Returns:
         device found or None
     """
-    return session.query(Device).filter(Device.device_id == device_id).one_or_none()
+    return session.query(Resource).filter(Resource.resource_id == device_id).one_or_none()
 
 def get_devices_by_labels(session, labels):
     """get Devices by labels
@@ -178,7 +178,7 @@ def get_devices_by_device_type(session, device_types):
     not_found_device_types = []
     device_types = [] if device_types is None else device_types
     for device_type in device_types:
-        devices = session.query(Device).filter(Device.device_type == device_type).all()
+        devices = session.query(Resource).filter(Resource.resource_type == device_type).all()
         if len(devices) == 0:
             not_found_device_types.append(device_type)
         else:
@@ -192,7 +192,7 @@ def get_all_devices(session):
     Returns:
         [] List of Device classes
     """
-    return session.query(Device).order_by(Device.device_id).all()
+    return session.query(Resource).order_by(Resource.resource_id).all()
 
 def get_rack_by_label(session, label):
     """get rack by label
@@ -271,7 +271,7 @@ def get_device_roles_by_device_id(session, device_id):
     Return:
         [] List of DeviceRole classes
     """
-    return session.query(DeviceRole).filter(DeviceRole.device_id == device_id).all()
+    return session.query(ResourceRole).filter(ResourceRole.resource_id == device_id).all()
 
 def add_racks(session, racks):
     """ Adds the racks in the list to the data store
@@ -349,7 +349,7 @@ def delete_devices(session, devices):
         key = device.key
         if key:
             keys.append(key)
-        roles = get_device_roles_by_device_id(session, device.device_id)
+        roles = get_device_roles_by_device_id(session, device.resource_id)
         device_roles.extend(roles)
     _delete(session, keys)
     _delete(session, device_roles)

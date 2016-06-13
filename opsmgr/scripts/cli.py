@@ -164,7 +164,7 @@ def list_devices(args):
         if not args.briefly:
             # find the device id and remove from both arrays to generate list
             # result without the device id info.
-            deviceid_index = tags_array.index('deviceid')
+            deviceid_index = tags_array.index('resourceid')
             del tags_array[deviceid_index]
             del labels_array[deviceid_index]
 

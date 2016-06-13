@@ -8,7 +8,7 @@ class Rack(Base):
     __tablename__ = "rack"
     rack_id = Column(Integer, primary_key=True)
 
-    #user defined label for device
+    #user defined label for rack
     label = Column(String(255), nullable=False, unique=True)
 
     data_center = Column(String(255))
@@ -16,7 +16,7 @@ class Rack(Base):
     row = Column(String(255))
     notes = Column(Text())
 
-    devices = relationship("Device", back_populates="rack")
+    resources = relationship("Resource", back_populates="rack")
 
     def to_dict_obj(self):
         result = {}
@@ -32,22 +32,22 @@ class Rack(Base):
         _dict = self.to_dict_obj()
         return str(_dict)
 
-class Device(Base):
-    __tablename__ = "device"
-    device_id = Column(Integer, primary_key=True)
+class Resource(Base):
+    __tablename__ = "resource"
+    resource_id = Column(Integer, primary_key=True)
 
-    #user defined label for device
+    #user defined label for resource
     label = Column(String(255), nullable=False, unique=True)
 
-    #machine type model and serial number pulled from the device
+    #machine type model and serial number pulled from the resource
     machine_type_model = Column(String(64))
     serial_number = Column(String(64))
 
     #Location of the device within a rack
     eia_location = Column(String(16))
 
-    #Integer of the constants.device_type enum
-    device_type = Column(String(64), nullable=False)
+    #Resource type from the plugin that manages it
+    resource_type = Column(String(64), nullable=False)
 
     #Version of firmware/software device is running
     version = Column(String(64))
@@ -71,12 +71,12 @@ class Device(Base):
     statusTime = Column(DateTime)
 
     rack_id = Column(Integer, ForeignKey('rack.rack_id'), nullable=False)
-    rack = relationship("Rack", back_populates="devices")
-    key = relationship("Key", uselist=False, back_populates="device")
+    rack = relationship("Rack", back_populates="resources")
+    key = relationship("Key", uselist=False, back_populates="resource")
 
     def to_dict_obj(self):
         result = {}
-        result["deviceid"] = self.device_id
+        result["resourceid"] = self.resource_id
         result["label"] = self.label
         result["rackid"] = self.rack_id
         result["rack-eia-location"] = self.eia_location
@@ -89,7 +89,7 @@ class Device(Base):
         result["version"] = self.version
         result["architecture"] = self.architecture
         result["validated"] = self.validated
-        result["device-type"] = self.device_type
+        result["resource-type"] = self.resource_type
         result["status"] = self.status
         result["statusTime"] = self.statusTime
         return result
@@ -102,21 +102,22 @@ class Key(Base):
     __tablename__ = "key"
     key_id = Column(Integer, primary_key=True)
 
-    device_id = Column(Integer, ForeignKey('device.device_id'))
-    device = relationship("Device", back_populates="key")
+    resource_id = Column(Integer, ForeignKey('resource.resource_id'))
+    resource = relationship("Resource", back_populates="key")
     type = Column(String(10), nullable=False)
     value = Column(Text(), nullable=False)
     password = Column(String(255))
 
-class DeviceRole(Base):
-    __tablename__ = "device_role"
-    device_id = Column(Integer, ForeignKey('device.device_id'), primary_key=True, nullable=False)
+class ResourceRole(Base):
+    __tablename__ = "resource_role"
+    resource_id = Column(Integer, ForeignKey('resource.resource_id'),
+                         primary_key=True, nullable=False)
     role = Column(String(30), primary_key=True, nullable=False)
 
-    def __init__(self, device_id, role):
-        self.device_id = device_id
+    def __init__(self, resource_id, role):
+        self.resource_id = resource_id
         self.role = role
 
     def __repr__(self):
-        return "<DeviceRole('%s', '%s')>" % (self.device_id, self.role)
+        return "<ResourceRole('%s', '%s')>" % (self.resource_id, self.role)
 

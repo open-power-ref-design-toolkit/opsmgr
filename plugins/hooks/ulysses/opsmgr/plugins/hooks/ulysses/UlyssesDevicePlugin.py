@@ -26,7 +26,7 @@ class UlyssesDevicePlugin(IManagerDeviceHook):
 
     @staticmethod
     def add_device_post_save(device):
-        if device.device_type == "Ubuntu":
+        if device.resource_type == "Ubuntu":
             address = device.address
             userid = device.userid
             key = device.key
@@ -45,7 +45,7 @@ class UlyssesDevicePlugin(IManagerDeviceHook):
             (_stdin, stdout, _stderr) = client.exec_command(command)
             for line in stdout.read().decode().splitlines():
                 roles.append(line.strip())
-            resource_mgr.add_resource_roles(device.device_id, roles)
+            resource_mgr.add_resource_roles(device.resource_id, roles)
 
     @staticmethod
     def remove_device_post_save(device):

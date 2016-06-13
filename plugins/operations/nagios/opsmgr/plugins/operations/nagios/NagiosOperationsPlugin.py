@@ -36,7 +36,7 @@ class NagiosPlugin(IManagerDeviceHook):
     @staticmethod
     def add_device_post_save(device):
         label = device.label
-        device_type = device.device_type
+        device_type = device.resource_type
         address = device.address
         hostname = device.hostname
         userid = device.userid
