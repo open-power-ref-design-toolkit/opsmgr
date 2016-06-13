@@ -1,7 +1,7 @@
 import logging
 import spur
 from opsmgr.common import exceptions
-from opsmgr.inventory.device_mgr import add_resource, validate_address, validate_label
+from opsmgr.inventory.resource_mgr import add_resource, validate_address, validate_label
 from opsmgr.discovery.interfaces.IDiscoveryPlugin import IDiscoveryPlugin
 
 COBBLER_CMD_SYSTEM_LIST = "cobbler system list"

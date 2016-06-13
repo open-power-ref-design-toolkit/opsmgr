@@ -10,12 +10,9 @@ import sys
 
 import paramiko
 
-import opsmgr.discovery.discovery_mgr as discovery_mgr
-import opsmgr.inventory.device_mgr as device_mgr
-import opsmgr.inventory.persistent_mgr as persistent_mgr
-import opsmgr.inventory.remote_access as remote_access
-from opsmgr.common.utils import get_strip_strings_array
-from opsmgr.common.utils import LoggingService
+from opsmgr.discovery import discovery_mgr
+from opsmgr.inventory import resource_mgr, rack_mgr, remote_access
+from opsmgr.common.utils import get_strip_strings_array, LoggingService
 
 def _prompt_for_key_password(key_file, password=None):
     """ Given a key_file will attempt read it, if password is None
@@ -61,18 +58,16 @@ def add_device(args):
 
     rack_id = None
     if args.rack:
-        rack = persistent_mgr.get_rack_by_label(args.rack)
-        if rack:
-            rack_id = rack.rack_id
-        else:
+        rack_id = rack_mgr.get_rack_id_by_label(args.rack)
+        if rack_id is None:
             error_message = _("Rack label (%s) was not found.") % args.rack
             return -1, error_message
 
-    return device_mgr.add_device(args.label, args.type, args.address, args.user,
-                                 password, rack_id, args.rack_location, ssh_key_string)
+    return resource_mgr.add_resource(args.label, args.type, args.address, args.user,
+                                     password, rack_id, args.rack_location, ssh_key_string)
 
 def add_rack(args):
-    return device_mgr.add_rack(args.label, args.data_center, args.room, args.row, args.notes)
+    return rack_mgr.add_rack(args.label, args.data_center, args.room, args.row, args.notes)
 
 def change_device(args):
     ssh_key_string = None
@@ -93,11 +88,8 @@ def change_device(args):
 
     rackid = None
     if args.rack:
-        rack = persistent_mgr.get_rack_by_label(args.rack)
-        if rack:
-            # found the matching rack.
-            rackid = rack.rack_id
-        else:
+        rackid = rack_mgr.get_rack_id_by_label(args.rack)
+        if rackid is None:
             message = _("Input label for rack option (%s) not found.") % (args.rack)
             return -1, message
 
@@ -106,11 +98,11 @@ def change_device(args):
         message = _("You must specify at least one property to be modified.")
         return -1, message
 
-    return device_mgr.change_device_properties(label=args.label, userid=args.user,
-                                               password=password, address=args.address,
-                                               new_label=args.new_label, rackid=rackid,
-                                               rack_location=args.rack_location,
-                                               ssh_key=ssh_key_string)
+    return resource_mgr.change_resource_properties(label=args.label, userid=args.user,
+                                                   password=password, address=args.address,
+                                                   new_label=args.new_label, rackid=rackid,
+                                                   rack_location=args.rack_location,
+                                                   ssh_key=ssh_key_string)
 
 def change_device_password(args):
     if not args.oldpassword:
@@ -133,17 +125,17 @@ def change_device_password(args):
         message = _("You must specify at least label in the command.")
         return -1, message
 
-    return device_mgr.change_device_password(label=args.label, old_password=old_password,
-                                             new_password=new_password)
+    return resource_mgr.change_resource_password(label=args.label, old_password=old_password,
+                                                 new_password=new_password)
 
 def change_rack(args):
     if not args.new_label and not args.data_center and not args.room \
            and not args.row and not args.notes:
         message = _("You must specify at least one property to be modified.")
         return -1, message
-    return device_mgr.change_rack_properties(label=args.label, new_label=args.new_label,
-                                             data_center=args.data_center, room=args.room,
-                                             row=args.row, notes=args.notes)
+    return rack_mgr.change_rack_properties(label=args.label, new_label=args.new_label,
+                                           data_center=args.data_center, room=args.room,
+                                           row=args.row, notes=args.notes)
 
 def list_devices(args):
     labels = None
@@ -156,11 +148,12 @@ def list_devices(args):
     if args.rack:
         rack_ids = []
         racks = get_strip_strings_array(str(args.rack))
-        racks, _not_found_racks = persistent_mgr.get_racks_by_labels(racks)
         for rack in racks:
-            rack_ids.append(rack.rack_id)
+            rack_id = rack_mgr.get_rack_id_by_label(rack)
+            if not rack_id is None:
+                rack_ids.append(rack_id)
 
-    (rc, result_dict) = device_mgr.list_devices(labels, args.briefly, types, racks=rack_ids)
+    (rc, result_dict) = resource_mgr.list_resources(labels, args.briefly, types, racks=rack_ids)
 
     result = ""
     try:
@@ -185,7 +178,7 @@ def list_devices(args):
         result += header
 
         rack_id_to_label_map = {}
-        rc, rack_dict = device_mgr.list_racks()
+        rc, rack_dict = rack_mgr.list_racks()
         racks = rack_dict['racks']
         for rack in racks:
             racklabel = rack['label']
@@ -234,7 +227,7 @@ def list_racks(args):
     if args.label:
         labels = get_strip_strings_array(str(args.label))
 
-    (rc, result_dict) = device_mgr.list_racks(labels, args.briefly)
+    (rc, result_dict) = rack_mgr.list_racks(labels, args.briefly)
 
     result = ""
     try:
@@ -279,7 +272,7 @@ def list_racks(args):
     return (rc, result)
 
 def list_supported_device_types():
-    device_types = device_mgr.list_supported_device_types()
+    device_types = resource_mgr.list_resource_types()
     result = ",".join(device_types)
     return 0, result
 
@@ -290,11 +283,11 @@ def remove_device(args):
     labels = None
     if args.label:
         labels = get_strip_strings_array(str(args.label))
-    return device_mgr.remove_device(labels, args.all)
+    return resource_mgr.remove_resource(labels, args.all)
 
 def remove_rack(args):
     labels = get_strip_strings_array(str(args.label))
-    return device_mgr.remove_rack(labels)
+    return rack_mgr.remove_rack(labels)
 
 def list_discovery_plugins():
     discovery_plugins = discovery_mgr.list_plugins()
@@ -323,24 +316,24 @@ def main(argv=sys.argv[1:]):
     #pad = Parser add_device
     #plr = Parser list_rack
 
-    #add_device
-    pad = subparsers.add_parser('add_device', help='Add a device to be managed')
-    pad.add_argument('-l', '--label', required=True, help='Label for the device being added')
+    #add_resource
+    pad = subparsers.add_parser('add_resource', help='Add a resource to be managed')
+    pad.add_argument('-l', '--label', required=True, help='Label for the resource being added')
     pad.add_argument('-u', '--user', required=True,
-                     help='The authorized user id to the device being added')
+                     help='The authorized user id to the resource being added')
     pad.add_argument('-p', '--password',
                      help='The password of the authorized user or private key,'
                           ' if not specified prompts for the password')
     pad.add_argument('-k', '--key', help='private key to authenticate the user id')
     pad.add_argument('-a', '--address', required=True,
-                     help='Ip Address or hostname for the device being added')
-    pad.add_argument('-t', '--type', choices=device_mgr.list_supported_device_types(),
-                     help='The type of the device being added')
+                     help='Ip Address or hostname for the resource being added')
+    pad.add_argument('-t', '--type', choices=resource_mgr.list_resource_types(),
+                     help='The type of the resource being added')
     pad.add_argument('-r', '--rack', help='The rack label, defaults to the first rack')
-    pad.add_argument('--rack-location', help='The location in the rack of the device being added')
+    pad.add_argument('--rack-location', help='The location in the rack of the resource being added')
 
     #add_rack
-    par = subparsers.add_parser('add_rack', help='Add a rack to group devices')
+    par = subparsers.add_parser('add_rack', help='Add a rack to group resources')
     par.add_argument('-l', '--label', required=True, help='Label for the rack being added')
     par.add_argument('--data-center',
                      help='Descriptive name of the data center where the rack resides')
@@ -349,25 +342,27 @@ def main(argv=sys.argv[1:]):
     par.add_argument('-n', '--notes',
                      help='Text notes with any additional information about the rack')
 
-    #change_device
-    pcd = subparsers.add_parser('change_device', help='Modify parameters associated with a device')
-    pcd.add_argument('-l', '--label', required=True, help='Label for the device being modified')
-    pcd.add_argument('--new-label', help='New label for the device')
-    pcd.add_argument('-u', '--user', help='Authorized user id of the device')
+    #change_resource
+    pcd = subparsers.add_parser('change_resource',
+                                help='Modify parameters associated with a resource')
+    pcd.add_argument('-l', '--label', required=True, help='Label for the resource being modified')
+    pcd.add_argument('--new-label', help='New label for the resource')
+    pcd.add_argument('-u', '--user', help='Authorized user id of the resource')
     pcd.add_argument('-p', '--password', help='The password of the authorized user or private key')
     pcd_mxg = pcd.add_mutually_exclusive_group()
     pcd_mxg.add_argument('-P', '--prompt-password', action='store_true',
                          help='Prompts for entry of the password')
     pcd_mxg.add_argument('-k', '--key', help='private key to authenticate the userid id')
-    pcd.add_argument('-a', '--address', help='New Ip Address or hostname of the device')
-    pcd.add_argument('-r', '--rack', help='The label of the rack to assign the device to')
-    pcd.add_argument('--rack-location', help='The location in the rack of the device')
+    pcd.add_argument('-a', '--address', help='New Ip Address or hostname of the resource')
+    pcd.add_argument('-r', '--rack', help='The label of the rack to assign the resource to')
+    pcd.add_argument('--rack-location', help='The location in the rack of the resource')
 
-    #change_device_password
-    pcdp = subparsers.add_parser('change_device_password', help='Change the password on the device')
-    pcdp.add_argument('-l', '--label', required=True, help='Label for the device being modified')
-    pcdp.add_argument('-o', '--oldpassword', help='The current password of the device')
-    pcdp.add_argument('-n', '--newpassword', help='The new password of the device')
+    #change_resource_password
+    pcdp = subparsers.add_parser('change_resource_password',
+                                 help='Change the password on the resource')
+    pcdp.add_argument('-l', '--label', required=True, help='Label for the resource being modified')
+    pcdp.add_argument('-o', '--oldpassword', help='The current password of the resource')
+    pcdp.add_argument('-n', '--newpassword', help='The new password of the resource')
 
     #change_rack
     pcr = subparsers.add_parser('change_rack', help='Modify parameters associated with a rack')
@@ -380,17 +375,18 @@ def main(argv=sys.argv[1:]):
     pcr.add_argument('-n', '--notes',
                      help='Text notes with any additional information about the rack')
 
-    #list_devices
-    pld = subparsers.add_parser('list_devices', help='List the managed devices')
+    #list_resources
+    pld = subparsers.add_parser('list_resources', help='List the managed resources')
     pld_mxg = pld.add_mutually_exclusive_group()
-    pld.add_argument('-b', '--briefly', action='store_true', help='Only list the device labels')
+    pld.add_argument('-b', '--briefly', action='store_true',
+                     help='Only list the resource labels')
     pld_mxg.add_argument('-l', '--label',
-                         help='The label of the device to list, multiple labels are comma'
+                         help='The label of the resource to list, multiple labels are comma'
                               ' separated.')
-    pld_mxg.add_argument('-t', '--type',
-                         help='The type of the device to list, multiple types are comma separated.')
+    pld_mxg.add_argument('-t', '--type', help='The type of the resource to list, ' \
+                         'multiple types are comma separated.')
     pld_mxg.add_argument('-r', '--rack',
-                         help='The rack label of the device to list, multiple rack labels are'
+                         help='The rack label of the resource to list, multiple rack labels are'
                               ' comma separated.')
 
     #list_rack
@@ -399,27 +395,27 @@ def main(argv=sys.argv[1:]):
     plr.add_argument('-l', '--label',
                      help='The label of the rack to list, multiple labels are comma separated.')
 
-    #list_supported_device_types
-    subparsers.add_parser('list_supported_device_types',
-                          help='List the supported device types')
+    #list_resource_types
+    subparsers.add_parser('list_resource_types',
+                          help='List the supported resource types')
 
     #remote_access
     pra = subparsers.add_parser('remote_access',
-                                help='Interactive ssh session to a managed device.')
+                                help='Interactive ssh session to a managed resource.')
     pra.add_argument('-l', '--label', required=True,
-                     help='Label of the device to ceate ssh session for.')
+                     help='Label of the resource to ceate ssh session for.')
 
-    #remove_device
-    prd = subparsers.add_parser('remove_device', help='Removes a managed device')
+    #remove_resource
+    prd = subparsers.add_parser('remove_resource', help='Removes a managed resource')
     #prd.add_argument('-f', '--force', action='store_true',
-    #                 help='Forces the removal of the device')
+    #                 help='Forces the removal of the resource')
     prd_mxg = prd.add_mutually_exclusive_group()
-    prd_mxg.add_argument('-a', '--all', action='store_true', help='Removes all the devices')
+    prd_mxg.add_argument('-a', '--all', action='store_true', help='Removes all the resources')
     prd_mxg.add_argument('-l', '--label',
-                         help='Label of device to remove, multiple labels are comma separated.')
+                         help='Label of resource to remove, multiple labels are comma separated.')
 
     #remove_rack
-    prr = subparsers.add_parser('remove_rack', help='Removes a rack having no devices')
+    prr = subparsers.add_parser('remove_rack', help='Removes a rack having no resources')
     prr.add_argument('-l', '--label', required=True, help='Label of the rack to be removed.')
 
     #list_discovery_plugins
@@ -445,25 +441,25 @@ def main(argv=sys.argv[1:]):
     rc = -1
     args = parser.parse_args(argv)
 
-    if args.operation == 'add_device':
+    if args.operation == 'add_resource':
         (rc, message) = add_device(args)
     elif args.operation == 'add_rack':
         (rc, message) = add_rack(args)
-    elif args.operation == 'change_device':
+    elif args.operation == 'change_resource':
         (rc, message) = change_device(args)
-    elif args.operation == 'change_device_password':
+    elif args.operation == 'change_resource_password':
         (rc, message) = change_device_password(args)
     elif args.operation == 'change_rack':
         (rc, message) = change_rack(args)
-    elif args.operation == 'list_devices':
+    elif args.operation == 'list_resources':
         (rc, message) = list_devices(args)
     elif args.operation == 'list_racks':
         (rc, message) = list_racks(args)
-    elif args.operation == 'list_supported_device_types':
+    elif args.operation == 'list_resource_types':
         (rc, message) = list_supported_device_types()
     elif args.operation == 'remote_access':
         (rc, message) = remote_access_cmd(args)
-    elif args.operation == 'remove_device':
+    elif args.operation == 'remove_resource':
         (rc, message) = remove_device(args)
     elif args.operation == 'remove_rack':
         (rc, message) = remove_rack(args)

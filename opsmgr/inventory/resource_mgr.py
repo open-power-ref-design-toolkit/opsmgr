@@ -10,7 +10,7 @@ from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.inventory import persistent_mgr
 from opsmgr.common.utils import entry_exit, is_valid_address, push_message, load_plugin_by_namespace
-from opsmgr.inventory.data_model import Device, Key, Rack
+from opsmgr.inventory.data_model import Device, Key, Rack, DeviceRole
 
 I_MANAGER_DEVICE_PLUGIN = "opsmgr.inventory.interfaces.IManagerDevicePlugin"
 I_MANAGER_DEVICE_HOOK = "opsmgr.inventory.interfaces.IManagerDeviceHook"
@@ -35,7 +35,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
         Message: string with message associated with return code
     """
 
-    _method_ = 'device_mgr._add_resource'
+    _method_ = 'resource_mgr.add_resource'
     label = label.strip()
     address = address.strip()
     session = persistent_mgr.create_database_session()
@@ -147,7 +147,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
 
 def change_resource_password(label=None, deviceid=None, old_password=None, new_password=None):
 
-    method_ = 'device_mgr.device_change_password'
+    method_ = 'resource_mgr.change_resource_password'
     message = None
     session = persistent_mgr.create_database_session()
 
@@ -224,7 +224,7 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
         rc:  return code
         message: completion message indicating reason for non zero rc (translated)
     """
-    _method_ = 'device_mgr.change_device_properties'
+    _method_ = 'resource_mgr.change_resource_properties'
     message = None
 
     session = persistent_mgr.create_database_session()
@@ -424,7 +424,7 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
                 devices:  list of device information packed in a dictionary structure
                 racks: list of rack information packed in a dictionary structure
     """
-    _method_ = 'device_mgr.list_devices'
+    _method_ = 'resource_mgr.list_resource'
     logging.debug("ENTRY %s", _method_)
     all_tags = ['deviceid', 'label', 'rackid', 'rack-eia-location', 'machine-type-model',
                 'serial-number', 'ip-address', 'hostname', 'userid', 'version', 'architecture',
@@ -556,7 +556,7 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
         ret    return code
         message message if provided with return code
     '''
-    _method_ = 'device_mgr.remove_device'
+    _method_ = 'resource_mgr.remove_resource'
     not_found_values = []
 
     session = persistent_mgr.create_database_session()
@@ -647,6 +647,31 @@ def get_labels_message(items, is_return_deviceid=False, id_attr_name="device_id"
                 obj, id_attr_name)
     return labels_message
 
+def get_resource_id_by_label(resource_label):
+    """
+    Find the resource id for the given label
+    Returns:
+        resource_id or None
+    """
+    resource_id = None
+    session = persistent_mgr.create_database_session()
+    resource = persistent_mgr.get_device_by_label(session, resource_label)
+    if resource:
+        resource_id = resource.device_id
+    session.close()
+    return resource_id
+
+def add_resource_roles(resource_id, roles):
+    """
+    And roles to an existing resource
+    """
+    roles_to_add = []
+    session = persistent_mgr.create_database_session()
+    for role in roles:
+        roles_to_add.append(DeviceRole(resource_id, role))
+    persistent_mgr.add_device_roles(session, roles_to_add)
+    session.close()
+
 def validate(address, userid, password, device_type, ssh_key=None):
     '''
     validate that the device is reachable with the credentials provided.
@@ -669,7 +694,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
             9 - root is required
             10  device type does not support function
     '''
-    _method_ = 'device_mgr.validate'
+    _method_ = 'resource_mgr.validate'
     logging.info("ENTER %s::address=%s userid=%s device_type=%s",
                  _method_, address, userid, device_type)
     plugins = _load_device_plugins()
@@ -738,7 +763,7 @@ def _validate(address, userid, password, device_type, ssh_key=None):
         rc:  return code for the operation
         message:  message to return to user in case of non 0 return code
     """
-    _method_ = 'device_mgr._validate'
+    _method_ = 'resource_mgr._validate'
     # have a userid and pw to try at this point with only new pw,
     # verify the new password as valid to set as the persisted pw
     message = ""
@@ -898,7 +923,7 @@ def validate_address(address):
             111 if IP address is invalid form
             108 if IP address is already in use by another inventoried system.
     """
-    _method_ = "device_mgr.validate_address"
+    _method_ = "resource_mgr.validate_address"
     if not is_valid_address(address):
         logging.error("%s::IP address is invalid (%s).", _method_, address)
         message = _("IP address is invalid (%s).") % (address)

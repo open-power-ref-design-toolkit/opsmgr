@@ -16,7 +16,7 @@ class access_status(Enum):
 
 #TODO replace usage with exceptions
 class validation_codes(Enum):
-    """ codes returned from the validate() call in device_mgr module
+    """ codes returned from the validate() call in resoure_mgr module
     """
     SUCCESS = 0
     FAILED_TO_CONNECT = 1

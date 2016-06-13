@@ -15,7 +15,7 @@ except ImportError:
 import paramiko
 from paramiko.py3compat import u
 
-import opsmgr.inventory.persistent_mgr as persistent_mgr
+from opsmgr.inventory import persistent_mgr
 
 def remote_access(label):
     """Establish ssh shell access to remote endpoint
@@ -28,7 +28,8 @@ def remote_access(label):
         message: message associated with return code returned
     """
     _method_ = 'device_mgr.remote_access'
-    device = persistent_mgr.get_device_by_label(label)
+    session = persistent_mgr.create_database_session()
+    device = persistent_mgr.get_device_by_label(session, label)
     if device:
         address = device.address
         userid = device.userid
@@ -63,6 +64,7 @@ def remote_access(label):
     logging.info(
         "%s::Remote access to device (%s) successful", _method_, label)
     message = _("Remote access to device (%s) successful") % label
+    session.close()
     return 0, message
 
 def _create_remote_connection(remote_access_label, address, userid, password, ssh_key_string):

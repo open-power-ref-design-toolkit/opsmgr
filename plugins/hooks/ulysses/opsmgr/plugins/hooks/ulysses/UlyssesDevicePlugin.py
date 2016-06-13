@@ -6,12 +6,11 @@ except ImportError:
     from io import StringIO
 import paramiko
 from opsmgr.inventory.interfaces.IManagerDeviceHook import IManagerDeviceHook
-from opsmgr.inventory import persistent_mgr
-from opsmgr.inventory.data_model import DeviceRole
+from opsmgr.inventory import resource_mgr, persistent_mgr
 
 class UlyssesDevicePlugin(IManagerDeviceHook):
 
-    ROLE_FILE = "/etc/role"
+    ROLE_FILE = "/etc/roles"
 
     @staticmethod
     def add_device_pre_save(device):
@@ -45,8 +44,8 @@ class UlyssesDevicePlugin(IManagerDeviceHook):
             command = "cat " + UlyssesDevicePlugin.ROLE_FILE
             (_stdin, stdout, _stderr) = client.exec_command(command)
             for line in stdout.read().decode().splitlines():
-                roles.append(DeviceRole(device.device_id, line.strip()))
-            persistent_mgr.add_device_roles(roles)
+                roles.append(line.strip())
+            resource_mgr.add_resource_roles(device.device_id, roles)
 
     @staticmethod
     def remove_device_post_save(device):

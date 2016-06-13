@@ -342,6 +342,20 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
     session.close()
     return 0, message
 
+def get_rack_id_by_label(rack_label):
+    """
+    Find the rack id for the rack label
+    Returns:
+        rack_id or None
+    """
+    rack_id = None
+    session = persistent_mgr.create_database_session()
+    rack = persistent_mgr.get_rack_by_label(session, rack_label)
+    if rack:
+        rack_id = rack.rack_id
+    session.close()
+    return rack_id
+
 def _get_racktag_text_id(tag_name):
     racktag_id = {
         'rackid': _('id'),
