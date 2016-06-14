@@ -16,7 +16,7 @@ I_MANAGER_DEVICE_PLUGIN = "opsmgr.inventory.interfaces.IManagerDevicePlugin"
 I_MANAGER_DEVICE_HOOK = "opsmgr.inventory.interfaces.IManagerDeviceHook"
 I_MANAGER_RACK_HOOK = "opsmgr.inventory.interfaces.IManagerRackHook"
 
-
+@entry_exit(exclude_index=[4, 7], exclude_name=["password", "ssh_key"])
 def add_resource(label, device_type, address, userid, password, rackid='', rack_location='',
                  ssh_key=None, offline=False):
     """ Add device to the list of devices in the configuration managed
@@ -145,6 +145,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     session.close()
     return 0, message
 
+@entry_exit(exclude_index=[2, 3], exclude_name=["old_password", "new_password"])
 def change_resource_password(label=None, deviceid=None, old_password=None, new_password=None):
 
     method_ = 'resource_mgr.change_resource_password'
@@ -203,7 +204,7 @@ def change_resource_password(label=None, deviceid=None, old_password=None, new_p
     session.close()
     return 0, message
 
-@entry_exit(exclude_index=[4], exclude_name=["password"])
+@entry_exit(exclude_index=[4, 8], exclude_name=["password", "ssh_key"])
 def change_resource_properties(label=None, deviceid=None, new_label=None,
                                userid=None, password=None, address=None,
                                rackid=None, rack_location=None, ssh_key=None):
@@ -401,6 +402,7 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
     session.close()
     return 0, message
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=None,
                    list_device_id=False, is_detail=False, racks=None):
     """Get a list of devices based on the information present in that arguments.
@@ -533,7 +535,7 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
         # add final form of device info to result
         result_devices.append(device_output)
 
-    result['devices'] = result_devices
+    result['resources'] = result_devices
 
     message = ""
     result['message'] = message
@@ -541,6 +543,7 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
     session.close()
     return 0, result
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def remove_resource(labels=None, all_devices=False, deviceids=None):
     '''Remove devices based on information present in the arguments
 
@@ -623,10 +626,12 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
     session.close()
     return ret, message
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def list_resource_types():
     return sorted(_load_device_plugins().keys())
 
-def get_labels_message(items, is_return_deviceid=False, id_attr_name="device_id"):
+@entry_exit(exclude_index=[0], exclude_name=["items"])
+def get_labels_message(items, is_return_deviceid=False, id_attr_name="resource_id"):
     """get the labels from the list of items using the label attr of the object,
     otherwise use the idAttrName passed
 
@@ -648,6 +653,7 @@ def get_labels_message(items, is_return_deviceid=False, id_attr_name="device_id"
                 obj, id_attr_name)
     return labels_message
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def get_resource_id_by_label(resource_label):
     """
     Find the resource id for the given label
@@ -662,6 +668,7 @@ def get_resource_id_by_label(resource_label):
     session.close()
     return resource_id
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def add_resource_roles(resource_id, roles):
     """
     And roles to an existing resource
@@ -673,6 +680,7 @@ def add_resource_roles(resource_id, roles):
     persistent_mgr.add_device_roles(session, roles_to_add)
     session.close()
 
+@entry_exit(exclude_index=[2, 4], exclude_name=["password", "ssh_key"])
 def validate(address, userid, password, device_type, ssh_key=None):
     '''
     validate that the device is reachable with the credentials provided.
@@ -750,7 +758,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
 
     return (constants.validation_codes.DEVICE_TYPE_ERROR.value, None, None, None, None, None)
 
-
+@entry_exit(exclude_index=[2, 4], exclude_name=["password", "ssh_key"])
 def _validate(address, userid, password, device_type, ssh_key=None):
     """ Validate the password, address and userid information
 
@@ -794,7 +802,7 @@ def _validate(address, userid, password, device_type, ssh_key=None):
             message = _("Root access is required to manage this device.")
     return rc, message
 
-
+#@entry_exit(exclude_index=[], exclude_name=[])
 def _get_devicetag_text_id(tag_name):
     devicetag_id = {
         'resourceid': _('id'),
@@ -817,7 +825,7 @@ def _get_devicetag_text_id(tag_name):
         return devicetag_id[tag_name]
     return tag_name
 
-
+@entry_exit(exclude_index=[4, 5], exclude_name=["ssh_key_string", "password"])
 def _change_device_key(device, address, userid, ssh_key_string, password):
     """ Validate the new ssh key works, and change the device properties
         prior to saving the device.
@@ -851,6 +859,7 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
         device.password = None # using ssh_key authentication
     return (rc, message)
 
+@entry_exit(exclude_index=[3], exclude_name=["password"])
 def _change_device_userpass(device, address, userid, password):
     """ Validate the userid password works and change the device_propeties
         prior to the saving the device.
@@ -887,6 +896,7 @@ def _load_inventory_device_plugins():
     """
     return load_plugin_by_namespace(I_MANAGER_DEVICE_HOOK)
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def _check_device_exist(session, address):
     devices = persistent_mgr.get_all_devices(session)
     if not devices:
@@ -896,6 +906,7 @@ def _check_device_exist(session, address):
             return True
     return False
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def _check_device_exist_by_props(session, device_type, mtm, serialnum):
     if device_type is None:
         return False
@@ -913,6 +924,7 @@ def _check_device_exist_by_props(session, device_type, mtm, serialnum):
             continue
     return found
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def validate_address(address):
     """Make sure the address is a valid IPv4 address and is not in use
 
@@ -940,7 +952,7 @@ def validate_address(address):
         session.close()
     return 0, ""
 
-
+@entry_exit(exclude_index=[], exclude_name=[])
 def validate_label(label):
     """Make sure the label is not in use
 
@@ -965,6 +977,7 @@ def validate_label(label):
     finally:
         session.close()
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def _check_address(address):
     ipv4 = ""
     hostname = ""

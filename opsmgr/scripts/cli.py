@@ -185,7 +185,7 @@ def list_devices(args):
             rackid = rack['rackid']
             rack_id_to_label_map[rackid] = racklabel
 
-        devices = result_dict['devices']
+        devices = result_dict['resources']
         for device in devices:
             # per device create the CSV line for the device
             line = ""
