@@ -21,7 +21,7 @@ from horizon import exceptions
 from horizon import messages
 from horizon import tables
 
-import opsmgr.inventory.device_mgr as device_mgr
+import opsmgr.inventory.resource_mgr as resource_mgr
 
 import logging
 
@@ -84,15 +84,15 @@ class RemoveResourcesAction(tables.DeleteAction):
 
     def delete(self, request, obj_id):
         __method__ = 'tables.RemoveResourcesAction.delete'
-        device_ids = []
-        device_ids.append(obj_id)
+        resource_ids = []
+        resource_ids.append(obj_id)
 
         try:
-            (rc, result_dict) = device_mgr.remove_device(None, False,
-                                                         device_ids)
+            (rc, result_dict) = resource_mgr.remove_resource(None, False,
+                                                             resource_ids)
             if rc != 0:
                 # Log details of the unsuccessful attempt.
-                logging.error("%s: Attemp to remove device with id: %s "
+                logging.error("%s: Attemp to remove resource with id: %s "
                               " failed.", __method__, obj_id)
                 logging.error(
                     "%s: Unable to remove resource with id %s."
@@ -180,16 +180,16 @@ class RemoveRackLink(tables.LinkAction):
         # assume button is NOT disabled.
         disable_delete = False
         if self.rack_id != "":
-            # list_devices(labels=None, isbriefly=False, device_types=None,
-            # deviceids=None, list_device_id=False, is_detail=False,
+            # list_resources(labels=None, isbriefly=False, device_types=None,
+            # resourceids=None, list_device_id=False, is_detail=False,
             # racks=None)
-            # Retrieve the devices for the selected rack
-            logging.debug("%s: before retrieving devices for rack: %s",
+            # Retrieve the resources for the selected rack
+            logging.debug("%s: before retrieving resources for rack: %s",
                           __method__, self.rack_id)
 
-            (rc, result_dict) = device_mgr.list_devices(None, False, None,
-                                                        None, False, False,
-                                                        [self.rack_id])
+            (rc, result_dict) = resource_mgr.list_resources(None, False, None,
+                                                            None, False, False,
+                                                            [self.rack_id])
 
             if rc != 0:
                 # Unexpected.  Unable to retrieve rack information for selected
@@ -200,16 +200,16 @@ class RemoveRackLink(tables.LinkAction):
                 messages.error(request, msg)
                 logging.error('%s: Unable to retrieve Operational Management'
                               ' inventory information. A Non-0 return code'
-                              ' returned from device_mgr.list_devices.'
+                              ' returned from resource_mgr.list_resources.'
                               ' The return code is: %s', __method__, rc)
             else:
-                devices = result_dict['devices']
+                resources = result_dict['resources']
                 # if the rack has any resources associated with it in the
                 # inventory don't allow the user to delete it
-                logging.debug("%s: got device info for rack %s.  Number of "
-                              "devices for this rack is: %s",
-                              __method__, self.rack_id, len(devices))
-                if len(devices) > 0:
+                logging.debug("%s: got resource info for rack %s.  Number of "
+                              "resources for this rack is: %s",
+                              __method__, self.rack_id, len(resources))
+                if len(resources) > 0:
                     disable_delete = True
 
         if disable_delete:
@@ -227,10 +227,10 @@ class RemoveRackLink(tables.LinkAction):
 class ResourceFilterAction(tables.FilterAction):
     name = "resource_filter"
 
-    def filter(self, table, devices, filter_string):
+    def filter(self, table, resources, filter_string):
         """Naive case-insensitive search."""
         q = filter_string.lower()
-        return [resource for resource in devices
+        return [resource for resource in resources
                 if q in resource.name.lower()]
 
 
@@ -275,9 +275,9 @@ class ResourcesTable(tables.DataTable):
         filters=(filters.unordered_list,))
     version = tables.Column('version',
                             verbose_name=_("Installed Version"))
-    device_id = tables.Column('device_id',
-                              hidden=True,
-                              verbose_name=_("Device ID"))
+    resource_id = tables.Column('resource_id',
+                                hidden=True,
+                                verbose_name=_("Resource ID"))
 
     class Meta(object):
         name = "resources"

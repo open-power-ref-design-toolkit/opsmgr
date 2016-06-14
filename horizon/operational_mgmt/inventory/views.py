@@ -27,11 +27,13 @@ from horizon.utils import memoized
 
 import logging
 
-from operational_mgmt import resource
 from operational_mgmt.inventory import forms as project_forms
 from operational_mgmt.inventory import tables as project_tables
 from operational_mgmt.inventory import tabs as inventoryRacks_tabs
-import opsmgr.inventory.device_mgr as device_mgr
+from operational_mgmt import resource
+
+import opsmgr.inventory.rack_mgr as rack_mgr
+import opsmgr.inventory.resource_mgr as resource_mgr
 
 
 class IndexView(tabs.TabbedTableView):
@@ -67,7 +69,7 @@ class AddResourceView(forms.ModalFormView):
                               " for the resource being added.")
         if "rack_id" in self.kwargs:
             try:
-                (rc, result_dict) = device_mgr.list_racks(
+                (rc, result_dict) = rack_mgr.list_racks(
                     None, False, [self.kwargs["rack_id"]])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve rack"
@@ -118,16 +120,16 @@ class EditResourceView(forms.ModalFormView):
     page_title = _("Edit Resource")
 
     def get_initial(self):
-        # Need the device being edited
-        device = self.get_object()
-        if device:
-            return {'label': device['label'],
-                    'auth_method': device['auth_method'],
-                    'rackid': device['rackid'],
-                    'eiaLocation': device['rack-eia-location'],
-                    'ip_address': device['ip-address'],
-                    'userID': device['userid'],
-                    'deviceId': device['deviceid']}
+        # Need the resource being edited
+        selected_resource = self.get_object()
+        if selected_resource:
+            return {'label': selected_resource['label'],
+                    'auth_method': selected_resource['auth_method'],
+                    'rackid': selected_resource['rackid'],
+                    'eiaLocation': selected_resource['rack-eia-location'],
+                    'ip_address': selected_resource['ip-address'],
+                    'userID': selected_resource['userid'],
+                    'resourceId': selected_resource['resourceid']}
         else:
             return
 
@@ -138,7 +140,7 @@ class EditResourceView(forms.ModalFormView):
                               " for the resource being edited.")
         if "resource_id" in self.kwargs:
             try:
-                (rc, result_dict) = device_mgr.list_devices(
+                (rc, result_dict) = resource_mgr.list_resources(
                     None, False, None, [self.kwargs['resource_id']])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve"
@@ -161,19 +163,19 @@ class EditResourceView(forms.ModalFormView):
         else:
             # We should have at least one resource in the results...just
             # return the first value
-            if len(result_dict['devices']) > 0:
-                return result_dict['devices'][0]
+            if len(result_dict['resources']) > 0:
+                return result_dict['resources'][0]
             else:
-                logging.error("%s: list_devices returned no information for"
-                              " resource with device id %s",
+                logging.error("%s: list_resources returned no information for"
+                              " resource with resource id %s",
                               __method__, self.kwargs["resource_id"])
                 messages.error(self.request, failure_message)
                 return
 
     def get_context_data(self, **kwargs):
-        # place the device id on to the submit url
+        # place the resource id on to the submit url
         context = super(EditResourceView, self).get_context_data(**kwargs)
-        args = (self.get_object()['deviceid'],)
+        args = (self.get_object()['resourceid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
         return context
 
@@ -194,12 +196,12 @@ class ChangePasswordView(forms.ModalFormView):
         return super(ChangePasswordView, self).dispatch(*args, **kwargs)
 
     def get_initial(self):
-        # Need the device and user information to prime the dialog
-        device = self.get_object()
-        if device:
-            return {'label': device['label'],
-                    'userID': device['userid'],
-                    'deviceid': device['deviceid']}
+        # Need the resource and user information to prime the dialog
+        selected_resource = self.get_object()
+        if selected_resource:
+            return {'label': selected_resource['label'],
+                    'userID': selected_resource['userid'],
+                    'resourceid': selected_resource['resourceid']}
         else:
             return
 
@@ -210,7 +212,7 @@ class ChangePasswordView(forms.ModalFormView):
                               " the resource having password changed.")
         if "resource_id" in self.kwargs:
             try:
-                (rc, result_dict) = device_mgr.list_devices(
+                (rc, result_dict) = resource_mgr.list_resources(
                     None, False, None, [self.kwargs['resource_id']])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve"
@@ -233,19 +235,19 @@ class ChangePasswordView(forms.ModalFormView):
         else:
             # We should have at least one resource in the results...just
             # return the first value
-            if len(result_dict['devices']) > 0:
-                return result_dict['devices'][0]
+            if len(result_dict['resources']) > 0:
+                return result_dict['resources'][0]
             else:
-                logging.error("%s: list_devices returned no information for"
-                              " resource with device id %s",
+                logging.error("%s: list_resources returned no information for"
+                              " resource with resource id %s",
                               __method__, self.kwargs["resource_id"])
                 messages.error(self.request, failure_message)
                 return
 
     def get_context_data(self, **kwargs):
-        # place the device id on the submit url
+        # place the resource id on the submit url
         context = super(ChangePasswordView, self).get_context_data(**kwargs)
-        args = (self.get_object()['deviceid'],)
+        args = (self.get_object()['resourceid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
         return context
 
@@ -279,7 +281,7 @@ class EditRackView(forms.ModalFormView):
                               " for the rack being edited.")
         if "rack_id" in self.kwargs:
             try:
-                (rc, result_dict) = device_mgr.list_racks(
+                (rc, result_dict) = rack_mgr.list_racks(
                     None, False, [self.kwargs["rack_id"]])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve"
@@ -312,7 +314,7 @@ class EditRackView(forms.ModalFormView):
                 return
 
     def get_context_data(self, **kwargs):
-        # place the device id on to the submit url
+        # place the rack id on to the submit url
         context = super(EditRackView, self).get_context_data(**kwargs)
         args = (self.get_object()['rackid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
@@ -345,7 +347,7 @@ class RemoveRackView(forms.ModalFormView):
                               " for the rack being removed.")
         if "rack_id" in self.kwargs:
             try:
-                (rc, result_dict) = device_mgr.list_racks(
+                (rc, result_dict) = rack_mgr.list_racks(
                     None, False, [self.kwargs["rack_id"]])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve"
@@ -378,7 +380,7 @@ class RemoveRackView(forms.ModalFormView):
                 return
 
     def get_context_data(self, **kwargs):
-        # place the device id on to the submit url
+        # place the rack id on to the submit url
         context = super(RemoveRackView, self).get_context_data(**kwargs)
         args = (self.get_object()['rackid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
@@ -396,11 +398,11 @@ class RemoveResourceView(forms.ModalFormView):
     page_title = _("Remove Resource")
 
     def get_initial(self):
-        # Need the device being edited
-        device = self.get_object()
-        if device:
-            return {'label': device['label'],
-                    'deviceId': device['deviceid']}
+        # Need the resource being edited
+        selected_resource = self.get_object()
+        if selected_resource:
+            return {'label': selected_resource['label'],
+                    'resourceId': selected_resource['resourceid']}
         else:
             return
 
@@ -411,7 +413,7 @@ class RemoveResourceView(forms.ModalFormView):
                               " for the resource being removed.")
         if "resource_id" in self.kwargs:
             try:
-                (rc, result_dict) = device_mgr.list_devices(
+                (rc, result_dict) = resource_mgr.list_resources(
                     None, False, None, [self.kwargs['resource_id']])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve"
@@ -434,19 +436,19 @@ class RemoveResourceView(forms.ModalFormView):
         else:
             # We should have at least one resource in the results...just
             # return the first value
-            if len(result_dict['devices']) > 0:
-                return result_dict['devices'][0]
+            if len(result_dict['resources']) > 0:
+                return result_dict['resources'][0]
             else:
-                logging.error("%s: list_devices returned no information for"
-                              " resource with device id %s",
+                logging.error("%s: list_resources returned no information for"
+                              " resource with resource id %s",
                               __method__, self.kwargs["resource_id"])
                 messages.error(self.request, failure_message)
                 return
 
     def get_context_data(self, **kwargs):
-        # place the device id on to the submit url
+        # place the resource id on to the submit url
         context = super(RemoveResourceView, self).get_context_data(**kwargs)
-        args = (self.get_object()['deviceid'],)
+        args = (self.get_object()['resourceid'],)
         context['submit_url'] = reverse(self.submit_url, args=args)
         return context
 
@@ -467,7 +469,7 @@ class RemoveResourcesView(tables.DataTableView, forms.ModalFormView):
                               " for the resources being removed.")
         if "rack_id" in self.kwargs:
             try:
-                (rc, result_dict) = device_mgr.list_racks(
+                (rc, result_dict) = rack_mgr.list_racks(
                     None, False, [self.kwargs["rack_id"]])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve"
@@ -510,20 +512,20 @@ class RemoveResourcesView(tables.DataTableView, forms.ModalFormView):
 
         # retrieve resources for the rack id passed in (rack_id may be -1 on
         # the initial pass)
-        (rc, result_dict) = device_mgr.list_devices(None, False, None, None,
-                                                    False, False, [rack_id])
+        (rc, result_dict) = resource_mgr.list_resources(
+            None, False, None, None, False, False, [rack_id])
         if rc != 0:
             messages.error(self.request, _('Unable to retrieve Operational'
                                            ' Management inventory information'
                                            ' for resources.'))
             logging.error('%s: Unable to retrieve Operational Management'
                           'inventory information. A Non-0 return code returned'
-                          ' from device_mgr.list_devices.  The return code is:'
-                          ' %s', __method__, rc)
+                          ' from resource_mgr.list_resources.  The return code'
+                          ' is: %s', __method__, rc)
         else:
-            all_devices = result_dict['devices']
-            for raw_device in all_devices:
-                resources.append(resource.Resource(raw_device))
+            all_resources = result_dict['resources']
+            for raw_resource in all_resources:
+                resources.append(resource.Resource(raw_resource))
 
         logging.debug("%s: Found %s resources",
                       __method__, len(resources))

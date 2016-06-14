@@ -23,7 +23,8 @@ from horizon import messages
 from horizon.utils import validators
 
 import logging
-import opsmgr.inventory.device_mgr as device_mgr
+import opsmgr.inventory.rack_mgr as rack_mgr
+import opsmgr.inventory.resource_mgr as resource_mgr
 
 AUTH_METHOD_USER_PWD = u'0'
 AUTH_METHOD_USER_KEY = u'1'
@@ -32,7 +33,7 @@ AUTH_METHOD_USER_KEY = u'1'
 def create_rack_choices(request):
     __method__ = 'forms.create_rack_choices'
     rack_choices = []
-    (rc, result_dict) = device_mgr.list_racks()
+    (rc, result_dict) = rack_mgr.list_racks()
     if rc is not 0:
         # Non-zero RC -- unexpected
         messages.error(
@@ -42,7 +43,7 @@ def create_rack_choices(request):
         logging.error(
             "%s: Unable to retrieve Operational Management rack"
             " inventory information. A Non-0 return code returned from"
-            " device_mgr.list_racks.  The return code is: %s.  Details"
+            " rack_mgr.list_racks.  The return code is: %s.  Details"
             " of the attempt: %s", __method__, rc, result_dict)
     else:
         value = result_dict['racks']
@@ -83,17 +84,17 @@ class AddResourceForm(forms.SelfHandlingForm):
     ip_address = forms.CharField(
         label=_("Host Name or IP Address"),
         max_length=255, required=True,
-        help_text=_("Specify the fully qualified host name or IP V4 address"
-                    " to be used by Operational Management to access the "
-                    " device."))
+        help_text=_("Specify the fully qualified host name or IP V4 address "
+                    "used by Operational Management to access the "
+                    " resource."))
     auth_method = forms.ChoiceField(
         label=_('Authentication Method'),
         choices=[(AUTH_METHOD_USER_PWD, _('User ID and Password')),
                  (AUTH_METHOD_USER_KEY, _('User ID and SSH Key'))],
         widget=forms.Select(attrs={'class': 'switchable', 'data-slug':
                                    'auth'}),
-        help_text=_("Indicates the type of credential information to be"
-                    " used by Operational Management to access the device."))
+        help_text=_("Indicates the type of credential information "
+                    "used by Operational Management to access the resource."))
     userID = forms.CharField(label=_("User ID"),
                              max_length=255, required=True)
     password = forms.CharField(
@@ -108,7 +109,7 @@ class AddResourceForm(forms.SelfHandlingForm):
                    'data-auth-1': _("SSH Key"), 'rows': 4}),
         required=True,
         help_text=_("Paste the private SSH key for the specified"
-                    " device."))
+                    " resource."))
     passphrase = forms.CharField(
         label=_("passphrase"), required=False,
         widget=forms.PasswordInput(attrs={'class': 'switched',
@@ -153,23 +154,24 @@ class AddResourceForm(forms.SelfHandlingForm):
             else:
                 if 'passphrase' in data:
                     password_value = data['passphrase']
-            # pass in "None" for device type in add_device -- so that the
-            # API will determine type for us
-            logging.debug("%s: Attempting to add a device to rack: %s, using"
+
+            logging.debug("%s: Attempting to add a resource to rack: %s, using"
                           " label: %s, address: %s, user id: %s, eia location"
                           " %s, and authentication method: %s", __method__,
                           self.initial['rackid'], data['label'],
                           data['ip_address'], data['userID'],
                           data['eiaLocation'], data['auth_method'])
 
-            (rc, result_dict) = device_mgr.add_device(
+            # pass in "None" for resource type in add_resource -- so that the
+            # API will determine type for us
+            (rc, result_dict) = resource_mgr.add_resource(
                 data['label'], None, data['ip_address'],
                 data['userID'].strip(), password_value,
                 self.initial['rackid'], data['eiaLocation'], data['sshKey'])
 
             if rc is not 0:
                 # Log details of the unsuccessful attempt.
-                logging.error("%s: Attemp to add a device to rack: %s, using"
+                logging.error("%s: Attemp to add a resource to rack: %s, using"
                               " label: %s, address: %s, user id: %s, eia"
                               " location %s, and authentication method:"
                               " %s failed.", __method__,
@@ -178,25 +180,34 @@ class AddResourceForm(forms.SelfHandlingForm):
                               data['eiaLocation'], data['auth_method'])
 
                 logging.error(
-                    "%s: Unable to add resource %s to rack %s.  A Non-0 "
-                    " return code returned from device_mgr.add_device.  "
-                    " The return code is: %s.  Details of the attempt: "
+                    "%s: Unable to add resource %s to rack %s. A Non-0 "
+                    " return code returned from resource_mgr.add_resource."
+                    " The return code is: %s. Details of the attempt: "
                     " %s", __method__, data['label'], self.initial['rackid'],
                     rc, result_dict)
                 msg = str(
-                    'Attempt to add resource ' + data['label'] + ' was '
+                    'Attempt to add resource ' + data['label'] + ' was ' +
                     'not successful. Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
+                # Return false in this case so that the dialog is not
+                # dismissed.  This gives the end-user a chance to
+                # update the dialog w/o having to re-enter all the
+                # information a second time.
+                return False
             else:
-                msg = str('Resource ' + data['label'] + ' successfully'
+                msg = str('Resource ' + data['label'] + ' successfully' +
                           ' added.')
                 messages.success(request, msg)
-            return True
+                return True
         except Exception as e:
             logging.error("%s: Exception received trying to add a resource.  "
                           "Exception is: %s", __method__, e)
             exceptions.handle(request,
                               _('Unable to add resource.'))
+            # In this case, return True so that the dialog closes.
+            # In theory, there are no values the end-user could change
+            # to the dialog inputs that would allow us to proceed.
+            return True
 
 
 class EditResourceForm(forms.SelfHandlingForm):
@@ -214,16 +225,16 @@ class EditResourceForm(forms.SelfHandlingForm):
         max_length=255, required=True,
         help_text=_(
             "Specify the fully qualified host name or IP V4"
-            " address to be used by Operational Management to access"
-            " the device."))
+            " address used by Operational Management to access"
+            " the resource."))
     auth_method = forms.ChoiceField(
         label=_('Authentication Method'),
         choices=[(AUTH_METHOD_USER_PWD, _('User ID and Password')),
                  (AUTH_METHOD_USER_KEY, _('User ID and SSH Key'))],
         widget=forms.Select(attrs={'class': 'switchable',
                                    'data-slug': 'auth'}),
-        help_text=_("Indicates the type of credential information to be used"
-                    "by Operational Management to access the device."))
+        help_text=_("Indicates the type of credential information used "
+                    "by Operational Management to access the resource."))
     userID = forms.CharField(label=_("User ID"), max_length=255,
                              required=True)
     password = forms.CharField(
@@ -240,7 +251,7 @@ class EditResourceForm(forms.SelfHandlingForm):
         widget=forms.widgets.Textarea(
             attrs={'class': 'switched', 'data-switch-on': 'auth',
                    'data-auth-1': _("SSH Key"), 'rows': 4}),
-        help_text=_("Paste the private SSH key for the specified device."))
+        help_text=_("Paste the private SSH key for the specified resource."))
     passphrase = forms.CharField(
         label=_("passphrase"),
         widget=forms.PasswordInput(attrs={'class': 'switched',
@@ -271,7 +282,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                 # we really do have an error
                 self._errors['sshKey'] = [
                     "Because you are changing the authentication"
-                    " method for this device to 'User ID and"
+                    " method for this resource to 'User ID and"
                     " SSH Key', you must supply an SSH Key value."]
             # else if the auth method is user/key, and the
             # user id value has changed from its initial value
@@ -281,7 +292,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                 self._errors['sshKey'] = [
                     "Because you are using the authentication"
                     " method 'User ID and SSH Key' for this "
-                    " device and are changing the User ID,"
+                    " resource and are changing the User ID,"
                     " you must supply an SSH Key value."]
             # else we don't have an sshKey (and) we don't need an ssh key
             # (no error needed)
@@ -301,7 +312,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                 # we really do have an error
                 self._errors['password'] = [
                     "Because you are changing the authentication"
-                    " method for this device to 'User ID and"
+                    " method for this resource to 'User ID and"
                     " Password', you must supply a password value."]
             # else if the auth method is user/password, and the user id
             # value has changed from its initial value
@@ -311,7 +322,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                 self._errors['password'] = [
                     "Because you are using the authentication"
                     " method 'User ID and Password' for this"
-                    " device and are changing the User ID,"
+                    " resource and are changing the User ID,"
                     " you must supply password value."]
             # else we don't have a password (and) we don't need a password
             # (no error needed)
@@ -363,22 +374,24 @@ class EditResourceForm(forms.SelfHandlingForm):
                     # only specify a passphrase if we are setting the sshKey
                     if 'passphrase' in data and data['passphrase'] is not None:
                         new_password = data['passphrase']
-            # pass in "None" for original device label -- we'll instead pass
-            # in the device ID so the API knows which device is being edited
-            logging.debug("%s: Attempting to edit device %s on rack: %s, using"
-                          " label: %s, address: %s, user id: %s, eia location"
-                          " %s, new rack %s, and authentication method: %s",
-                          __method__, self.initial['label'],
+            # pass in "None" for original resource label; also, we will
+            # pass in the resource ID so the API knows which resource is
+            # being edited
+            logging.debug("%s: Attempting to edit resource %s on rack: %s, "
+                          "using label: %s, address: %s, user id: %s, eia "
+                          "location %s, new rack %s, and authentication "
+                          " method: %s", __method__, self.initial['label'],
                           self.initial['rackid'], new_label, new_ip_address,
                           new_user_id, new_eia_location, new_rackid,
                           data['auth_method'])
-            (rc, result_dict) = device_mgr.change_device_properties(
-                None, self.initial['deviceId'], new_label, new_user_id,
+
+            (rc, result_dict) = resource_mgr.change_resource_properties(
+                None, self.initial['resourceId'], new_label, new_user_id,
                 new_password, new_ip_address, new_rackid, new_eia_location,
                 new_ssh_key)
             if rc is not 0:
                 # Log details of the unsuccessful attempt.
-                logging.error("%s: Attempt to edit device %s on rack: %s,"
+                logging.error("%s: Attempt to edit resource %s on rack: %s,"
                               " using new label: %s, address: %s, user id:"
                               " %s, eia location %s, new rack %s, and"
                               " authentication method: %s failed.", __method__,
@@ -388,31 +401,37 @@ class EditResourceForm(forms.SelfHandlingForm):
                               data['auth_method'])
 
                 logging.error(
-                    "%s: Unable to edit resource %s to rack %s.  A Non-0 "
-                    " return code returned from device_mgr.add_device.  "
+                    "%s: Unable to edit resource %s to rack %s.  A Non-0"
+                    " return code returned from resource_mgr.edit_resource."
                     " The return code is: %s.  Details of the attempt: "
                     " %s", __method__, self.initial['label'],
                     self.initial['rackid'], rc, result_dict)
                 # failure case -- so use the initial label for logging/message
                 msg = str('Attempt to edit resource ' +
-                          self.initial['label'] + " was not successful."
+                          self.initial['label'] + " was not successful." +
                           ' Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
-                logging.error('%s: Unable to edit resource "%s".  Return'
-                              ' code "%s" received.  Details of the'
-                              ' failure: "%s"', __method__,
-                              self.initial['label'], rc, result_dict)
+
+                # Return false in this case so that the dialog is not
+                # dismissed.  This gives the end-user a chance to
+                # update the dialog w/o having to re-enter all the
+                # information a second time.
+                return False
             else:
                 # must have a 0 rc -- display completion msg -- use current
                 # label for message
                 msg = str('Resource ' + data['label'] +
                           ' successfully edited.')
                 messages.success(request, msg)
-            return True
+                return True
         except Exception as e:
             logging.error("%s: Exception received trying to edit resource."
                           " Exception is: %s", __method__, e)
             exceptions.handle(request, _('Unable to edit selected resource.'))
+            # In this case, return True so that the dialog closes.
+            # In theory, there are no values the end-user could change
+            # to the dialog inputs that would allow us to proceed.
+            return True
 
 
 class ChangePasswordForm(PasswordMixin, forms.SelfHandlingForm):
@@ -441,16 +460,16 @@ class ChangePasswordForm(PasswordMixin, forms.SelfHandlingForm):
     def handle(self, request, data):
         __method__ = 'forms.ChangePasswordForm.handle'
         try:
-            # pass in "None" for device label -- we'll instead pass in the
-            # device ID so the API knows which device to act on
-            (rc, result_dict) = device_mgr.change_device_password(
-                None, self.initial['deviceid'], data['oldpassword'],
+            # pass in "None" for resource label -- we'll instead pass in the
+            # resource ID so the API knows which resource to act on
+            (rc, result_dict) = resource_mgr.change_resource_password(
+                None, self.initial['resourceid'], data['oldpassword'],
                 data['password'])
             if rc is not 0:
                 # failure case -- so use the initial label for logging/message
-                msg = str('Attempt to change the password for'
-                          ' user "' + data['userID'] + '" on resource'
-                          ' "' + data['label'] + '" was not successful.'
+                msg = str('Attempt to change the password for' +
+                          ' user "' + data['userID'] + '" on resource' +
+                          ' "' + data['label'] + '" was not successful.' +
                           ' Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
                 logging.error(
@@ -458,20 +477,30 @@ class ChangePasswordForm(PasswordMixin, forms.SelfHandlingForm):
                     ' resource "%s".  Return code "%s" received.  Details'
                     ' of the failure: "%s"', __method__,
                     data['userID'], data['label'], rc, result_dict)
+
+                # Return false in this case so that the dialog is not
+                # dismissed.  This gives the end-user a chance to
+                # update the dialog w/o having to re-enter all the
+                # information a second time.
+                return False
             else:
                 # must have a 0 rc -- display completion msg -- use
                 # current label for message
-                msg = str('Password changed successfully for'
-                          ' user ' + data['userID'] + ' on'
+                msg = str('Password changed successfully for' +
+                          ' user ' + data['userID'] + ' on' +
                           ' resource ' + data['label'])
                 messages.success(request, msg)
-            return True
+                return True
         except Exception as e:
             logging.error("%s: Exception received trying to change the"
                           " password of the selected resource.  Exception"
                           " is: %s", __method__, e)
             exceptions.handle(request, _('Unable to change password for'
                                          ' the selected resource.'))
+            # In this case, return True so that the dialog closes.
+            # In theory, there are no values the end-user could change
+            # to the dialog inputs that would allow us to proceed.
+            return True
 
 
 class EditRackForm(forms.SelfHandlingForm):
@@ -495,16 +524,17 @@ class EditRackForm(forms.SelfHandlingForm):
             # rack ID so the API knows which rack to act on
             logging.debug("%s: Attempting to edit rack %s using"
                           " label: %s, data center: %s, room: %s, row: %s, "
-                          " notes: %s", __method__, self.initial['label'],
+                          " notes: '%s.'", __method__, self.initial['label'],
                           data['label'], data['data_center'],
                           data['room'], data['row'], data['notes'])
-            (rc, result_dict) = device_mgr.change_rack_properties(
+            (rc, result_dict) = rack_mgr.change_rack_properties(
                 None, data['rack_id'], data['label'], data['data_center'],
                 data['room'], data['row'], data['notes'])
             if rc is not 0:
                 logging.error("%s: Attempt to edit rack %s using"
                               " label: %s, data center: %s, "
-                              " notes: %s, was not successful.", __method__,
+                              " room: %s, row: %s, and "
+                              " notes: '%s' was not successful.", __method__,
                               self.initial['label'], data['label'],
                               data['data_center'], data['room'],
                               data['row'], data['notes'])
@@ -516,16 +546,26 @@ class EditRackForm(forms.SelfHandlingForm):
                           self.initial['label'] + ' failed. Details of the' +
                           ' attempt: ' + result_dict)
                 messages.error(request, msg)
+
+                # Return false in this case so that the dialog is not
+                # dismissed.  This gives the end-user a chance to
+                # update the dialog w/o having to re-enter all the
+                # information a second time.
+                return False
             else:
                 # must have a 0 rc -- display completion msg
                 msg = str('Rack details successfully updated.')
                 messages.success(request, msg)
-            return True
+                return True
         except Exception as e:
             logging.error("%s: Exception received trying to edit the "
                           "selected rack.  Exception is: %s", __method__, e)
             exceptions.handle(request,
                               _('Unable to edit rack details.'))
+            # In this case, return True so that the dialog closes.
+            # In theory, there are no values the end-user could change
+            # to the dialog inputs that would allow us to proceed.
+            return True
 
 
 class RemoveRackForm(forms.SelfHandlingForm):
@@ -543,35 +583,45 @@ class RemoveRackForm(forms.SelfHandlingForm):
             # pass in "None" for rack label -- we'll instead pass in the
             # rack ID so the API knows which rack to act on.  Also pass in
             # False so the API knows to NOT remove all racks
-            (rc, result_dict) = device_mgr.remove_rack(
+            (rc, result_dict) = rack_mgr.remove_rack(
                 None, False, [data['rack_id']])
             if rc is not 0:
                 msg = str(
                     'Attempt to remove rack with rack id ' +
-                    data['rack_id'] + '.  Details of the attempt: ' +
-                    result_dict)
+                    data['rack_id'] + ' was not successful.  Details of ' +
+                    ' the attempt: ' + result_dict)
                 messages.error(request, msg)
                 logging.error(
                     '%s: Unable to remove rack with label "%s".  Return '
                     'code "%s" received.  Details of the failure: "%s"',
                     __method__, self.initial['label'], rc, result_dict)
+
+                # Return false in this case so that the dialog is not
+                # dismissed.  This gives the end-user a chance to
+                # update the dialog w/o having to re-enter all the
+                # information a second time.
+                return False
             else:
                 # must have a 0 rc -- display completion msg
                 msg = str('Rack successfully removed.')
                 messages.success(request, msg)
-            return True
+                return True
         except Exception as e:
             logging.error("%s: Exception received trying to remove the "
                           "selected rack.  Exception is: %s", __method__, e)
             exceptions.handle(request, _('Unable to remove rack.'))
+            # In this case, return True so that the dialog closes.
+            # In theory, there are no values the end-user could change
+            # to the dialog inputs that would allow us to proceed.
+            return True
 
 
 class RemoveResourceForm(forms.SelfHandlingForm):
     label = forms.CharField(
         label=_("Label"),
         max_length=255, required=True)
-    deviceId = forms.CharField(label=_("Resource ID"),
-                               widget=forms.HiddenInput())
+    resourceId = forms.CharField(label=_("Resource ID"),
+                                 widget=forms.HiddenInput())
 
     def __init__(self, *args, **kwargs):
         super(RemoveResourceForm, self).__init__(*args, **kwargs)
@@ -581,29 +631,39 @@ class RemoveResourceForm(forms.SelfHandlingForm):
     def handle(self, request, data):
         __method__ = 'forms.RemoveResourceForm.handle'
         try:
-            # pass in "None" for device label -- we'll instead pass
-            # in the device ID so the API knows which device is being
+            # pass in "None" for resource label -- we'll instead pass
+            # in the resource ID so the API knows which resource is being
             # removed
-            (rc, result_dict) = device_mgr.remove_device(
-                None, False, [data['deviceId']])
+            (rc, result_dict) = resource_mgr.remove_resource(
+                None, False, [data['resourceId']])
             if rc is not 0:
                 # failure case -- so use the initial label for logging/message
                 msg = str('Attempt to remove resource ' +
-                          self.initial['label'] + " was not successful."
+                          self.initial['label'] + " was not successful." +
                           ' Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
                 logging.error('%s: Unable to remove resource "%s".  Return '
                               'code "%s" received.  Details of the failure:'
                               '"%s"', __method__, self.initial['label'],
                               rc, result_dict)
+
+                # Return false in this case so that the dialog is not
+                # dismissed.  This gives the end-user a chance to
+                # update the dialog w/o having to re-enter all the
+                # information a second time.
+                return False
             else:
                 # must have a 0 rc -- display completion msg -- use current
                 # label for message
                 msg = str('Resource ' + data['label'] + ' removed.')
                 messages.success(request, msg)
-            return True
+                return True
         except Exception as e:
             logging.error("%s: Exception received trying to remove resource."
                           " Exception is: %s", __method__, e)
             exceptions.handle(request, _('Unable to remove selected '
                                          'resource.'))
+            # In this case, return True so that the dialog closes.
+            # In theory, there are no values the end-user could change
+            # to the dialog inputs that would allow us to proceed.
+            return True

@@ -15,20 +15,20 @@
 
 class Resource(object):
     # The class "constructor" - It's actually an initializer
-    def __init__(self, device):
-        self.id = device['deviceid']
-        self.name = device['label']
-        self.type = device['device-type']
-        self.arch = device['architecture']
-        self.rack_loc = device['rack-eia-location']
-        self.userid = device['userid']
-        self.mtm = device['machine-type-model']
-        self.serial_num = device['serial-number']
-        self.ip_address = device['ip-address']
-        self.hostname = device['hostname']
-        self.version = device['version']
-        self.web_url = device['web_url']
-        self.device_id = device['deviceid']
+    def __init__(self, resource):
+        self.id = resource['resourceid']
+        self.name = resource['label']
+        self.type = resource['resource-type']
+        self.arch = resource['architecture']
+        self.rack_loc = resource['rack-eia-location']
+        self.userid = resource['userid']
+        self.mtm = resource['machine-type-model']
+        self.serial_num = resource['serial-number']
+        self.ip_address = resource['ip-address']
+        self.hostname = resource['hostname']
+        self.version = resource['version']
+        self.web_url = resource['web_url']
+        self.resource_id = resource['resourceid']
 
         # displayable host / ip address info
         self.host_name = []
@@ -46,5 +46,5 @@ class Resource(object):
 
         # Capabilities
         self.capabilities = []
-        for capability in device['capabilities']:
+        for capability in resource['capabilities']:
             self.capabilities.append(capability)

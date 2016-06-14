@@ -23,8 +23,9 @@ from operational_mgmt.inventory import tables
 from operational_mgmt import rack
 from operational_mgmt import resource
 
-import opsmgr.inventory.device_mgr as device_mgr
 import opsmgr.inventory.plugins as plugins
+import opsmgr.inventory.rack_mgr as rack_mgr
+import opsmgr.inventory.resource_mgr as resource_mgr
 
 
 class RackProperty(object):
@@ -44,20 +45,20 @@ def retrieve_rack_resources(self):
 
     # retrieve resources for the rack id passed in (rack_id may be -1 on
     # the initial pass)
-    (rc, result_dict) = device_mgr.list_devices(None, False, None, None,
-                                                False, False, [self.rack_id])
+    (rc, result_dict) = resource_mgr.list_resources(
+        None, False, None, None, False, False, [self.rack_id])
     if rc != 0:
         messages.error(self.request, _('Unable to retrieve Operational'
                                        ' Management inventory information'
                                        ' for resources.'))
         logging.error('%s: Unable to retrieve Operational Management'
                       'inventory information. A Non-0 return code returned'
-                      ' from device_mgr.list_devices.  The return code is:'
+                      ' from resource_mgr.list_resources.  The return code is:'
                       ' %s', __method__, rc)
     else:
-        all_devices = result_dict['devices']
-        for raw_device in all_devices:
-            resources.append(resource.Resource(raw_device))
+        all_resources = result_dict['resources']
+        for raw_resource in all_resources:
+            resources.append(resource.Resource(raw_resource))
 
     logging.debug("%s: Found %s resources",
                   __method__, len(resources))
@@ -70,7 +71,7 @@ def retrieve_rack_metadata(self):
 
     # retrieve the rack details for the rack passed in (rack_id may be -1 on
     # initial pass)
-    (rc, result_dict) = device_mgr.list_racks(None, False, [self.rack_id])
+    (rc, result_dict) = rack_mgr.list_racks(None, False, [self.rack_id])
 
     if rc != 0:
         messages.error(self.request, _('Unable to retrieve Operational'
@@ -78,10 +79,10 @@ def retrieve_rack_metadata(self):
                                        ' for racks.'))
         logging.error('%s, Unable to retrieve Operational Management'
                       ' inventory information. A Non-0 return code returned'
-                      ' from device_mgr.list_racks.  The return code is:'
+                      ' from rack_mgr.list_racks.  The return code is:'
                       ' %s', __method__, rc)
     else:
-        # We should have at least one resource in the results...just return
+        # We should have at least one rack in the results...just return
         # the metadata for the first value
         if len(result_dict['racks']) > 0:
             the_rack = rack.Rack(result_dict['racks'][0])
@@ -209,14 +210,14 @@ class InventoryRacksTabs(tabs.TabGroup):
         # created)
         logging.debug("%s: before retrieving rack all racks",
                       __method__)
-        (rc, result_dict) = device_mgr.list_racks()
+        (rc, result_dict) = rack_mgr.list_racks()
         if rc != 0:
             messages.error(self.request, _('Unable to retrieve Operational'
                                            ' Management inventory information'
                                            ' for racks.'))
             logging.error('%s: Unable to retrieve Operational Management'
                           ' inventory information. A Non-0 return code'
-                          ' returned from device_mgr.list_racks.  The'
+                          ' returned from rack_mgr.list_racks.  The'
                           ' return code is: %s', __method__, rc)
             return
 
@@ -231,11 +232,12 @@ class InventoryRacksTabs(tabs.TabGroup):
             # initialize the defined rack tab (with rack information)
             defined_rack_tab.initialize(a_rack["label"], a_rack['rackid'])
 
-            # Add the defineRackTab class to the list of classes in the
+            # Add the defined rack tab class to the list of classes in the
             # tab group
             list_tabs.append(defined_rack_tab.__class__)
 
-            # Add the defineRackTab (the new tab) to the list of defined tabs
+            # Add the defined rack tab (the new tab) to the list of defined
+            # tabs
             defined_tabs[a_rack["label"] + "_tab"] = defined_rack_tab
 
             logging.debug("%s: creating a new tab for rack with label: %s",
