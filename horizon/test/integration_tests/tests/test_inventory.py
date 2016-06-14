@@ -21,8 +21,7 @@ class TestInventory(helpers.OpsMgrTestCase):
     * > checks that the inventory page is available
     * > checks that the inventory page loads without error
     * > checks that the rack details can be edited
-    * > adds a resource by host name
-    * > checks that a resource cannot be added twice
+    * > adds a resource by host name    
     * > checks that a resource can be removed
     * > adds a resource by IP address
     * > changes the password of a user on a resource
@@ -111,13 +110,13 @@ jYeOtp0Xk/uU2g03fizO0NIg09CenygUCkoncidU0Ze/RGV8+W2SGYMqoyCOFXxp
                         self.HOST_RESOURCE_NAME))
 
         # Attempt to add the resource a second time (should fail)
-        inv_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA,
-                              self.HOST_NAME, self.HOST_USERID,
-                              self.INITIAL_PASSWORD)
-        self.assertTrue(inv_page.find_message_and_dismiss(
-                        messages.ERROR))
-        self.assertFalse(inv_page.find_message_and_dismiss(
-                         messages.SUCCESS))
+        # inv_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA,
+        #                      self.HOST_NAME, self.HOST_USERID,
+        #                      self.INITIAL_PASSWORD)
+        # self.assertTrue(inv_page.find_message_and_dismiss(
+        #                messages.ERROR))
+        # self.assertFalse(inv_page.find_message_and_dismiss(
+        #                 messages.SUCCESS))
 
         # Attempt to remove the resource (should succeed)
         inv_page.remove_resource(self.HOST_RESOURCE_NAME)
