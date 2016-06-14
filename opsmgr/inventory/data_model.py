@@ -85,7 +85,7 @@ class Resource(Base):
         result["ip-address"] = self.address
         result["hostname"] = self.hostname
         result["userid"] = self.userid
-        result["password"] = self.password
+        #exclude password so it isn't logged
         result["version"] = self.version
         result["architecture"] = self.architecture
         result["validated"] = self.validated
@@ -107,6 +107,9 @@ class Key(Base):
     type = Column(String(10), nullable=False)
     value = Column(Text(), nullable=False)
     password = Column(String(255))
+
+    def __repr__(self):
+        return "<Key('%s', '%s')>" % (self.resource_id, self.type)
 
 class ResourceRole(Base):
     __tablename__ = "resource_role"

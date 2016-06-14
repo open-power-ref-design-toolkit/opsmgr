@@ -630,7 +630,7 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
 def list_resource_types():
     return sorted(_load_device_plugins().keys())
 
-@entry_exit(exclude_index=[0], exclude_name=["items"])
+@entry_exit(exclude_index=[], exclude_name=[])
 def get_labels_message(items, is_return_deviceid=False, id_attr_name="resource_id"):
     """get the labels from the list of items using the label attr of the object,
     otherwise use the idAttrName passed

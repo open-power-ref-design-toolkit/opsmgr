@@ -9,6 +9,7 @@ from opsmgr.inventory.data_model import Rack
 
 I_MANAGER_RACK_HOOK = "opsmgr.inventory.interfaces.IManagerRackHook"
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def add_rack(label, data_center='', room='', row='', notes=''):
     """add rack to the list of racks in the configuration managed
 
@@ -71,6 +72,7 @@ def add_rack(label, data_center='', room='', row='', notes=''):
     session.close()
     return 0, message
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def list_racks(labels=None, isbriefly=False, rackids=None):
     """Get a list of racks based on the information present in that arguments.
 
@@ -141,6 +143,7 @@ def list_racks(labels=None, isbriefly=False, rackids=None):
     session.close()
     return 0, result
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def remove_rack(labels=None, all_racks=False, rackids=None):
     '''Remove racks based on information present in the arguments
 
@@ -251,6 +254,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
     session.close()
     return ret, message
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def change_rack_properties(label=None, rackid=None, new_label=None, data_center=None,
                            room=None, row=None, notes=None):
     ''' Change the rack properties in the data store
@@ -342,6 +346,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
     session.close()
     return 0, message
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def get_rack_id_by_label(rack_label):
     """
     Find the rack id for the rack label

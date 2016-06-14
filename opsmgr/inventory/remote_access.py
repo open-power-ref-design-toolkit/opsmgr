@@ -16,7 +16,9 @@ import paramiko
 from paramiko.py3compat import u
 
 from opsmgr.inventory import persistent_mgr
+from opsmgr.common.utils import entry_exit
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def remote_access(label):
     """Establish ssh shell access to remote endpoint
 
@@ -27,7 +29,7 @@ def remote_access(label):
         rc: return code
         message: message associated with return code returned
     """
-    _method_ = 'device_mgr.remote_access'
+    _method_ = 'remote_access.remote_access'
     session = persistent_mgr.create_database_session()
     device = persistent_mgr.get_device_by_label(session, label)
     if device:
@@ -67,6 +69,7 @@ def remote_access(label):
     session.close()
     return 0, message
 
+@entry_exit(exclude_index=[3, 4], exclude_name=["password", "ssh_key_string"])
 def _create_remote_connection(remote_access_label, address, userid, password, ssh_key_string):
     """ create a remote ssh connection based on the information provided.
 
@@ -77,7 +80,7 @@ def _create_remote_connection(remote_access_label, address, userid, password, ss
         password: password of userid or ssh_key_string
         ssh_key_string: String containing an ssh private key
     """
-    _method_ = 'device_mgr._create_remote_connection'
+    _method_ = 'remote_access._create_remote_connection'
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     if ssh_key_string:
@@ -96,6 +99,7 @@ def _create_remote_connection(remote_access_label, address, userid, password, ss
     logging.info("%s::Remote connection to device (%s) disconnected.",
                  _method_, remote_access_label)
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def _open_interactive_shell(chan):
     '''    Opens a remote terminal interface
     Note: Works only on unix as it uses POSIX style tty control

@@ -1,5 +1,7 @@
 import socket
 
+from opsmgr.common.utils import entry_exit
+
 class PluginApplication():
 
     def __init__(self, name, function, protocol, host, port, path):
@@ -23,6 +25,7 @@ class PluginApplication():
     def get_path(self):
         return self.path
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def get_operations_plugins():
     """ Returns a List of PluginApplication classes so the url for an installed application
         can be constructed. For plugins installed on the localhost, it is recommened to not use

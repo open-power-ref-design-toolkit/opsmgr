@@ -1,26 +1,22 @@
 import logging
-from stevedore import extension
+from opsmgr.common.utils import entry_exit, load_plugin_by_namespace
 
 I_DISCOVERY_PLUGIN = "opsmgr.discovery.interfaces.IDiscoveryPlugin"
 
-def _load_by_namespace(namespace):
-    plugins = {}
-    extensions = extension.ExtensionManager(namespace=namespace)
-    for ext in extensions:
-        plugins[ext.name] = ext.plugin()
-    return plugins
-
-def load_plugins():
+@entry_exit(exclude_index=[], exclude_name=[])
+def _load_plugins():
     """ Find the discovery provider plugins and return them as
         dictonary[name]=plugin class
     """
-    return _load_by_namespace(I_DISCOVERY_PLUGIN)
+    return load_plugin_by_namespace(I_DISCOVERY_PLUGIN)
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def list_plugins():
-    return sorted(load_plugins().keys())
+    return sorted(_load_plugins().keys())
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def find_resources():
-    plugins = load_plugins()
+    plugins = _load_plugins()
     plugin_label = 'unknown' #keeps pylint happy
     message = None
     try:
@@ -28,12 +24,14 @@ def find_resources():
             plugin.find_resources()
     except Exception as e:
         logging.exception(e)
-        message = _("Error in plugin (%s)::Unable to find resources - reason::%s") % (plugin_label, e)
+        message = _("Error in plugin (%s)::Unable to find resources - reason::%s") % \
+                  (plugin_label, e)
         return -1, message
     return 0, message
 
+@entry_exit(exclude_index=[], exclude_name=[])
 def import_resources(resource_label='*', offline=False):
-    plugins = load_plugins()
+    plugins = _load_plugins()
     plugin_label = 'unknown' #keeps pylint happy
     message = None
     try:
@@ -41,6 +39,7 @@ def import_resources(resource_label='*', offline=False):
             plugin.import_resources(resource_label, offline)
     except Exception as e:
         logging.exception(e)
-        message = _("Error in plugin (%s)::Unable to import resource - reason::%s") % (plugin_label, e)
+        message = _("Error in plugin (%s)::Unable to import resource - reason::%s") % \
+                 (plugin_label, e)
         return -1, message
     return 0, message
