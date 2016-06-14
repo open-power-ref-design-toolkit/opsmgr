@@ -13,6 +13,7 @@ import paramiko
 
 from opsmgr.common import constants
 from opsmgr.common import exceptions
+from opsmgr.common.utils import entry_exit
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
 RHEL_RELEASE_FILE = "/etc/redhat-release"
@@ -42,7 +43,7 @@ class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_capabilities():
         return [constants.LOGGING_CAPABLE, constants.MONITORING_CAPABLE]
 
-
+    @entry_exit(exclude_index=[0, 3, 4], exclude_name=["self", "password", "ssh_key_string"])
     def connect(self, host, userid, password=None, ssh_key_string=None):
         _method_ = "RhelPlugin.connect"
         self.userid = userid
@@ -70,16 +71,20 @@ class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.error("%s::Connection timed out. host=%s", _method_, host)
             raise exceptions.ConnectionException("Unable to ssh to the device")
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def disconnect(self):
         if self.client:
             self.client.close()
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_machine_type_model(self):
         return self.machine_type_model
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_serial_number(self):
         return self.serial_number
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_version(self):
         version = None
         (_stdin, stdout, _stderr) = self.client.exec_command("cat " + RHEL_RELEASE_FILE)
@@ -89,11 +94,13 @@ class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                 break
         return version
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_architecture(self):
         (_stdin, stdout, _stderr) = self.client.exec_command("uname -m")
         architecture = stdout.read().decode().strip()
         return architecture
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def _is_guest_rhel(self):
         """Check the OS type is RHEL
         Return True if System is RHEL
@@ -103,6 +110,7 @@ class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         rc = stdout.channel.recv_exit_status()
         return True if rc == 0 else False
 
+    @entry_exit(exclude_index=[0, 1], exclude_name=["self", "new_password"])
     def change_device_password(self, new_password):
         """Update the password for the logged in userid.
         """

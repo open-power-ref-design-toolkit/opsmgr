@@ -13,6 +13,7 @@ import paramiko
 
 from opsmgr.common import constants
 from opsmgr.common import exceptions
+from opsmgr.common.utils import entry_exit
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
 class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
@@ -46,6 +47,7 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_web_url(host):
         return None
 
+    @entry_exit(exclude_index=[0, 3, 4], exclude_name=["self", "password", "ssh_key_string"])
     def connect(self, host, userid, password, ssh_key_string=None):
         _method_ = "UbuntuPlugin.connect"
         try:
@@ -73,20 +75,24 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.error("%s::Connection timed out. host=%s", _method_, host)
             raise exceptions.ConnectionException("Unable to ssh to the device")
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def disconnect(self):
         if self.client:
             self.client.close()
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_machine_type_model(self):
         if self.machine_type_model == "":
             self._get_system_details()
         return self.machine_type_model
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_serial_number(self):
         if self.serial_number == "":
             self._get_system_details()
         return self.serial_number
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_version(self):
         _method_ = "manage_ubuntu.get_version"
         version = None
@@ -108,11 +114,13 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.error("%s::Failed to retrieve version.", _method_)
             return None
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_architecture(self):
         (_stdin, stdout, _stderr) = self.client.exec_command("uname -m")
         architecture = stdout.read().decode().strip()
         return architecture
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def _is_ubuntu(self):
         """Check the OS type is RHEL
         Return True if System is RHEL
@@ -124,6 +132,7 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                 return True
         return False
 
+    @entry_exit(exclude_index=[0, 1], exclude_name=["self", "new_password"])
     def change_device_password(self, new_password):
         """Update the password for the logged in userid.
         """
@@ -148,6 +157,7 @@ class UbuntuPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.warning(message)
             raise exceptions.DeviceException(message)
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def _get_system_details(self):
         found_serial_number_tag = False
         (_stdin, stdout, _stderr) = self.client.exec_command(self.SYSTEM_INFO_CMD)

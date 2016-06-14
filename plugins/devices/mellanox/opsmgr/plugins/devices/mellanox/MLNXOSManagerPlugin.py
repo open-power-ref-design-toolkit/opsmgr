@@ -13,6 +13,7 @@ import paramiko
 
 from opsmgr.common import constants
 from opsmgr.common import exceptions
+from opsmgr.common.utils import entry_exit
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
 class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
@@ -44,6 +45,7 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_capabilities():
         return [constants.MONITORING_CAPABLE]
 
+    @entry_exit(exclude_index=[0, 3, 4], exclude_name=["self", "password", "ssh_key_string"])
     def connect(self, host, userid, password=None, ssh_key_string=None):
         _method_ = "MLNXOSPlugin.connect"
         self.host = host
@@ -71,16 +73,20 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.error("%s::Connection timed out. host=%s", _method_, host)
             raise exceptions.ConnectionException("Unable to ssh to the device")
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def disconnect(self):
         if self.client:
             self.client.close()
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_machine_type_model(self):
         return self.machine_type_model
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_serial_number(self):
         return self.serial_number
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_version(self):
         version = None
         client_shell = self.client.invoke_shell()
@@ -93,9 +99,11 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                 break
         return version
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_architecture(self):
         return None
 
+    @entry_exit(exclude_index=[0, 1], exclude_name=["self", "new_password"])
     def change_device_password(self, new_password):
         _method_ = "MLNXOSPlugin.change_device_password"
         logging.info("ENTER %s::host=%s userid=%s", _method_, self.host, self.userid)
@@ -114,6 +122,7 @@ class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
                           "%s", _method_, str(e))
             raise e
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def _is_mellanox_switch(self):
         """Check if the Device type is Mellanox
         """

@@ -13,6 +13,7 @@ import paramiko
 
 from opsmgr.common import constants
 from opsmgr.common import exceptions
+from opsmgr.common.utils import entry_exit
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
 class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
@@ -49,6 +50,7 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
     def get_capabilities():
         return [constants.MONITORING_CAPABLE]
 
+    @entry_exit(exclude_index=[0, 3, 4], exclude_name=["self", "password", "ssh_key_string"])
     def connect(self, host, userid, password=None, ssh_key_string=None):
         _method_ = "RackSwitchPlugin.connect"
         self.host = host
@@ -77,25 +79,29 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.error("%s::Connection timed out. host=%s", _method_, host)
             raise exceptions.ConnectionException("Unable to ssh to the device")
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def disconnect(self):
         if self.client:
             self.client.close()
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_machine_type_model(self):
         return self.machine_type_model
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_serial_number(self):
         return self.serial_number
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def get_version(self):
         return self.version
 
     def get_architecture(self):
         return None
 
+    @entry_exit(exclude_index=[0, 1], exclude_name=["self", "new_password"])
     def change_device_password(self, new_password):
         _method_ = "RackSwitchPlugin.change_device_password"
-        logging.info("ENTER %s::host=%s userid=%s", _method_, self.host, self.userid)
 
         self._check_connection()
         client_shell = self.client.invoke_shell()
@@ -114,6 +120,7 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
             logging.warning(message)
             raise exceptions.DeviceException(message)
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def _is_rack_switch(self):
         """Check if the Device type is Lenovo Rack Switch
         """
@@ -133,6 +140,7 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         else:
             return True
 
+    @entry_exit(exclude_index=[0], exclude_name=["self"])
     def _check_connection(self):
         """ The lenovo switch seems to drop a connection really quick if not active in
             shell. Verify the connection is active before using it, and if necessary

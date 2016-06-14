@@ -1,6 +1,7 @@
 import logging
 import spur
 from opsmgr.common import exceptions
+from opsmgr.common.utils import entry_exit
 from opsmgr.inventory.resource_mgr import add_resource, validate_address, validate_label
 from opsmgr.discovery.interfaces.IDiscoveryPlugin import IDiscoveryPlugin
 
@@ -11,7 +12,7 @@ COBBLER_TAG_ADDRESS = "ip_address_eth0"
 COBBLER_TAG_BREED = "breed"
 
 COBBLER_DIC_TYPES = {'ubuntu' : 'Ubuntu',
-                     'rhel' : 'Redhat Enterprise Linux' }
+                     'rhel' : 'Redhat Enterprise Linux'}
 
 #TODO: read these parameters from Cobbler too
 SUDO_PASSWORD = "setup4me"
@@ -27,11 +28,11 @@ class CobblerPlugin(IDiscoveryPlugin):
     def get_type():
         return "Cobbler"
 
+    @entry_exit(exclude_index=[], exclude_name=[])
     def list_systems(self):
         """ Method to query Cobbler and list all systems defined within its database
         """
         _method_ = "CobblerDiscoveryPlugin.list_systems"
-        logging.info("ENTER %s", _method_)
         systems = []
         if self.shell is None:
             self.shell = spur.LocalShell()
@@ -53,21 +54,23 @@ class CobblerPlugin(IDiscoveryPlugin):
                 logging.error("%s::Connection error - host = %s", _method_, self.shell._hostname)
                 raise exceptions.ConnectionException(e)
         return systems
-    
+
     def format_resource(self, label, rtype, address, user):
         return "Resource[label=%s,type=%s,address=%s,user=%s]" % (label, rtype, address, user)
 
+    @entry_exit(exclude_index=[], exclude_name=[])
     def find_resources(self):
         self.discover_resources(resource_label='*', offline=True, add=False)
 
+    @entry_exit(exclude_index=[], exclude_name=[])
     def import_resources(self, resource_label='*', offline=False):
         self.discover_resources(resource_label, offline, add=True)
 
+    @entry_exit(exclude_index=[], exclude_name=[])
     def discover_resources(self, resource_label='*', offline=False, add=False):
         """ Method to query all data from all systems defined within Cobbler's database
         """
         _method_ = "CobblerDiscoveryPlugin.import_resources"
-        logging.info("ENTER %s", _method_)
         systems = self.list_systems()
         if self.shell is None:
             self.shell = spur.LocalShell()
@@ -95,31 +98,32 @@ class CobblerPlugin(IDiscoveryPlugin):
                     resource_type = COBBLER_DIC_TYPES[resource_breed]
                     resource = self.format_resource(system, resource_type, resource_ipv4, DEFAULT_RESOURCE_USER)
                     if resource_type is None:
-                        print "Warning:: Cannot find a suitable resource type for %s" % resource
+                        print("Warning:: Cannot find a suitable resource type for %s" % resource)
                     else:
-                        print "Discovered from %s: %s" % (self.get_type(), resource)
+                        print("Discovered from %s: %s" % (self.get_type(), resource))
                         rc1, message = validate_label(system)
                         if rc1 != 0:
-                            print "Warning:: %s" % message
+                            print("Warning:: %s" % message)
                         rc2, message = validate_address(resource_ipv4)
                         if rc2 != 0:
-                            print "Warning:: %s" % message
+                            print("Warning:: %s" % message)
                         if add:
                             if rc1 == 0 and rc2 == 0:
                                 rc, message = add_resource(system, resource_type, resource_ipv4,
                                                            DEFAULT_RESOURCE_USER, DEFAULT_RESOURCE_PWD,
                                                            offline=offline)
                                 if rc == 0:
-                                    print "Resource imported: %s" % system
+                                    print("Resource imported: %s" % system)
                                 else:
-                                    print "Import error: %s" % message
+                                    print("Import error: %s" % message)
                             else:
-                                print "Cannot import: %s - conflicting resource exists" % system
+                                print("Cannot import: %s - conflicting resource exists" % system)
                 except (spur.ssh.NoSuchCommandError, spur.ssh.ConnectionError) as e:
                     logging.exception(e)
                     logging.error("%s::Connection error - host = %s", _method_, self.shell._hostname)
                     raise exceptions.ConnectionException(e)
-        
+
+    @entry_exit(exclude_index=[3, 4], exclude_name=["pwd", "pkey"])
     def connect(self, host, user, pwd, pkey=None):
         """ Method to optionally connecting to a remote host prior to interacting
             with Cobbler
@@ -137,11 +141,12 @@ class CobblerPlugin(IDiscoveryPlugin):
                 logging.exception(e)
                 logging.error("%s::Connection error - host = %s", _method_, host)
                 raise exceptions.ConnectionException(e)
-    
+
+    @entry_exit(exclude_index=[], exclude_name=[])
     def disconnect(self):
         """ Method to disconnect from a previously connected remote host
         """
         if self.shell:
             self.shell.close()
             self.shell = None
-    
+

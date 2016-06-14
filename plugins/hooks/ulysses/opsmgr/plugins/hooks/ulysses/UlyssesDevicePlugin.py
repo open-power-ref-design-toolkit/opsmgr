@@ -7,6 +7,7 @@ except ImportError:
 import paramiko
 from opsmgr.inventory.interfaces.IManagerDeviceHook import IManagerDeviceHook
 from opsmgr.inventory import resource_mgr, persistent_mgr
+from opsmgr.common.utils import entry_exit
 
 class UlyssesDevicePlugin(IManagerDeviceHook):
 
@@ -25,6 +26,7 @@ class UlyssesDevicePlugin(IManagerDeviceHook):
         pass
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def add_device_post_save(device):
         if device.resource_type == "Ubuntu":
             address = device.address

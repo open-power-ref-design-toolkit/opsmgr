@@ -7,6 +7,7 @@ from backports import configparser
 from opsmgr.inventory.interfaces.IManagerDeviceHook import IManagerDeviceHook
 from opsmgr.inventory import persistent_mgr
 from opsmgr.common import exceptions
+from opsmgr.common.utils import entry_exit
 
 class NagiosPlugin(IManagerDeviceHook):
 
@@ -34,6 +35,7 @@ class NagiosPlugin(IManagerDeviceHook):
         pass
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def add_device_post_save(device):
         label = device.label
         device_type = device.resource_type
@@ -56,16 +58,19 @@ class NagiosPlugin(IManagerDeviceHook):
         NagiosPlugin._reload_nagios()
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def remove_device_post_save(device):
         NagiosPlugin._remove_config_files(device.address)
         NagiosPlugin._reload_nagios()
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def change_device_post_save(device, old_device_info):
         NagiosPlugin._remove_config_files(old_device_info["ip-address"])
         NagiosPlugin.add_device_post_save(device)
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def _reload_nagios():
         """ Reload the nagios server from within the
             nagios container
@@ -121,6 +126,7 @@ class NagiosPlugin(IManagerDeviceHook):
             client.close()
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def _write_config_file(label, device_type, address, hostname):
         nagios_host = NagiosPlugin._get_nagios_server()
         try:
@@ -143,6 +149,7 @@ class NagiosPlugin(IManagerDeviceHook):
             client.close()
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def _remove_config_files(address):
         nagios_host = NagiosPlugin._get_nagios_server()
         try:
@@ -167,6 +174,7 @@ class NagiosPlugin(IManagerDeviceHook):
             client.close()
 
     @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
     def _get_nagios_server():
         server = None
         if os.path.exists(NagiosPlugin.OPSMGR_CONF):
