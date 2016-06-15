@@ -1,7 +1,0 @@
----
-- hosts: nrpe
-  become: true
-  vars_files:
-    - vars/containers.yml
-  roles:
-    - nrpe

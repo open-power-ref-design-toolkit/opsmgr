@@ -1,0 +1,28 @@
+---
+
+# defaults to localhost
+# this variable must be passed when calling this playbook as --extra_vars
+nagios_servers:
+    - localhost
+
+# defaults for nagios nrpe agent configuration
+nrpe_dir: /etc/nagios
+nrpe_plugins_dir: /usr/lib/nagios/plugins
+nrpe_group: nagios
+nrpe_user: nagios
+nrpe_pass: nagios
+nrpe_bind_address: 127.0.0.1
+nrpe_bind_port: 5666
+nrpe_service: nagios-nrpe-server
+nrpe_pid: /var/run/nagios/nrpe.pid
+
+# nagios nrpe agent and plugin packages to install
+nrpe_packages:
+    - nagios-nrpe-server
+    - nagios-plugins
+#    - nagios-plugin-check-multi
+#    - nagios-plugins-contrib
+#    - nagios-plugins-common
+#    - nagios-snmp-plugins
+
+

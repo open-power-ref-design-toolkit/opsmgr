@@ -1,0 +1,32 @@
+---
+
+- hosts: localhost
+  become: true
+
+  vars_files:
+    - roles/nagios/vars/main.yml
+    - roles/nagios/vars/osa-deployers.yml
+
+  roles:
+    - nagios
+
+- hosts: hosts
+  become: true
+
+  vars_files:
+    - roles/nagios/vars/main.yml
+    - roles/nagios/vars/osa-hosts.yml
+
+  roles:
+    - nagios
+
+- hosts: all_containers
+  become: true
+
+  vars_files:
+    - roles/nagios/vars/main.yml
+    - roles/nagios/vars/osa-containers.yml
+
+  roles:
+    - nagios
+

@@ -1,6 +1,6 @@
 import os
 
-CREDS_DIR = "/usr/local/nagios/opsmgr/.creds"
+CREDS_DIR = "/usr/local/nagios/opsmgr/nagios_config/.creds"
 
 
 def retrieveAccessInfoForDevice(address):

@@ -1,8 +1,24 @@
 ---
-- hosts: opsmgr
+- hosts: opsmgr_hosts
   become: true
   vars_files:
     - vars/containers.yml
+    - roles/opsmgr/vars/main.yml
   roles:
     - opsmgr
+
+- hosts: localhost
+  become: false
+  tasks:
+    - name: clean extra-vars file
+      become: false
+      file:
+          path: "{{ playbook_dir }}/etc/vars.yml"
+          state: absent
+    - name: create extra-vars file
+      become: false
+      template:
+          src: "{{ playbook_dir }}/roles/opsmgr/templates/spec.vars.j2"
+          dest: "{{ playbook_dir }}/etc/vars.yml"
+
 

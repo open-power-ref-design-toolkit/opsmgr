@@ -1,7 +1,6 @@
-[opsmgr]
-controller1
+[opsmgr_hosts]
+localhost
 
-[nrpe]
-controller1
-compute1
+[opsmgr_targets]
+localhost
 

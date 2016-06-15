@@ -1,185 +1,208 @@
 ---
 
-# install pre-reqs
+    # install pre-reqs
+    
+    - name: installs prereq packages with aptitude
+      apt: name={{ item }} state=present update_cache=true
+      with_items: "{{ apt_packages }}"
+    
+    - name: installs prereq packages with pip
+      pip: name={{ item }}
+      with_items: "{{ pip_packages }}"
+    
+    # finds out where temporary directories are located
+    
+    - name: finds where plugin will be extracted
+      set_fact: plugin_dir="{{ temp_dir }}/{{ plugin_download_file|replace('.tar.gz','') }}"
+    
+    - name: finds where nagios will be extracted
+      set_fact: nagios_dir="{{ temp_dir }}/{{ nagios_download_file|replace('.tar.gz','') }}"
+    
+    # clean temporary directories if they exist
+    
+    - name: cleanup nagios core directory
+      command: rm -rf {{ nagios_dir }}
+    
+    - name: cleanup nagios plugin directory
+      command: rm -rf {{ plugin_dir }}
+    
+    # download, install and configure nagios
+    
+    - name: download nagios core
+      get_url:
+          url: "{{ nagios_download_site }}/{{ nagios_download_file }}"
+          dest: "{{ temp_dir }}"
+    
+    - name: create nagios group
+      group: name={{ nagios_group }} state=present
+    
+    - name: create nagios user and add him to the nagios group
+      user: name={{ nagios_user }} groups={{ nagios_group }}
+    
+    - name: add the apache user www-data to the nagios group
+      user: name=www-data groups={{ nagios_group }} append=yes
+    
+    - name: extract nagios core
+      unarchive: src={{ temp_dir }}/{{ nagios_download_file }} dest={{ temp_dir }} creates={{ nagios_dir }} copy=no
+    
+    - name: check if nagios extracted directory exists
+      stat: path={{ nagios_dir }}
+      register: nagios_dir_exists
+    
+    - name: fails if nagios extracted directory does not exist
+      fail: msg="Extracted nagios directory {{ nagios_dir }} does not exist"
+      when: nagios_dir_exists.stat.exists == false
+    
+    - name: configure nagios core
+      command: |
+          ./configure
+          --with-nagios-user={{ nagios_user }} --with-nagios-group={{ nagios_group }}
+          --with-command-user={{ nagios_user }} --with-command-group={{ nagios_group }}
+          chdir={{ nagios_dir }}
+    
+    - name: make all
+      command: make all chdir={{ nagios_dir }}
+    
+    - name: make install
+      command: make install chdir={{ nagios_dir }}
+    
+    - name: make install-init
+      command: make install-init chdir={{ nagios_dir }}
+    
+    - name: make install-config
+      command: make install-config chdir={{ nagios_dir }}
+    
+    - name: make install-commandmode
+      command: make install-commandmode chdir={{ nagios_dir }}
+    
+    - name: make nagios start on boot
+      command: ln -sf /etc/init.d/nagios /etc/rcS.d/S99nagios
+    
+    - name: copy nagios conf to apache
+      command: /usr/bin/install -c -m 644 sample-config/httpd.conf /etc/apache2/sites-enabled/nagios.conf chdir={{ nagios_dir }}
+    
+    - name: create default nagios ui user and password
+      command: htpasswd -c -b /usr/local/nagios/etc/htpasswd.users {{ nagios_user }} {{ nagios_pass }}
 
-- name: installs prereq packages with aptitude
-  apt: name={{ item }} state=present update_cache=true
-  with_items: "{{ apt_packages }}"
+    - name: fix cgi.cfg to match nagios ui user
+      replace: dest=/usr/local/nagios/etc/cgi.cfg regexp='nagiosadmin' replace={{ nagios_user }} backup=yes
+    
+    - name: allow urls rewrites
+      command: a2enmod rewrite
+    
+    - name: allow cgi-bins
+      command: a2enmod cgi
+    
+    # download, install and configure nagios plugins
+    
+    - name: download nagios plugins
+      get_url:
+          url: "{{ plugin_download_site }}/{{ plugin_download_file }}"
+          dest: "{{ temp_dir }}"
+    
+    - name: extract nagios plugins
+      unarchive: src={{ temp_dir }}/{{ plugin_download_file }} dest={{ temp_dir }} creates={{ plugin_dir }} copy=no
+    
+    - name: check if plugin extracted directory exists
+      stat: path={{ plugin_dir }}
+      register: plugin_dir_exists
+    
+    - name: fails if plugin extracted directory does not exist
+      fail: msg="Extracted plugin directory {{ plugin_dir }} does not exist"
+      when: plugin_dir_exists.stat.exists == false
+    
+    - name: configure nagios plugins
+      command: |
+          ./configure
+          --with-nagios-user=nagios --with-nagios-group=nagios
+          chdir={{ plugin_dir }}
+    
+    - name: make plugins
+      command: make chdir={{ plugin_dir }}
+    
+    - name: make install plugins
+      command: make install chdir={{ plugin_dir }}
+    
+    - name: installs nrpe
+      apt: name={{item}} install_recommends=no state=present update_cache=yes
+      with_items: "{{ nrpe_packages }}"
 
-- name: installs prereq packages with pip
-  pip: name={{ item }}
-  with_items: "{{ pip_packages }}"
+    # additional nagios configuration
+    - name: add command configuration for check_nrpe
+      blockinfile:
+          dest: /usr/local/nagios/etc/objects/commands.cfg
+          block: |
+            define command {
+                   command_name                             check_nrpe
+                   command_line                             /usr/lib/nagios/plugins/check_nrpe -H $HOSTADDRESS$ -t 30 -c $ARG1$ $ARG2$
+            }
 
-# finds out where temporary directories are located
+    - name: ensures plugins directory exists
+      file:
+          path: /usr/local/nagios/libexec
+          state: directory
+    
+    - name: copy custom plugins
+      copy:
+          src: "{{ item }}"
+          dest: /usr/local/nagios/libexec
+          mode: 0755
+      with_fileglob:
+          - plugins/*
+    
+    - name: ensures commands directory exists
+      file:
+          path: /usr/local/nagios/opsmgr/nagios_config/commands
+          state: directory
+    
+    - name: copy custom commands
+      copy:
+          src: "{{ item }}"
+          dest: /usr/local/nagios/opsmgr/nagios_config/commands
+          mode: 0644
+      with_fileglob:
+          - commands/*
+    
+    - name: ensures hosts directory exists
+      file:
+          path: /usr/local/nagios/opsmgr/nagios_config/hosts
+          state: directory
+    
+    - name: copy custom hosts
+      copy:
+          src: "{{ item }}"
+          dest: /usr/local/nagios/opsmgr/nagios_config/hosts
+          mode: 0644
+      with_fileglob:
+          - hosts/*
+    
+    - name: tell nagios to read the commands files in our directory
+      lineinfile:
+          line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/commands"
+          dest: "/usr/local/nagios/etc/nagios.cfg"
+    
+    - name: tell nagios to read the hosts files in our directory
+      lineinfile:
+          line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/hosts"
+          dest: "/usr/local/nagios/etc/nagios.cfg"
+    
+    - name: validate nagios config
+      command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+    
+    # start nagios and apache services
+    
+    - name: restart apache
+      service: name=apache2 state=restarted enabled=yes
+    
+    - name: restart nagios
+      service: name=nagios state=restarted enabled=yes
+    
+    # clean temporary directories after installation
+    
+    - name: cleanup nagios core directory
+      command: rm -rf {{ nagios_dir }}
+    
+    - name: cleanup nagios plugin directory
+      command: rm -rf {{ plugin_dir }}
 
-- name: finds where plugin was extracted
-  set_fact: plugin_dir="{{ temp_dir }}/{{ plugin_download_file|replace('.tar.gz','') }}"
-
-- name: finds where nagios was extracted
-  set_fact: nagios_dir="{{ temp_dir }}/{{ nagios_download_file|replace('.tar.gz','') }}"
-
-# clean temporary directories if they exist
-
-- name: cleanup nagios core directory
-  command: rm -rf {{ nagios_dir }}
-
-- name: cleanup nagios plugin directory
-  command: rm -rf {{ plugin_dir }}
-
-# download, install and configure nagios
-
-- name: download nagios core
-  get_url:
-      url: "{{ nagios_download_site }}/{{ nagios_download_file }}"
-      dest: "{{ temp_dir }}"
-
-- name: create nagios group
-  group: name=nagios state=present
-
-- name: create nagios user and add him to the nagios group
-  user: name=nagios groups=nagios
-
-- name: add the apache user www-data to the nagios group
-  user: name=www-data groups=nagios append=yes
-
-- name: extract nagios core
-  unarchive: src={{ temp_dir }}/{{ nagios_download_file }} dest={{ temp_dir }} creates={{ nagios_dir }} copy=no
-
-- name: check if nagios extracted directory exists
-  stat: path={{ nagios_dir }}
-  register: nagios_dir_exists
-
-- name: fails if nagios extracted directory does not exist
-  fail: msg="Extracted nagios directory {{ nagios_dir }} does not exist"
-  when: nagios_dir_exists.stat.exists == false
-
-- name: configure nagios core
-  command: ./configure --with-nagios-group=nagios --with-command-group=nagios chdir={{ nagios_dir }}
-
-- name: make all
-  command: make all chdir={{ nagios_dir }}
-
-- name: make install
-  command: make install chdir={{ nagios_dir }}
-
-- name: make install-init
-  command: make install-init chdir={{ nagios_dir }}
-
-- name: make install-config
-  command: make install-config chdir={{ nagios_dir }}
-
-- name: make install-commandmode
-  command: make install-commandmode chdir={{ nagios_dir }}
-
-- name: make nagios start on boot
-  command: ln -sf /etc/init.d/nagios /etc/rcS.d/S99nagios
-
-- name: copy nagios conf to apache
-  command: /usr/bin/install -c -m 644 sample-config/httpd.conf /etc/apache2/sites-enabled/nagios.conf chdir={{ nagios_dir }}
-
-- name: create default nagios ui user and password
-  command: htpasswd -c -b /usr/local/nagios/etc/htpasswd.users nagiosadmin {{ nagios_pass }}
-
-- name: allow urls rewrites
-  command: a2enmod rewrite
-
-- name: allow cgi-bins
-  command: a2enmod cgi
-
-# download, install and configure nagios plugins
-
-- name: download nagios plugins
-  get_url:
-      url: "{{ plugin_download_site }}/{{ plugin_download_file }}"
-      dest: "{{ temp_dir }}"
-
-- name: extract nagios plugins
-  unarchive: src={{ temp_dir }}/{{ plugin_download_file }} dest={{ temp_dir }} creates={{ plugin_dir }} copy=no
-
-- name: check if plugin extracted directory exists
-  stat: path={{ plugin_dir }}
-  register: plugin_dir_exists
-
-- name: fails if plugin extracted directory does not exist
-  fail: msg="Extracted plugin directory {{ plugin_dir }} does not exist"
-  when: plugin_dir_exists.stat.exists == false
-
-- name: configure nagios plugins
-  command: ./configure --with-nagios-user=nagios --with-nagios-group=nagios chdir={{ plugin_dir }}
-
-- name: make plugins
-  command: make chdir={{ plugin_dir }}
-
-- name: make install plugins
-  command: make install chdir={{ plugin_dir }}
-
-# additional nagios configuration
-
-- name: ensures plugins directory exists
-  file:
-      path: /usr/local/nagios/libexec
-      state: directory
-
-- name: copy custom plugins
-  copy:
-      src: "{{ item }}"
-      dest: /usr/local/nagios/libexec
-      mode: 0755
-  with_fileglob:
-      - plugins/*
-
-- name: ensures commands directory exists
-  file:
-      path: /usr/local/nagios/opsmgr/commands
-      state: directory
-
-- name: copy custom commands
-  copy:
-      src: "{{ item }}"
-      dest: /usr/local/nagios/opsmgr/commands
-      mode: 0644
-  with_fileglob:
-      - commands/*
-
-- name: ensures hosts directory exists
-  file:
-      path: /usr/local/nagios/opsmgr/hosts
-      state: directory
-
-- name: copy custom hosts
-  copy:
-      src: "{{ item }}"
-      dest: /usr/local/nagios/opsmgr/hosts
-      mode: 0644
-  with_fileglob:
-      - hosts/*
-
-- name: tell nagios to read the commands files in our directory
-  lineinfile:
-      line: "cfg_dir=/usr/local/nagios/opsmgr/commands"
-      dest: "/usr/local/nagios/etc/nagios.cfg"
-
-- name: tell nagios to read the hosts files in our directory
-  lineinfile:
-      line: "cfg_dir=/usr/local/nagios/opsmgr/hosts"
-      dest: "/usr/local/nagios/etc/nagios.cfg"
-
-- name: validate nagios Config
-  command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
-
-# start nagios and apache services
-
-- name: restart apache
-  service: name=apache2 state=restarted enabled=yes
-
-- name: restart nagios
-  service: name=nagios state=restarted enabled=yes
-
-# clean temporary directories after installation
-
-- name: cleanup nagios core directory
-  command: rm -rf {{ nagios_dir }}
-
-- name: cleanup nagios plugin directory
-  command: rm -rf {{ plugin_dir }}
 

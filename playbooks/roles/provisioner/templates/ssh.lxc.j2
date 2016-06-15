@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+#
+{% for proxy in groups['opsmgr_hosts'] %}
+Host {{ item.hostname }}
+  Hostname {{ item.address }}
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  ProxyCommand ssh -q %r@{{ proxy }} nc -q0 %h %p
+  IdentityFile ~/.ssh/opsmgr.key
+
+{% endfor %}
+

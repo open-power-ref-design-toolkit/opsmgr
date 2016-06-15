@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  become: true
+
+  vars_files:
+    - vars/main.yml
+
+  pre_tasks:
+
+    - debug: var=groups.hosts
+    - debug: var=groups.all_containers
+
+    - name: print host ips
+      debug: var="{{ external_lb_vip_address }}"
+
+

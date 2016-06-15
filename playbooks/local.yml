@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  become: false
+  connection: local
+  vars_files:
+    - etc/vars.yml
+  roles:
+    - provisioner
+

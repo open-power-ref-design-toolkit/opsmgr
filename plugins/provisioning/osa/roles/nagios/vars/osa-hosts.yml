@@ -1,0 +1,19 @@
+---
+
+is_monitored: true
+has_agent: true
+
+apt_packages:
+  - ruby
+  - ruby-dev
+  - sysstat
+  - ntp
+  - pciutils
+  - python-pip
+
+pip_packages:
+  - python-dateutil
+
+gem_packages:
+  - sensu-plugin
+

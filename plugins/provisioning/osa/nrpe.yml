@@ -1,0 +1,11 @@
+---
+- hosts: hosts
+  become: true
+
+  vars_files:
+    - vars/main.yml
+    - roles/nrpe/vars/main.yml
+
+  roles:
+    - nrpe
+

@@ -1,6 +1,21 @@
 ---
-- hosts: nagios
+- hosts: localhost
+  become: false
+  vars_files:
+    - etc/vars.yml
+  tasks:
+    - name: register containers in dynamic inventory opsmgr_nagios group
+      add_host:
+          name:    "{{ item.hostname }}"
+          group:   "opsmgr_{{ item.role }}"
+          host:    "{{ item.host }}"
+          address: "{{ item.address }}"
+          lxc:     "{{ item }}"
+      with_items: "{{ opsmgr_containers }}"
+
+- hosts: opsmgr_nagios
   gather_facts: no
   become: true
   roles:
     - nagios
+

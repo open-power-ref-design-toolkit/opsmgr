@@ -1,0 +1,46 @@
+---
+- hosts: opsmgr_hosts
+  become: true
+
+  vars_files:
+    - vars/containers.yml
+
+  tasks:
+    - name: start containers if stopped
+      lxc_container:
+          name: "{{ ansible_hostname }}-{{ item.name }}"
+          state: started
+      with_items: "{{ containers }}"
+      register: lxc_info
+
+    - name: get iptables rules
+      shell: iptables -t nat -L
+      register: iptablesrules
+      always_run: yes
+    
+    - name: remove iptables rule to forward container port
+      command: |
+          iptables -t nat -D PREROUTING -p tcp
+          -d {{ ansible_default_ipv4.address }}
+          --dport {{ item.1.host }} -j DNAT -m comment
+          --to {{ lxc_info | lxcaddress(item.0.name) }}:{{ item.1.container }}
+          --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}"
+      when: iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}") == -1
+      with_subelements:
+        - "{{ containers }}"
+        - ports
+    
+    - name: save the iptables change
+      shell: iptables-save > /etc/iptables.rules
+    
+    - name: destroy containers
+      lxc_container:
+          name: "{{ ansible_hostname }}-{{ item.name }}"
+          state: absent
+      with_items: "{{ containers }}"
+
+    - name: shows container information on the screen
+      debug: msg="removed lxc container {{ ansible_hostname }}-{{ item.name }}"
+      with_items: "{{ containers }}"
+
+

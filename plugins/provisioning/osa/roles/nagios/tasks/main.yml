@@ -1,0 +1,72 @@
+---
+
+    # install pre-reqs
+
+    - name: installs prereq packages with apt
+      apt: name={{ item }} state=present update_cache=true
+      with_items: "{{ apt_packages }}"
+      when: is_monitored == true
+
+    - name: installs prereq packages with pip
+      pip: name={{ item }} state=present
+      with_items: "{{ pip_packages }}"
+      when: is_monitored == true
+
+    - name: installs prereq packages with gem
+      command: gem install --install-dir /var/lib/gems/1.9.1 --both --include-dependencies --rdoc --ri --force "{{ item }}"
+      with_items: "{{ gem_packages }}"
+      when: is_monitored == true
+
+    - name: configure sar data collection
+      template:
+          src: sysstat.j2
+          dest: /etc/default/sysstat
+          mode: 0644
+      when: is_monitored == true
+
+    - name: restart sysstat service
+      service: name=sysstat state=restarted
+      when: is_monitored == true
+
+    # install pre-reqs on deployer (if monitored)
+
+    - name: ensures plugins directory exists
+      file:
+          path: "{{ nrpe_dir }}/plugins"
+          state: directory
+      when: has_agent == true
+    
+    - name: copy plugins for roles
+      copy:
+          src: "plugins/"
+          dest: "{{ nrpe_dir }}/plugins/"
+          mode: 0755
+      when: has_agent == true
+    
+    - name: ensures nrpe.d directory exists
+      file:
+          path: "{{ nrpe_dir }}/commands"
+          state: directory
+      when: has_agent == true
+    
+    - name: copy nrpe.d for roles
+      copy:
+          src: "nrpe.d/"
+          dest: "{{ nrpe_dir }}/nrpe.d/"
+          mode: 0644
+      when: has_agent == true
+    
+    - name: ensures commands directory exists
+      file:
+          path: "{{ nrpe_dir }}/commands"
+          state: directory
+      when: has_agent == true
+    
+    - name: copy commands for roles
+      copy:
+          src: "commands/"
+          dest: "{{ nrpe_dir }}/commands/"
+          mode: 0644
+      when: has_agent == true
+
+

@@ -1,10 +1,17 @@
 ---
 
+# apt packages needed for lxc support
 apt_packages:
   - lxc
   - lxc-dev
   - python2.7-dev
   - python-pip
 
+# pip packages needed for lxc support
 pip_packages:
   - lxc-python2
+
+# host directory shared with all containers
+lxc_shared: /etc/opsmgr/shared
+
+

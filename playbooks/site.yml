@@ -1,4 +1,6 @@
 ---
 - include: opsmgr.yml
+- include: local.yml
 - include: nagios.yml
-- include: nrpe.yml
+#- include: targets.yml
+
