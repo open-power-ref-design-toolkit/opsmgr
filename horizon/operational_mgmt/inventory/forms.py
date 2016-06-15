@@ -171,9 +171,9 @@ class AddResourceForm(forms.SelfHandlingForm):
 
             if rc is not 0:
                 # Log details of the unsuccessful attempt.
-                logging.error("%s: Attemp to add a resource to rack: %s, using"
-                              " label: %s, address: %s, user id: %s, eia"
-                              " location %s, and authentication method:"
+                logging.error("%s: Attempt to add a resource to rack: %s, "
+                              "using label: %s, address: %s, user id: %s, "
+                              "eia location %s, and authentication method:"
                               " %s failed.", __method__,
                               self.initial['rackid'], data['label'],
                               data['ip_address'], data['userID'],

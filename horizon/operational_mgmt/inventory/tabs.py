@@ -23,7 +23,7 @@ from operational_mgmt.inventory import tables
 from operational_mgmt import rack
 from operational_mgmt import resource
 
-import opsmgr.inventory.plugins as plugins
+from opsmgr.inventory.plugins import PluginApplication
 import opsmgr.inventory.rack_mgr as rack_mgr
 import opsmgr.inventory.resource_mgr as resource_mgr
 
@@ -114,7 +114,7 @@ def retrieve_application_links(self, request):
     app_link_data = {}
 
     # Retrieve the applications' link information
-    applications = plugins.get_operations_plugins()
+    applications = PluginApplication.get_operations_plugins()
 
     # Since the server could have multiple IP addresses, for
     # now we will use the host value from the request instead.
@@ -153,8 +153,6 @@ class RackTabBase(tabs.TableTab):
         # Store the rack_id of the current rack into
         # the AddResource action
         tables.AddResourceLink.rack_id = self.rack_id
-        # ... and the RemoveResources action
-        tables.RemoveResourcesLink.rack_id = self.rack_id
         # Return the list of resources
         return retrieve_rack_resources(self)
 

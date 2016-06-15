@@ -13,10 +13,9 @@
 # limitations under the License.
 
 from django.core.urlresolvers import reverse
-from django.core.urlresolvers import reverse_lazy
+from django import shortcuts
 from django.template import defaultfilters as filters
 from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
 from horizon import exceptions
 from horizon import messages
 from horizon import tables
@@ -42,74 +41,61 @@ class AddResourceLink(tables.LinkAction):
             return self.url
 
 
-class RemoveResourcesLink(tables.LinkAction):
-    # Link opens custom dialog to remove multiple resources from
-    # a rack definition
+class RemoveResources(tables.Action):
     name = "removeResources"
-    verbose_name = _("Remove Resources")
-    url = "horizon:op_mgmt:inventory:removeResources"
-    classes = ("ajax-modal", "btn-danger")
-    icon = "trash"
-    rack_id = ""
+    verbose_name = "Remove Resource"
+    classes = ('btn-danger', 'btn-detach')
+    help_text = _("This action cannot be undone.")
 
-    # required to prime the remove resources dialog with the rack id
-    def get_link_url(self):
-        if self.rack_id != "":
-            return reverse(self.url, args=[self.rack_id])
-        else:
-            return self.url
+    def get_default_attrs(self):
+        """Returns a list of the default HTML attributes for the action."""
+        attrs = super(RemoveResources, self).get_default_attrs()
+        # This action must behave like a batch-action activity with
+        # regards to enablement/disablement...
+        attrs.update({'data-batch-action': 'true'})
+        return attrs
 
-    def allowed(self, request, datum):
-        return False  # hide Remove Resources function for now
+    def get_success_url(self, request):
+        return reverse('horizon:op_mgmt:inventory:index')
 
+    def handle(self, data_table, request, object_ids):
+        __method__ = 'tables.RemoveResources.handle'
+        logging.debug("%s: Attempt to remove resources %s ",
+                      __method__, object_ids)
 
-class RemoveResourcesAction(tables.DeleteAction):
-    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
-
-    @staticmethod
-    def action_present(count):
-        return ungettext_lazy(
-            u"Remove Resource",
-            u"Remove Resources",
-            count
-        )
-
-    @staticmethod
-    def action_past(count):
-        return ungettext_lazy(
-            u"Removed Resource",
-            u"Removed Resources",
-            count
-        )
-
-    def delete(self, request, obj_id):
-        __method__ = 'tables.RemoveResourcesAction.delete'
-        resource_ids = []
-        resource_ids.append(obj_id)
+        if len(object_ids) <= 0:
+            return shortcuts.redirect(self.get_success_url(request))
 
         try:
             (rc, result_dict) = resource_mgr.remove_resource(None, False,
-                                                             resource_ids)
+                                                             object_ids)
             if rc != 0:
                 # Log details of the unsuccessful attempt.
-                logging.error("%s: Attemp to remove resource with id: %s "
-                              " failed.", __method__, obj_id)
+                logging.error("%s: Attempt to remove resources "
+                              "failed.", __method__)
                 logging.error(
-                    "%s: Unable to remove resource with id %s."
-                    " The return code is: %s.  Details of the attempt: "
-                    " %s", __method__, obj_id, rc, result_dict)
-                msg = str('Attempt to remove resources was not successful. '
-                          'Details of the attempt: ' + result_dict)
+                    "%s: Unable to remove resources. A Non-0 "
+                    " return code returned from resource_mgr.remove_resource."
+                    " The return code is: %s. Details of the attempt: "
+                    " %s", __method__, rc, result_dict)
+                # Show generic failure message
+                msg = str(
+                    'Attempt to remove resources was not successful.  ' +
+                    'Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
             else:
-                return  # allow the base class to display the success message
+                # Show generic success message
+                msg = str('Resources successfully removed.')
+                messages.success(request, msg)
         except Exception as e:
             redirect = reverse('horizon:op_mgmt:inventory:index')
             logging.error("%s: Exception received trying to remove  "
-                          "resource with id %s.  Exception is: %s",
-                          __method__, obj_id, e)
+                          "resources with ids %s.  Exception is: %s",
+                          __method__, object_ids, e)
             exceptions.handle(request, _('Unable to remove resources.'),
                               redirect=redirect)
+
+        return shortcuts.redirect(self.get_success_url(request))
 
 
 class EditResourceLink(tables.LinkAction):
@@ -285,8 +271,9 @@ class ResourcesTable(tables.DataTable):
         multi_select = False
         row_actions = (EditResourceLink, ChangePasswordLink,
                        RemoveResourceLink)
-        table_actions = (ResourceFilterAction, AddResourceLink,
-                         RemoveResourcesLink)
+        table_actions = (ResourceFilterAction, AddResourceLink)
+        # table_actions = (ResourceFilterAction, AddResourceLink,
+        #                  RemoveResources)
 
 
 class RackDetailsTable(tables.DataTable):
@@ -308,22 +295,3 @@ class RackDetailsTable(tables.DataTable):
         # remove rack to be present (Remove Rack is hidden
         # via its 'allowed' function)
         table_actions = (EditRackLink, RemoveRackLink)
-
-
-class RemoveResourcesTable(tables.DataTable):
-    name = NameLinkColumn('name',
-                          verbose_name=_('Label'))
-    type = tables.Column('type',
-                         verbose_name=_("Type"))
-    hostname = tables.Column('hostname',
-                             verbose_name=_("Host Name"))
-    ip_address = tables.Column('ip_address',
-                               verbose_name=_("IP Address"))
-
-    class Meta(object):
-        name = "removeResources"
-        verbose_name = _("Remove Resources")
-        multi_select = True
-        # Allow resource filtering, and the ability to remove
-        # multiple resources as table actions
-        table_actions = (ResourceFilterAction, RemoveResourcesAction)
