@@ -5,11 +5,12 @@ import paramiko
 
 from backports import configparser
 from opsmgr.inventory.interfaces.IManagerDeviceHook import IManagerDeviceHook
-from opsmgr.inventory import persistent_mgr
+from opsmgr.inventory.interfaces.IOperationsPlugin import IOperationsPlugin
+from opsmgr.inventory import persistent_mgr, plugins
 from opsmgr.common import exceptions
 from opsmgr.common.utils import entry_exit
 
-class NagiosPlugin(IManagerDeviceHook):
+class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
 
     CONFIG_PATH = "/usr/local/nagios/opsmgr"
     HOSTS_DIR = CONFIG_PATH + "/hosts"
@@ -19,8 +20,23 @@ class NagiosPlugin(IManagerDeviceHook):
     RELOAD_COMMAND = "service nagios reload"
 
     OPSMGR_CONF = "/etc/opsmgr/opsmgr.conf"
-    OPSMGR_SECTION = "NAGIOS"
-    OPSMGR_NAGIOS_SERVER = "server"
+    NAGIOS_SECTION = "NAGIOS"
+    NAGIOS_SERVER = "server"
+
+    @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
+    def get_application_url():
+        if os.path.exists(NagiosPlugin.OPSMGR_CONF):
+            parser = configparser.ConfigParser()
+            parser.read(NagiosPlugin.OPSMGR_CONF, encoding='utf-8')
+            web_protcol = parser.get(NagiosPlugin.NAGIOS_SECTION, "web_protocol")
+            web_proxy = parser.get(NagiosPlugin.NAGIOS_SECTION, "web_proxy")
+            web_port = parser.get(NagiosPlugin.NAGIOS_SECTION, "web_port")
+            web_path = parser.get(NagiosPlugin.NAGIOS_SECTION, "web_path")
+            return plugins.PluginApplication("nagios", "monitoring", web_protcol, web_proxy,
+                                             web_port, web_path)
+        else:
+            return None
 
     @staticmethod
     def add_device_pre_save(device):
@@ -180,5 +196,5 @@ class NagiosPlugin(IManagerDeviceHook):
         if os.path.exists(NagiosPlugin.OPSMGR_CONF):
             parser = configparser.ConfigParser()
             parser.read(NagiosPlugin.OPSMGR_CONF, encoding='utf-8')
-            server = parser.get(NagiosPlugin.OPSMGR_SECTION, NagiosPlugin.OPSMGR_NAGIOS_SERVER)
+            server = parser.get(NagiosPlugin.NAGIOS_SECTION, NagiosPlugin.NAGIOS_SERVER)
         return server

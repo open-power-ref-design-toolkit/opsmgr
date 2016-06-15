@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='opsmgr-plugins-operations-nagios',
+    name='opsmgr-plugins-operations-elk',
     version='0.1',
 
-    description='Operational Management Operations Plugin for Nagios',
+    description='Operational Management Operations Plugin for ELK',
 
     author='',
     author_email='',
@@ -26,17 +26,14 @@ setup(
 
     namespace_packages=['opsmgr','opsmgr.plugins','opsmgr.plugins.operations'],
 
-    provides=['opsmgr.plugins.operations.nagios'],
+    provides=['opsmgr.plugins.operations.elk'],
 
     packages=find_packages(),
     include_package_data=True,
 
     entry_points={
-        'opsmgr.inventory.interfaces.IManagerDeviceHook': [
-            'Nagios = opsmgr.plugins.operations.nagios.NagiosOperationsPlugin:NagiosPlugin',
-        ],
         'opsmgr.inventory.interfaces.IOperationsPlugin': [
-            'Nagios = opsmgr.plugins.operations.nagios.NagiosOperationsPlugin:NagiosPlugin',
+            'ELK = opsmgr.plugins.operations.elk.ELKOperationsPlugin:ELKPlugin',
         ],
     },
 

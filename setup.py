@@ -49,6 +49,7 @@ setup(
         'opsmgr.inventory.interfaces.IManagerDevicePlugin': [],
         'opsmgr.inventory.interfaces.IManagerDeviceHook': [],
         'opsmgr.inventory.interfaces.IManagerRackHook': [],
+        'opsmgr.inventory.interfaces.IOperationsPlugin': [],
     },
 
     data_files=[('etc', ['etc/logging.yaml'])],
