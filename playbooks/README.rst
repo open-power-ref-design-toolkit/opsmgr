@@ -33,7 +33,8 @@ OpsMgr provisioning is accomplished via ansible playbooks. The "core" integratio
 The following core plays/roles are implemented so far:
 - bootstrap.yml: convenience play to set up a common ssh key and sudoers access (as needed) all inventory hosts.
 - site.yml: end-to-end playbook that orchestrates the main plays (except bootstrap and teardown).
-- opsmgr.yml: build lxc containers for integrated open applications and adds them into dynamic inventory.
+- hosts.yml: build lxc containers for integrated open applications and adds them into dynamic inventory.
+- opsmgr.yml Installs the opsmgr CLI, UI and plugins in a horizon container
 - local.yml: sets up ssh key and sudoers for the created containers.
 - <app>.yml: plays that are responsible for installing the server side of integrated open applications.
 - targets.yml: play that discovers what types of resources are defined into inventory and spawns calls to the integrated provisioning plugins.
@@ -55,7 +56,7 @@ Pre-requisites:
 - Ansible > 1.9 < 2.0
 
 Configuration files:
-- "inventory" contains the host groups to host lxc containers (opsmgr_hosts) and that point to managed endpoints (opsmgr_targets).
+- "inventory" contains the host groups to host lxc containers (opsmgr_hosts), the opsmgr ui (opsmgr) and that point to managed endpoints (opsmgr_targets).
 - "vars/containers.yml" defines the lxc containers that will be created and their "roles" (e.g. a container that hosts Nagios Core is assigned the "nagios" role). This field of the container controls which integrated play will be called afterwards to install the open integrated applications.
 
 How to run:

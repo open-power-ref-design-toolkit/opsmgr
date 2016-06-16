@@ -1,0 +1,30 @@
+cli:
+  version: 1
+  disable_existing_loggers: false
+  formatters:
+    simple:
+      format: '%(asctime)s %(thread)d %(threadName)s %(levelname)s %(message)s'
+  handlers:
+    info_file_handler:
+      class: logging.FileHandler
+      level: INFO
+      formatter: simple
+      filename: /var/log/opsmgr/opsmgr.log
+      encoding: utf8
+    error_file_handler:
+      class: logging.FileHandler
+      level: ERROR
+      formatter: simple
+      filename: /var/log/opsmgr/opsmgr_error.log
+      encoding: utf8
+  loggers:
+    my_module:
+      level: ERROR
+      handlers:
+      - error_file_handler
+      propagate: false
+  root:
+    level: INFO
+    handlers:
+    - info_file_handler
+    - error_file_handler

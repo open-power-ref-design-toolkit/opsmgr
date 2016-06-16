@@ -1,0 +1,17 @@
+[DEFAULT]
+passphrase = {{ random_passphrase.stdout }}
+
+[DATABASE]
+connection = mysql+pymysql://{{ db_user }}:{{ db_password }}@{{ db_host }}/{{ db_name }}
+
+[NAGIOS]
+server = {{ nagios_container_ip }}
+web_protocol = http://
+web_proxy = {{ controller_ip }}
+web_port = 8081
+web_path = /nagios
+
+[ELK]
+web_protocol = https://
+web_proxy = {{ controller_ip }}
+web_port = 8433

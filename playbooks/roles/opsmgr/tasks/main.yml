@@ -1,160 +1,111 @@
 ---
 
-    # install pre-reqs on lxc host
-    
-    - name: installs prereq packages with aptitude
-      apt: name={{ item }} state=present update_cache=true
-      with_items: "{{ apt_packages }}"
-    
-    - name: installs prereq packages with pip
-      pip: name={{ item }}
-      with_items: "{{ pip_packages }}"
-    
-    # provision opsmgr lxc containers
-    
-    - name: validate the shared directory on the host is created
-      file: path={{ lxc_shared }} state=directory mode=0755
-    
-    - name: create containers
-      lxc_container:
-          name: "{{ ansible_hostname }}-{{ item.name }}"
-          template: ubuntu
-          state: stopped
-          template_options: >
-              --release {{ item.release }}
-              --user {{ ansible_ssh_user }}
-          container_command: |
-              [[ ! -d "/{{ item.mount }}" ]] && mkdir -p "/{{ item.mount }}"
-          container_config:
-              - "lxc.mount.entry = {{ lxc_shared }} {{ item.mount }} none rw,bind 0 0"
-              - "lxc.aa_profile = unconfined"
-      with_items: "{{ containers }}"
+# install pre-reqs
 
-    - name: add static interface if static addressing
-      template:
-          src: interfaces.j2
-          dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/network/interfaces
-          mode: 0644
-      with_items: "{{ containers }}"
-      when: item.address is defined
-    
-    # configure connection parameters for each container
-    
-    - name: create .ssh directory
-      file:
-          path: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/home/{{ ansible_ssh_user }}/.ssh
-          owner: "{{ ansible_ssh_user }}"
-          group: "{{ ansible_ssh_user }}"
-          mode: 0700
-          state: directory
-      with_items: "{{ containers }}"
-    
-    - name: copy ssh key
-      copy:
-          src: opsmgr.pub
-          dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/home/{{ ansible_ssh_user }}/.ssh/authorized_keys
-          owner: "{{ ansible_ssh_user }}"
-          group: "{{ ansible_ssh_user }}"
-          mode: 0600
-      with_items: "{{ containers }}"
-    
-    - name: assures sudoers.d directory exists
-      file:
-        path: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d
-        owner: root
-        group: root
-        mode: 0755
-        state: directory
-      with_items: "{{ containers }}"
-    
-    - name: assures sudoers has include
-      lineinfile:
-        dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers
-        line: "#includedir /etc/sudoers.d"
-        state: present
-        validate: "/usr/sbin/visudo -cf %s"
-      with_items: "{{ containers }}"
-    
-    - name: create sudoers include file
-      template:
-        src: sudoers.d.j2
-        dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d/opsmgr_sudoers
-        owner: root
-        group: root
-        mode: 0440
-        validate: "/usr/sbin/visudo -cf %s"
-      with_items: "{{ containers }}"
-    
-    - name: start containers, fix permissions, install python
-      lxc_container:
-        name: "{{ ansible_hostname }}-{{ item.name }}"
-        state: started
-        container_command: |
-            chown -R {{ ansible_ssh_user }}:{{ ansible_ssh_user }} /home/{{ ansible_ssh_user }}
-            #while [[ ! $(ifconfig eth0) =~ "inet addr:" ]]; do
-            #  sleep 1
-            #done
-            #sleep 3
-            apt-get update
-            apt-get install -y python
-        container_config:
-            - "lxc.start.auto = 1"
-      with_items: "{{ containers }}"
-      register: lxc_info
-    
-    #- debug: var=lxc_info
-    
-    - name: wait for containers to be up
-      wait_for:
-          port: 22
-          delay: 10
-          host: "{{ lxc_info | lxcaddress(item.name) }}"
-      with_items: "{{ containers }}"
+- name: installs prereq packages with aptitude
+  apt: name={{ item }} state=present update_cache=true
+  with_items: "{{ apt_packages }}"
 
-    # configure host iptables parameters for each container
-    
-    - name: get iptables rules
-      shell: iptables -t nat -L
-      register: iptablesrules
-      always_run: yes
-    
-    - name: create iptables rule to forward container port
-      command: |
-          iptables -t nat -I PREROUTING -p tcp
-          -d {{ ansible_default_ipv4.address }}
-          --dport {{ item.1.host }} -j DNAT -m comment
-          --to {{ lxc_info | lxcaddress(item.0.name) }}:{{ item.1.container }}
-          --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}"
-      when: iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}") == -1
-      with_subelements:
-        - "{{ containers }}"
-        - ports
-    
-    - name: save the iptables change
-      shell: iptables-save > /etc/iptables.rules
-    
-    - name: load iptables on boot
-      lineinfile:
-          line: "pre-up iptables-restore < /etc/iptables.rules"
-          dest: "/etc/network/interfaces"
-    
-    # add containers to dynamic inventory
-    
-    - name: register containers in dynamic inventory
-      add_host:
-          name: "{{ ansible_hostname }}-{{ item.name }}"
-          group: "opsmgr_containers"
-          host: "{{ ansible_hostname }}"
-          hostaddr: "{{ ansible_default_ipv4.address }}"
-          address: "{{ lxc_info | lxcaddress(item.name) }}"
-          lxc: "{{ item }}"
-          #ansible_connection: lxc
-      with_items: "{{ containers }}"
+- name: installs prereq packages with pip
+  pip: name={{ item }}
+  with_items: "{{ pip_packages }}"
 
-    - debug: var=hostvars[item]
-      when: hostvars[item].host == ansible_hostname
-      with_items: groups['opsmgr_containers']
+# copy the code to server
 
+- name: create tmp director for the code
+  file:
+    path: "{{ tmp_install_directory }}"
+    state: directory
+    mode: 0700
 
+- name: copy code to server
+  copy:
+    src: "{{ playbook_dir }}/.."
+    dest: "{{ tmp_install_directory }}"
 
+# opstmgr python package integration
 
+- name: install opsmgr modules
+  command: python setup.py install
+  args:
+    chdir: "{{ tmp_install_directory }}/{{ item }}"
+  with_items: "{{ opsmgr_modules }}"
+  notify: restart apache
+
+# drop enabled files for horizon
+- name: find the enabled directory
+#  shell: find / -type d -print0 2> /dev/null | grep -FzZ '/site-packages/openstack_dashboard/local/enabled'
+  shell: echo /openstack/venvs/horizon-13.1.0/lib/python2.7/site-packages/openstack_dashboard/local
+  register: enabled_directory
+
+- name: Copy the ui files into the enabled directory
+  copy:
+    src: "{{ playbook_dir }}/../horizon/enabled"
+    dest: "{{ enabled_directory.stdout }}"
+  notify: restart apache
+
+# Create /etc/opsmgr and /var/log/opsmgr
+- name: Create /etc/opsmgr
+  file:
+    path: "/etc/opsmgr"
+    state: directory
+    mode: 0755
+
+- name: Create /etc/opsmgr/logging.yaml
+  template:
+    src: logging.yaml.j2
+    dest: /etc/opsmgr/logging.yaml
+
+- name: Generate a random passpharse to encrypt the passwords in the db with
+  shell: python -c "import base64;import os;print(str(base64.b64encode(os.urandom(32))))"
+  register: random_passphrase  
+
+- name: Create /etc/opsmgr/opsmgr.conf
+  template:
+    src: opsmgr.conf.j2
+    dest: /etc/opsmgr/opsmgr.conf
+    force: no
+
+- name: Create /var/log/opsmgr
+  file:
+    path: "/var/log/opsmgr/"
+    state: directory
+    mode: 0777
+
+# Create the database
+- name: Create DB for service
+  mysql_db:
+    login_user: "{{ db_login_user }}"
+    login_password: "{{ db_login_password }}"
+    login_host: "{{ db_login_host }}"
+    name: "{{ db_name }}"
+    state: "present"
+
+- name: Grant access to the DB for the service
+  mysql_user:
+    login_user: "{{ db_login_user }}"
+    login_password: "{{ db_login_password }}"
+    login_host: "{{ db_login_host }}"
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    host: "{{ item }}"
+    state: "present"
+    priv: "{{ db_name }}.*:ALL"
+  with_items:
+    - "localhost"
+    - "%"
+
+- name: Creae the database tables
+  command: opsmgr-admin db_sync
+
+# Create the default rack
+- name: Create the default rack
+  command: opsmgr add_rack -l default
+  ignore_errors: yes # rack might already exist
+
+# remove the code after it is installed
+
+- name: Remove tmp directory for the code
+  file:
+    path: "{{ tmp_install_directory }}"
+    state: absent

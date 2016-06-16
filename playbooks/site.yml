@@ -1,5 +1,5 @@
 ---
-- include: opsmgr.yml
+- include: hosts.yml
 - include: local.yml
 - include: nagios.yml
 #- include: targets.yml
