@@ -126,7 +126,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
 
     if ssh_key:
         key_info = Key()
-        key_info.device = device_info
+        key_info.resource = device_info
         key_info.type = "RSA"
         key_info.value = ssh_key
         if password:
@@ -847,7 +847,7 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
             key_info = device.key
         else: #new key needs created
             key_info = Key()
-            key_info.device = device
+            key_info.resource = device
             key_info.type = "RSA"
         key_info.value = ssh_key_string
         if password:
