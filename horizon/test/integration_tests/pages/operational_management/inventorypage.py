@@ -24,7 +24,8 @@ class ResourcesTable(tables.TableRegion):
     # the resources table on the Inventory page
     name = 'resources'
     ADD_RESOURCE_FORM_FIELDS = ("label", "eiaLocation", "ip_address",
-                                "userID", "password")
+                                "auth_method", "userID", "password", "sshKey",
+                                "passphrase")
     EDIT_RESOURCE_FORM_FIELDS = ("label", "eiaLocation", "ip_address",
                                  "auth_method", "userID", "password", "sshKey",
                                  "passphrase")
@@ -78,6 +79,8 @@ class InventoryPage(basepage.BaseNavigationPage):
     # has a uniqifier at the end.  So use the correct syntax to get
     # the item whose id starts with 'rackDetailsLink'
     _rack_details_locator = (by.By.CSS_SELECTOR, 'a[id^="rackDetailsLink"]')
+    _password_field_locator = (by.By.ID, 'id_password')
+    _sshkey_field_locator = (by.By.ID, 'id_sshKey')
 
     def __init__(self, driver, conf):
         super(InventoryPage, self).__init__(driver, conf)
@@ -105,16 +108,40 @@ class InventoryPage(basepage.BaseNavigationPage):
         edit_rack_form.notes.text = notes
         edit_rack_form.submit()
 
-    def add_resource(self, name, eiaLocation, ip_address,
-                     userID, password):
+    def add_resource(self, name, eiaLocation, ip_address, auth_method,
+                     userID, password, sshKey, passphrase):
         # Perform the add resource
         add_resource_form = self.resources_table.add_resource()
         add_resource_form.label.text = name
         add_resource_form.eiaLocation.text = eiaLocation
         add_resource_form.ip_address.text = ip_address
-        add_resource_form.userID.text = userID
-        add_resource_form.password.text = password
+        add_resource_form.auth_method.value = auth_method
+
+        # based on authentication method passed in, fill in the
+        # visible fields
+        if (auth_method == u'1'):
+            add_resource_form.userID.text = userID
+            add_resource_form.sshKey.text = sshKey
+            add_resource_form.passphrase.text = passphrase
+        else:
+            add_resource_form.userID.text = userID
+            add_resource_form.password.text = password
         add_resource_form.submit()
+
+    def is_authMethod_set(self, name, auth_method):
+        # find the resource that we need to check
+        row = self._get_row_with_resource_name(name)
+
+        # open edit resource dialog on the item
+        edit_form = self.resources_table.edit_resource(row)
+
+        # check the authentication method for the page
+        if (int(edit_form.auth_method.value) == int(auth_method)):
+            edit_form.cancel()
+            return True
+        else:
+            edit_form.cancel()
+            return False
 
     def edit_resource(self, name, new_name, eiaLocation, ip_address,
                       auth_method, userID, password, sshKey, passphrase):
@@ -126,8 +153,10 @@ class InventoryPage(basepage.BaseNavigationPage):
         edit_form.eiaLocation.text = eiaLocation
         edit_form.ip_address.text = ip_address
         edit_form.auth_method.value = auth_method
-        # based on authentication method selected, fill in the
-        # visible fields
+
+        # based on authentication method passed in, fill in the
+        # visible fields (setting the auth method should force the
+        # following fields to be displayed).
         if (auth_method == u'1'):
             edit_form.userID.text = userID
             edit_form.sshKey.text = sshKey
