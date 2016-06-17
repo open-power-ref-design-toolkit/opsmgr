@@ -268,12 +268,11 @@ class ResourcesTable(tables.DataTable):
     class Meta(object):
         name = "resources"
         verbose_name = _("Resources")
-        multi_select = False
+        multi_select = True
         row_actions = (EditResourceLink, ChangePasswordLink,
                        RemoveResourceLink)
-        table_actions = (ResourceFilterAction, AddResourceLink)
-        # table_actions = (ResourceFilterAction, AddResourceLink,
-        #                  RemoveResources)
+        table_actions = (ResourceFilterAction, AddResourceLink,
+                         RemoveResources)
 
 
 class RackDetailsTable(tables.DataTable):
