@@ -17,30 +17,14 @@
 #    under the License.
 
 if [ "$1" == "--help" ]; then
-    echo "Usage: deploy-elk"
+    echo "Usage: create-cluster-opsmgr [-i <controllernode1,...>] [-s <storagenode1,...>] [-c <computenode1,...>]"
     echo ""
     echo "export KIBANA_PASSWORD=                            Not applicable unless set"
     exit 1
 fi
 
-if [ ! -e scripts/deploy-elk.sh ]; then
+if [ ! -e scripts/bootstrap-opsmgr.sh ]; then
     echo "This script must be run from /root/os-services/opsmgr or opsmgr"
-    exit 1
-fi
-
-# Checkout the openstack-ansible repository
-if [ ! -d /opt/openstack-ansible ]; then
-    echo "Error -- openstack-ansible is not configured!"
-    exit 1
-fi
-
-if [ ! -d /etc/ansible ]; then
-    echo "Error -- ansible is not configured!"
-    exit 1
-fi
-
-if [ ! -d /etc/openstack_deploy ]; then
-    echo "Error -- openstack is not configured!"
     exit 1
 fi
 
@@ -51,35 +35,17 @@ echo "DEPLOY_AIO=$DEPLOY_AIO"
 echo "InfraNodes=$infraNodes"
 echo "allNodes=$allNodes"
 
-echo "Copying opsmgr user variables and secrets to ${TARGET_OSA_DEPLOY}/openstack_deploy"
-cp -R etc/openstack_deploy ${TARGET_OSA_DEPLOY}
-
 echo "Generating passwords"
 
 # Set password in file for named secret if it is not set in file and environment variable is set
 set_passwd /etc/openstack_deploy/user_secrets_opsmgr.yml kibana_password $KIBANA_PASSWORD
 
 # Ensure all needed passwords and tokens are generated
+pushd /opt/openstack-ansible >/dev/null 2>&1
 ./scripts/pw-token-gen.py --file /etc/openstack_deploy/user_secrets_opsmgr.yml
-
-echo "Running OSA playbooks"
-
-pushd /opt/openstack-ansible/playbooks >/dev/null 2>&1
-run_ansible setup-hosts.yml               # Setup the hosts and build containers
-rc=$?
-if [ $rc != 0 ]; then
-    echo "Failed setup-hosts.yml"
-    exit 2
-fi     
-run_ansible setup-infrastructure.yml      # Run the playbook to configure containers
-rc=$?
-if [ $rc != 0 ]; then
-    echo "Failed setup-infrastructure.yml"
-    exit 3
-fi     
 popd >/dev/null 2>&1
 
-echo "Running ELK playbooks"
-
-cd playbooks_elk
+echo "Running elk playbooks"
+pushd playbooks_elk >/dev/null 2>&1
 run_ansible elk.yml
+popd >/dev/null 2>&1
