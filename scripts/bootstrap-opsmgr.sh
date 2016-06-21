@@ -23,7 +23,7 @@ if [ "$1" == "--help" ]; then
     exit 1
 fi
 
-if [ ! -e scripts/bootstrap-opsmgr ]; then
+if [ ! -e scripts/bootstrap-opsmgr.sh ]; then
     echo "This script must be run from /root/os-services/opsmgr or opsmgr"
     exit 1
 fi
