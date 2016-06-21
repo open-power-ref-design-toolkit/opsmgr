@@ -21,6 +21,39 @@ set -o pipefail
 
 ulimit -n 100000
 
+function git-clone () {
+    GIT_URL=$1
+    DESIRED_TAG=$2
+    TARGET_DIR=$3
+    echo "GIT_URL=$GIT_URL"
+    echo "DESIRED_TAG=$DESIRED_TAG"
+    pushd . >/dev/null 2>&1
+    if [ -d $TARGET_DIR ]; then
+        cd $TARGET_DIR
+        TAG=`git symbolic-ref -q --short HEAD || git describe --tags --exact-match`
+        if [ "$TAG" == "$DESIRED_TAG" ]; then
+            git pull
+            rc=$?
+        else
+            git checkout $DESIRED_TAG
+            rc=$?
+        fi
+    else
+        git clone $GIT_URL $TARGET_DIR
+        rc=$?
+        if [ $rc == 0 ]; then
+            cd $TARGET_DIR
+            git checkout $DESIRED_TAG
+            rc=$?
+        fi
+    fi
+    popd >/dev/null 2>&1
+    if [ $rc != 0 ]; then
+        echo "Failed git $TARGET_DIR, rc=$rc"
+        exit 3
+    fi
+}
+
 function set_passwd() {
     FILE=$1
     KEY=$2
@@ -47,7 +80,7 @@ function run_ansible {
 }
 
 # This inventory is tied to manufacturing
-GENESIS_INVENTORY="/var/oprc/inventory"
+GENESIS_INVENTORY="/var/oprc/inventory.yml"
 
 # Reduce list to unique items
 function mkListsUnique() {
