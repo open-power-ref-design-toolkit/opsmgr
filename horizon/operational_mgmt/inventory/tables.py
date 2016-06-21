@@ -44,7 +44,9 @@ class AddResourceLink(tables.LinkAction):
 class RemoveResources(tables.Action):
     name = "removeResources"
     verbose_name = "Remove Resource"
-    classes = ('btn-danger', 'btn-detach')
+    action_type = "danger"
+    icon = "trash"
+    classes = ('btn-danger', )
     help_text = _("This action cannot be undone.")
 
     def get_default_attrs(self):
@@ -268,11 +270,11 @@ class ResourcesTable(tables.DataTable):
     class Meta(object):
         name = "resources"
         verbose_name = _("Resources")
-        multi_select = True
+        multi_select = False
         row_actions = (EditResourceLink, ChangePasswordLink,
-                       RemoveResourceLink)
-        table_actions = (ResourceFilterAction, AddResourceLink,
-                         RemoveResources)
+                       RemoveResources)
+        table_actions = (ResourceFilterAction, AddResourceLink,)
+        #                 RemoveResources)
 
 
 class RackDetailsTable(tables.DataTable):
