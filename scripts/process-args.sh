@@ -31,7 +31,7 @@ function set_passwd() {
             PASSWORD="${PATTERN##*:}"          # Delete everything before ':'
             PASSWORD="${PASSWORD// /}"         # Delete all blanks.  There is no newline
             if [ -z "$PASSWORD" ]; then
-                sed -i "s/$KEY:.*/$KEY: ${VALUE}/" $FILE
+                sed -i "s/^$KEY:.*/$KEY: ${VALUE}/" $FILE
             fi
         fi
     fi
