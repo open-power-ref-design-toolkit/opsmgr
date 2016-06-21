@@ -19,6 +19,6 @@
   roles:
     - { role: "haproxy_elk" }
   vars_files:
-    - "{{ oa_path }}/playbooks/vars/configs/haproxy_config.yml"
+    - "{{ osa_path }}/playbooks/vars/configs/haproxy_config.yml"
   vars:
     is_metal: "{{ properties.is_metal|default(false) }}"
