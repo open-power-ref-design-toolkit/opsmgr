@@ -20,7 +20,7 @@ EOT
 while getopts "d:i:e:k:u:p:x" FLAG;
 do 
   case ${FLAG} in
-    x) export set x ;;
+    x) set -x ;;
     d) export DASHBOARD=${OPTARG} ;;
     i) export ELK_IP=${OPTARG} ;;
     e) export ELASTIC_PORT=${OPTARG} ;;
