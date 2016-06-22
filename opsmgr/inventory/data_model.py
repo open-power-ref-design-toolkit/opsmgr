@@ -1,4 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Text, DateTime, SmallInteger
+from sqlalchemy import PickleType
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -116,11 +117,14 @@ class ResourceRole(Base):
     resource_id = Column(Integer, ForeignKey('resource.resource_id'),
                          primary_key=True, nullable=False)
     role = Column(String(30), primary_key=True, nullable=False)
+    additional_data = Column(PickleType)
 
-    def __init__(self, resource_id, role):
+    def __init__(self, resource_id, role, additional_data):
         self.resource_id = resource_id
         self.role = role
+        self.additional_data = additional_data
 
     def __repr__(self):
-        return "<ResourceRole('%s', '%s')>" % (self.resource_id, self.role)
+        return "<ResourceRole('%s', '%s', '%s')>" % \
+               (self.resource_id, self.role, self.additional_data)
 

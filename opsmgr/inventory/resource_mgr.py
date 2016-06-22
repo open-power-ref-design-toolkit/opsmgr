@@ -669,16 +669,34 @@ def get_resource_id_by_label(resource_label):
     return resource_id
 
 @entry_exit(exclude_index=[], exclude_name=[])
-def add_resource_roles(resource_id, roles):
+def add_resource_roles(resource_label=None, resource_id=None, roles=None, additional_data=None):
     """
     And roles to an existing resource
     """
-    roles_to_add = []
+    message = None
+    if roles is None:
+        roles = []
+
     session = persistent_mgr.create_database_session()
+    if resource_id is not None:
+        pass
+    elif resource_label is not None:
+        resource = persistent_mgr.get_device_by_label(session, resource_label)
+        if resource is not None:
+            resource_id = resource.resource_id
+    else:
+        message = "Error: add_role called without specifying to remove either a label or id"
+        return -1, message
+
+    roles_to_add = []
     for role in roles:
-        roles_to_add.append(ResourceRole(resource_id, role))
+        roles_to_add.append(ResourceRole(resource_id, role, additional_data))
     persistent_mgr.add_device_roles(session, roles_to_add)
     session.close()
+    if message is None:
+        message = _("added role successfully.")
+    return (0, message)
+
 
 @entry_exit(exclude_index=[2, 4], exclude_name=["password", "ssh_key"])
 def validate(address, userid, password, device_type, ssh_key=None):
