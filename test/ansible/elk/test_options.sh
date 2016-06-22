@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script processes the common test case command line options
+# Source this file in your script to read command line options and set variables
+
 OPTIONS=$*
 /bin/echo "Options passed in are ${OPTIONS}"
 
