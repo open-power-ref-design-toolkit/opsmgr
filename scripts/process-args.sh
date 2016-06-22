@@ -21,7 +21,7 @@ set -o pipefail
 
 ulimit -n 100000
 
-function git-clone () {
+function git-clone {
     GIT_URL=$1
     DESIRED_TAG=$2
     TARGET_DIR=$3
@@ -54,7 +54,7 @@ function git-clone () {
     fi
 }
 
-function set_passwd() {
+function set_passwd {
     FILE=$1
     KEY=$2
     VALUE=$3
@@ -83,7 +83,7 @@ function run_ansible {
 GENESIS_INVENTORY="/var/oprc/inventory.yml"
 
 # Reduce list to unique items
-function mkListsUnique() {
+function mkListsUnique {
     if [[ $# -eq 0 ]]; then
         uniqueList=""
     else
