@@ -304,7 +304,17 @@ def import_resources(args):
         resource = '*'
     return discovery_mgr.import_resources(resource, args.offline)
 
+def add_role(args):
+    roles = get_strip_strings_array(str(args.role))
+    data_dict = None
+    if args.data:
+        data_dict = {}
+        key_value_pairs = args.data.split()
+        for key_value_pair in key_value_pairs:
+            key, value = key_value_pair.split("=", 1)
+            data_dict[key] = value
 
+    return resource_mgr.add_resource_roles(args.label, None, roles, data_dict)
 
 def main(argv=sys.argv[1:]):
     LoggingService().init_cli_logging()
@@ -437,6 +447,16 @@ def main(argv=sys.argv[1:]):
                      help='Label of the resource to import into Inventory. If omitted, ' \
                           'all are imported.')
 
+    #add_role
+    par = subparsers.add_parser('add_role',
+                                help='Adds a role to a resource')
+    par.add_argument('-l', '--label', required=True, help='Label for the resource with the role')
+    par.add_argument('-r', '--role', required=True, help='Role the resource plays in the ' \
+                                                         'environment. Multiple roles are ' \
+                                                         'comma seperated')
+    par.add_argument('-d', '--data', help='additional data inputed as key=value pairs saved ' \
+                                          'in a python dictonary')
+
     message = ''
     rc = -1
     args = parser.parse_args(argv)
@@ -469,6 +489,8 @@ def main(argv=sys.argv[1:]):
         (rc, message) = find_resources()
     elif args.operation == 'import_resources':
         (rc, message) = import_resources(args)
+    elif args.operation == 'add_role':
+        (rc, message) = add_role(args)
     else:
         parser.print_help()
 
