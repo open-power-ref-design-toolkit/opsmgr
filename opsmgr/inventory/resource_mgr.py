@@ -612,10 +612,9 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
             continue
         remove_devices.append(device)
     ret = 0
-    is_return_deviceid = False
     if len(remove_devices) > 0:
         persistent_mgr.delete_devices(session, remove_devices)
-        labels_message = get_labels_message(remove_devices, is_return_deviceid)
+        labels_message = get_labels_message(remove_devices)
         message = push_message(message, _("devices removed: %s.") % labels_message)
 
         #Call hook for remove_device_post_save
@@ -629,11 +628,11 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
                                        "(%s): %s") % (hook_name, e))
 
     if len(not_remove_devices) > 0:
-        labels_message = get_labels_message(not_remove_devices, is_return_deviceid)
+        labels_message = get_labels_message(not_remove_devices)
         message = push_message(message, _("devices not removed: %s.") % labels_message)
         ret = 102
     if len(not_found_values) > 0:
-        labels_message = get_labels_message(not_found_values, is_return_deviceid)
+        labels_message = get_labels_message(not_found_values)
         message = push_message(message, _("devices not found: %s") % labels_message)
         ret = 101
 
@@ -645,16 +644,13 @@ def list_resource_types():
     return sorted(_load_device_plugins().keys())
 
 @entry_exit(exclude_index=[], exclude_name=[])
-def get_labels_message(items, is_return_deviceid=False, id_attr_name="resource_id"):
-    """get the labels from the list of items using the label attr of the object,
-    otherwise use the idAttrName passed
+def get_labels_message(items):
+    """get the labels from the list of items using the label attr of the object
 
     Args:
         items: list of items to get values for
-        isReturnDeviceId: if true returns the device ids for the items as the list of items
-        idAttrName: name of attribute name to use for the device id value when prior arg is true
     Returns:
-        string with list of lables or device ids based on input
+        string with list of labels
     """
     labels_message = ""
     for obj in items:
@@ -662,9 +658,10 @@ def get_labels_message(items, is_return_deviceid=False, id_attr_name="resource_i
             labels_message += ', '
         if isinstance(obj, str):
             labels_message += obj
+        elif isinstance(obj, int):
+            labels_message += str(obj)
         else:
-            labels_message += obj.label if not is_return_deviceid else getattr(
-                obj, id_attr_name)
+            labels_message += obj.label
     return labels_message
 
 @entry_exit(exclude_index=[], exclude_name=[])

@@ -234,11 +234,9 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
 
     result_message = ""
     ret = 0
-    is_return_rackid = False
     if len(remove_racks) > 0:
         persistent_mgr.delete_racks(session, remove_racks)
-        labels_message = resource_mgr.get_labels_message(
-            remove_racks, is_return_rackid, 'rack_id')
+        labels_message = resource_mgr.get_labels_message(remove_racks)
         message = push_message(message, _("racks removed: %s") % labels_message)
 
         #Call hook for remove_rack_post_save
@@ -253,15 +251,13 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
                        (rack.label, hook_name, e))
 
     if len(not_remove_racks) > 0:
-        labels_message = resource_mgr.get_labels_message(
-            not_remove_racks, is_return_rackid, 'rack_id')
+        labels_message = resource_mgr.get_labels_message(not_remove_racks)
         message = push_message(message, _("racks not removed: %s") % labels_message)
         for rack_msg in not_remove_racks_msgs:
             message = push_message(message, rack_msg)
         ret = 102
     if len(not_found_rack_values) > 0:
-        labels_message = resource_mgr.get_labels_message(
-            not_found_rack_values, is_return_rackid, 'rack_id')
+        labels_message = resource_mgr.get_labels_message(not_found_rack_values)
         message = push_message(message, _("racks not found: %s") % labels_message)
         ret = 101
     message = push_message(message, result_message)
