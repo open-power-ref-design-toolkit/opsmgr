@@ -7,7 +7,7 @@
       with_items: "{{ apt_packages }}"
     
     - name: installs prereq packages with pip
-      pip: name={{ item }}
+      pip: name={{ item }} state=present
       with_items: "{{ pip_packages }}"
     
     # provision opsmgr lxc containers
@@ -15,6 +15,18 @@
     - name: validate the shared directory on the host is created
       file: path={{ lxc_shared }} state=directory mode=0755
     
+    - set_fact: lxc_user={{ ansible_ssh_user }}
+
+    - set_fact: lxc_home='home/{{ ansible_ssh_user }}'
+
+    - set_fact: lxc_user='ubuntu' # lxc-create doesn't work for root user
+      when: ansible_ssh_user == 'root'
+
+    - set_fact: lxc_home='root' # if using root fix the home directory
+      when: ansible_ssh_user == 'root'
+
+    - debug: var=lxc_user
+
     - name: create containers
       lxc_container:
           name: "{{ ansible_hostname }}-{{ item.name }}"
@@ -22,7 +34,7 @@
           state: stopped
           template_options: >
               --release {{ item.release }}
-              --user {{ ansible_ssh_user }}
+              --user {{ lxc_user }}
           container_command: |
               [[ ! -d "/{{ item.mount }}" ]] && mkdir -p "/{{ item.mount }}"
           container_config:
@@ -42,7 +54,7 @@
     
     - name: create .ssh directory
       file:
-          path: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/home/{{ ansible_ssh_user }}/.ssh
+          path: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh"
           owner: "{{ ansible_ssh_user }}"
           group: "{{ ansible_ssh_user }}"
           mode: 0700
@@ -51,8 +63,8 @@
     
     - name: copy ssh key
       copy:
-          src: opsmgr.pub
-          dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/home/{{ ansible_ssh_user }}/.ssh/authorized_keys
+          src: "~/.ssh/id_rsa.pub"
+          dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh/authorized_keys"
           owner: "{{ ansible_ssh_user }}"
           group: "{{ ansible_ssh_user }}"
           mode: 0600
@@ -60,7 +72,7 @@
     
     - name: assures sudoers.d directory exists
       file:
-        path: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d
+        path: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d"
         owner: root
         group: root
         mode: 0755
@@ -69,7 +81,7 @@
     
     - name: assures sudoers has include
       lineinfile:
-        dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers
+        dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers"
         line: "#includedir /etc/sudoers.d"
         state: present
         validate: "/usr/sbin/visudo -cf %s"
@@ -78,11 +90,20 @@
     - name: create sudoers include file
       template:
         src: sudoers.d.j2
-        dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d/opsmgr_sudoers
+        dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d/{{ sudoers_filename }}"
         owner: root
         group: root
         mode: 0440
         validate: "/usr/sbin/visudo -cf %s"
+      with_items: "{{ containers }}"
+    
+    - name: copy script to check on network
+      template:
+        src: etc/waitip.sh
+        dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/tmp/waitip.sh"
+        owner: root
+        group: root
+        mode: 0755
       with_items: "{{ containers }}"
     
     - name: start containers, fix permissions, install python
@@ -90,24 +111,26 @@
         name: "{{ ansible_hostname }}-{{ item.name }}"
         state: started
         container_command: |
-            chown -R {{ ansible_ssh_user }}:{{ ansible_ssh_user }} /home/{{ ansible_ssh_user }}
-            #while [[ ! $(ifconfig eth0) =~ "inet addr:" ]]; do
-            #  sleep 1
-            #done
-            #sleep 3
+            chown -R {{ ansible_ssh_user }}:{{ ansible_ssh_user }} /{{ lxc_home }}
             apt-get update
-            apt-get install -y python
+            apt-get install -y --force-yes python
+            /tmp/waitip.sh eth0
         container_config:
             - "lxc.start.auto = 1"
+            - "lxc.start.delay = 0"
+            - "lxc.group = onboot"
+            - "lxc.group = opsmgr"
       with_items: "{{ containers }}"
       register: lxc_info
-    
-    #- debug: var=lxc_info
+
+    - debug: var=lxc_info
     
     - name: wait for containers to be up
       wait_for:
           port: 22
           delay: 10
+          connect_timeout: 30
+          timeout: 300
           host: "{{ lxc_info | lxcaddress(item.name) }}"
       with_items: "{{ containers }}"
 
@@ -118,7 +141,7 @@
       register: iptablesrules
       always_run: yes
     
-    - name: create iptables rule to forward container port
+    - name: create iptables prerouting rule to forward port to container
       command: |
           iptables -t nat -I PREROUTING -p tcp
           -d {{ ansible_default_ipv4.address }}
@@ -126,6 +149,19 @@
           --to {{ lxc_info | lxcaddress(item.0.name) }}:{{ item.1.container }}
           --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}"
       when: iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}") == -1
+      with_subelements:
+        - "{{ containers }}"
+        - ports
+    
+    - name: create iptables masquerade rule to allow mysql connection
+      command: |
+          iptables -t nat -I POSTROUTING -p tcp
+          -d "{{ lxc_info | lxcaddress(item.0.name) }}/32"
+          --dport {{ item.1.host }} -j MASQUERADE -m comment
+          --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-masq"
+      when: |
+          item.1.name == 'mysql' and
+          iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-masq") == -1
       with_subelements:
         - "{{ containers }}"
         - ports

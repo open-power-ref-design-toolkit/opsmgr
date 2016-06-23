@@ -1,0 +1,47 @@
+---
+
+    # install pre-reqs
+
+    - name: installs prereq packages with aptitude
+      apt: name={{ item }} state=present update_cache=true
+      with_items: "{{ apt_packages }}"
+
+    # configure service
+
+    - name: update mysql root password
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        password: "{{ mysql_root_password }}"
+        state: present
+      with_items:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+
+    - name: create .my.cnf file
+      template:
+        src: "my.cnf.j2"
+        dest: "~/.my.cnf"
+        mode: 0600
+
+    - name: configure new db user for remote connections
+      mysql_user:
+        name: "{{ db_login_user }}"
+        host: "{{ item }}"
+        password: "{{ db_login_password }}"
+        state: present
+      with_items:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+
+    - name: Remove the test database
+      mysql_db: name=test state=absent
+      notify:
+        - restart service
+      ignore_errors: yes # might not exist
+
+

@@ -1,0 +1,10 @@
+pip==8.1.1
+setuptools==20.3.1
+wheel==0.26.0
+ansible>1.9,<2.0
+ansible-lint>=2.0.3,<=2.3.6     # ansible
+Jinja2>=2.6                     # ansible
+paramiko>=1.13.0                # ansible
+pycrypto>=2.6                   # ansible
+PyYAML>=3.1.0                   # ansible
+

@@ -52,7 +52,7 @@ echo "InfraNodes=$infraNodes"
 echo "allNodes=$allNodes"
 
 echo "Copying opsmgr user variables and secrets to ${TARGET_OSA_DEPLOY}/openstack_deploy"
-cp -R etc/openstack_deploy ${TARGET_OSA_DEPLOY}
+cp -R predeploy/elk/etc/openstack_deploy ${TARGET_OSA_DEPLOY}
 
 echo "Generating passwords"
 
@@ -81,5 +81,6 @@ popd >/dev/null 2>&1
 
 echo "Running ELK playbooks"
 
-cd playbooks_elk
+cd predeploy/elk
 run_ansible elk.yml
+

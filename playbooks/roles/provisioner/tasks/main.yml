@@ -1,21 +1,55 @@
 ---
 
-    # create .ssh and copy keys
+    # sets up ssh keys and configuration
     
-    - name: create .ssh directory
+    - name: ensure .ssh directory exists
       file:
         path: ~/.ssh
         state: directory
         mode: 0700
     
-    - name: copy keys for the user
+    - name: check if ssh key file exists
+      stat:
+          path: "~/.ssh/{{ item }}"
+      with_items:
+        - id_rsa
+        - id_rsa.pub
+      register: user_keys
+
+    - name: decide if we use user's keys or not
+      set_fact:
+        use_user_keys: user_keys.0.stat.exists and user_keys.1.stat.exists
+
+    - name: copy keys from user
       copy:
-        src: "{{ playbook_dir }}/{{ item }}"
-        dest: ~/.ssh
+        src: "~/.ssh/{{ item }}"
+        dest: "{{ opsmgr_dir }}/keys/current"
         mode: 0600
       with_items:
-        - opsmgr.key
-        - opsmgr.pub
+        - id_rsa
+        - id_rsa.pub
+      when: use_user_keys == true
+    
+    - name: fallback to use opsmgr master key instead
+      copy:
+        src: "{{ opsmgr_dir }}/keys/master/{{ item.0 }}"
+        dest: "{{ opsmgr_dir }}/keys/current/{{ item.1 }}"
+        mode: 0600
+      with_together:
+        - [ 'opsmgr.key', 'opsmgr.pub' ]
+        - [ 'id_rsa',     'id_rsa.pub' ]
+      when: use_user_keys == false
+    
+    - name: copy master keys to ~/.ssh
+      copy:
+        src: "{{ opsmgr_dir }}/keys/current/{{ item }}"
+        dest: "~/.ssh"
+        mode: 0600
+        backup: yes
+      with_items:
+        - id_rsa
+        - id_rsa.pub
+      when: use_user_keys == false
     
     # assemble ~/.ssh/config file for proxying through hosts
     
@@ -29,28 +63,62 @@
           path: ~/.ssh/config.d
           mode: 0700
           state: directory
-    
-    - name: create ssh config entries for hosts
+
+    - debug: var=ssh_hosts
+    - debug: var=ssh_containers
+    - debug: var=groups.opsmgr_hosts
+    - debug: var=groups.opsmgr_containers
+
+    - name: create ssh config entries for hosts from inventory
       template:
           src: ssh.host.j2
           dest: "~/.ssh/config.d/ssh.host-{{ item }}"
           mode: 0644
-      when: hostvars[item].ansible_default_ipv4.address is defined
-      with_items: groups['opsmgr_hosts']
-    
-    - name: create ssh config entries for containers
+      with_items: groups.opsmgr_hosts
+      when: groups.opsmgr_hosts is defined
+
+    - name: create ssh config entries for targets from inventory
+      template:
+          src: ssh.host.j2
+          dest: "~/.ssh/config.d/ssh.host-{{ item }}"
+          mode: 0644
+      with_items: groups.opsmgr_targets
+      when: groups.opsmgr_targets is defined
+
+    - name: create ssh config entries for hosts from extravars
+      template:
+          src: ssh.host.j2
+          dest: "~/.ssh/config.d/ssh.host-{{ item }}"
+          mode: 0644
+      with_items: ssh_hosts
+      when: ssh_hosts is defined
+
+    #- debug: var=hostvars[item]
+    #  with_items: groups.opsmgr_containers
+    #  when: groups.opsmgr_containers is defined
+
+    - name: create ssh config entries for containers from inventory
       template:
           src: ssh.lxc.j2
-          dest: "~/.ssh/config.d/ssh.lxc-{{ item.hostname }}"
+          dest: "~/.ssh/config.d/ssh.lxc-{{ item }}"
           mode: 0644
-      when: item.address is defined
-      with_items: opsmgr_containers
-    
+      with_items: groups.opsmgr_containers
+      when: groups.opsmgr_containers is defined
+
+    - name: create ssh config entries for containers from extravars
+      template:
+          src: ssh.lxc.j2
+          dest: "~/.ssh/config.d/ssh.lxc-{{ item }}"
+          mode: 0644
+      with_items: ssh_containers
+      when: ssh_containers is defined
+
     - name: assemble ~/.ssh/config file
-      sudo: no
+      become: false
       assemble:
           src: ~/.ssh/config.d
           dest: ~/.ssh/config
+          backup: yes
 
 
 

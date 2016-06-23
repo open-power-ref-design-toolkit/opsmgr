@@ -1,10 +1,6 @@
 [opsmgr_hosts]
 localhost
 
-[opsmgr]
-horizon_container
-
-
 [opsmgr_targets]
 localhost
 

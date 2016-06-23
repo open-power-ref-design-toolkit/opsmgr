@@ -1,0 +1,34 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
+
+- hosts: opsmgr_mysql
+  gather_facts: no
+  become: true
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - debug: var=install_mysql
+    - debug: var=mysql_root_password
+    - debug: var=db_login_user
+    - debug: var=db_login_password
+    - debug: var=db_login_host
+    - debug: var=db_user
+    - debug: var=db_password
+    - debug: var=db_host
+  roles:
+    - { role: "mysql", when: install_mysql is defined and install_mysql == True }
+
+
+

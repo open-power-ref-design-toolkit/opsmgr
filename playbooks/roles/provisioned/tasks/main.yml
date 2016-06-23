@@ -1,49 +1,50 @@
 ---
 
-# configure connection parameters for each host in inventory
+    # configure connection parameters for each host in inventory
 
-- name: create .ssh directory
-  file:
-    path: ~/.ssh
-    state: directory
-    mode: 0700
+    - name: ensure .ssh directory exists
+      file:
+        path: ~/.ssh
+        state: directory
+        mode: 0700
 
-- name: set up authorized_keys for the user
-  authorized_key:
-    user={{ ansible_ssh_user }}
-    key="{{ item }}" state=present
-  with_file:
-    - opsmgr.pub
+    - name: set up authorized_keys for the user
+      authorized_key:
+        user: "{{ ansible_ssh_user }}"
+        key: "{{ item }}"
+        state: present
+      with_file:
+        - "~/.ssh/id_rsa.pub"
 
-- name: assures sudoers.d directory exists
-  file:
-    path: /etc/sudoers.d
-    owner: root
-    group: root
-    mode: 0755
-    state: directory
+    - name: ensure sudoers.d directory exists
+      file:
+        path: /etc/sudoers.d
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
 
-- name: assures sudoers has include
-  lineinfile:
-    dest: /etc/sudoers
-    line: "#includedir /etc/sudoers.d"
-    state: present
-    validate: "/usr/sbin/visudo -cf %s"
+    - name: ensure sudoers has include
+      lineinfile:
+        dest: /etc/sudoers
+        line: "#includedir /etc/sudoers.d"
+        state: present
+        validate: "/usr/sbin/visudo -cf %s"
 
-- name: create sudoers include file
-  template:
-    src: sudoers.d.j2
-    dest: "/etc/sudoers.d/{{ sudoers_filename }}"
-    owner: root
-    group: root
-    mode: 0440
-    validate: "/usr/sbin/visudo -cf %s"
-  when: not sudoers_remove
+    - name: create sudoers include file
+      template:
+        src: sudoers.d.j2
+        dest: "/etc/sudoers.d/{{ sudoers_filename }}"
+        owner: root
+        group: root
+        mode: 0440
+        validate: "/usr/sbin/visudo -cf %s"
+      when: not sudoers_remove
 
-- name: remove sudoers based on variable
-  file:
-    path: "/etc/sudoers.d/{{ sudoers_filename }}"
-    state: absent
-  when: sudoers_remove
+    - name: remove sudoers based on variable
+      file:
+        path: "/etc/sudoers.d/{{ sudoers_filename }}"
+        state: absent
+      when: sudoers_remove
 
 

@@ -1,9 +1,26 @@
 ---
+
 - hosts: localhost
-  become: false
+  gather_facts: yes
   connection: local
+  become: false
   vars_files:
-    - etc/vars.yml
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
   roles:
     - provisioner
+
+- hosts: all
+  gather_facts: yes
+  become: true
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  roles:
+    - provisioned
+
 

@@ -1,8 +1,9 @@
 ---
+
 - hosts: all
   become: true
 
-#- include: local.yml
-#- include: nagios.yml
+- include: local.yml
+- include: nagios.yml
 - include: nrpe.yml
 

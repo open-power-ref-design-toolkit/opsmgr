@@ -1,9 +1,28 @@
 ---
-- hosts: opsmgr
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
+
+- hosts: opsmgr_core
+  gather_facts: no
   become: true
   vars_files:
-    - ../predeploy/osa/etc/osa-vars.yml
-    - roles/opsmgr/vars/main.yml
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - debug: var=install_ui
+    - debug: var=ui_enabled
   roles:
     - opsmgr
+
+
 

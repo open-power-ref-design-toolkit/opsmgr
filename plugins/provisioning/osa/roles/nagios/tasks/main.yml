@@ -28,7 +28,7 @@
       service: name=sysstat state=restarted
       when: is_monitored == true
 
-    # install pre-reqs on deployer (if monitored)
+    # install configuration
 
     - name: ensures plugins directory exists
       file:

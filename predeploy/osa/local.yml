@@ -1,0 +1,67 @@
+---
+
+- hosts: all
+  become: true
+  vars:
+    - roles:
+        - osa
+
+  pre_tasks:
+
+    - local_action: command uname -r
+      register: uname
+      
+    - set_fact:
+          ansible_kernel: "{{ uname.stdout | replace('\"', '') }}"
+  
+    - local_action: command ./scripts/osrel.sh
+      register: osrel
+
+    - set_fact:
+          ostag: "{{ osrel.stdout | replace('\"', '') }}"
+  
+    - set_fact:
+          openstack_release: "{{ ostag }}"
+
+  tasks:
+  
+    - name: clone this playbook to osa deployer for re-execution
+      synchronize: src=./ dest=/tmp/osa/ mode=push
+    
+    - name: execute remote playbook
+      command: /tmp/osa/scripts/rplay.sh
+    
+    - name: retrieve remote execution log file
+      fetch: src=/tmp/osa/ansible.log dest=remote.log flat=yes
+      
+    - name: retrieve generated vars.yml file
+      fetch: src=/tmp/osa/osa_vars.yml dest=etc/overrides.yml flat=yes
+
+    - name: retrieve osa groups file
+      fetch: src=/tmp/osa/osa_groups.json dest=etc/ flat=yes
+
+    - name: retrieve osa ips file
+      fetch: src=/etc/openstack_deploy/openstack_hostnames_ips.yml dest=etc/osa_ips.json flat=yes
+
+    - name: retrieve osa inventory file
+      fetch: src=/etc/openstack_deploy/openstack_inventory.json dest=/tmp/osa_inv.json flat=yes
+
+    - name: fix inventory file for import
+      local_action: command ./scripts/osfix.sh
+    
+    - name: imports osa inventory
+      include_vars: etc/osa_inv.json
+    
+    - name: generate opsmgr inventory file from osa hosts
+      local_action: template src=templates/inventory.j2 dest=etc/inventory
+    
+    - name: ensures /etc/opsmgr exists
+      file: path=/etc/opsmgr owner=root group=root mode=0755 state=directory
+
+    - name: drop .spec file in deployer to denote this is osa
+      template: src=./templates/.spec.j2 dest=/etc/opsmgr/.spec owner=root group=root mode=0644
+          
+    - name: remove temp files
+      file: path=/tmp/osa/ state=absent
+
+

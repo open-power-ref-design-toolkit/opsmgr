@@ -10,7 +10,7 @@
     
     - name: check if provisioning plays exist for specs
       become: false
-      local_action: stat path={{ playbook_dir }}/../plugins/provisioning/{{ item }}/site.yml
+      local_action: stat path={{ opsmgr_dir }}/plugins/provisioning/{{ item }}/site.yml
       with_items: "{{ opsmgr_spec }}"
       register: spec_plays
     
@@ -19,7 +19,7 @@
     - name: copy spec vars file
       become: false
       copy:
-          src:  "{{ playbook_dir }}/etc/vars.yml"
+          src:  "{{ opsmgr_dir }}/ext/shared.yml"
           dest: "{{ playbook_dir }}/etc/vars-{{ inventory_hostname }}.yml"
       delegate_to: localhost
 
@@ -48,11 +48,11 @@
       with_items: spec_plays.results
       delegate_to: localhost
 
-    - name: spawns spec play calls
+    - name: spawns spec play calls (go grab a coffee!)
       become: true
       local_action: shell "{{ playbook_dir }}/etc/play-{{ item.item }}-{{ inventory_hostname }}.sh"
       args:
-          chdir: "{{ playbook_dir }}/../plugins/provisioning/{{ item.item }}/"
+          chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item.item }}/"
       with_items: spec_plays.results
       when: item.stat.exists == true
       register: play_output

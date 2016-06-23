@@ -1,0 +1,40 @@
+#openstack_release: "13.1.0"
+#horizon_lib_dir: "/openstack/venvs/horizon-untagged/lib/python2.7/dist-packages"
+#horizon_galera_user: "dash"
+#horizon_container_mysql_password: "e7cd4885ba8326b77b9f49780ae8267a"
+#internal_lb_vip_address: "172.29.236.6"
+#ui_enabled_spec: "/openstack/venvs/horizon-13.1.0/lib/python2.7/site-packages/openstack_dashboard/local"
+
+# my vars
+
+controller_ip: {{ global_overrides.external_lb_vip_address }}
+
+install_mysql: False
+
+db_login_user: "{{ galera_root_user }}"
+db_login_password: "{{ galera_root_password }}"
+db_login_host: "{{ global_overrides.internal_lb_vip_address }}"
+
+db_user: opsmgr
+db_password: passw0rd
+db_host: "{{ global_overrides.internal_lb_vip_address }}"
+
+install_ui: True
+
+ui_enabled: "{{ horizon_lib_dir | dirname | replace('untagged', ostag) }}/site-packages/openstack_dashboard/local"
+
+import_containers:
+{% for item in groups['horizon_container'] %}
+{% if hostvars[item].component == 'horizon' %}
+{% set physical_host = hostvars[item].physical_host %}
+  - name:     {{ hostvars[item].container_name }}
+    role:     core
+    address:  {{ hostvars[item].container_address }}
+    host:     {{ physical_host }}
+    hostaddr: {{ hostvars[physical_host].ansible_ssh_host }}
+    hostname: {{ item }}
+
+{% endif %}
+{% endfor %}
+
+

@@ -24,7 +24,7 @@ if [ "$1" == "--help" ]; then
 fi
 
 if [ ! -e scripts/bootstrap-opsmgr.sh ]; then
-    echo "This script must be run from /root/os-services/opsmgr or opsmgr"
+    echo "This script must be run from the opsmgr directory"
     exit 1
 fi
 
@@ -48,7 +48,7 @@ if [ -d diffs ]; then
 fi
 
 echo "Copying opsmgr user variables and secrets to ${TARGET_OSA_DEPLOY}/openstack_deploy"
-cp -R etc/openstack_deploy ${TARGET_OSA_DEPLOY}
+cp -R predeploy/elk/etc/openstack_deploy ${TARGET_OSA_DEPLOY}
 rc=$?
 if [ $rc != 0 ]; then
     echo "Failed cp secrets and variables to ${TARGET_OSA_DEPLOY}"

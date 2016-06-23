@@ -1,0 +1,21 @@
+---
+
+# default vars
+
+controller_ip: 127.0.0.1
+
+install_mysql: True
+db_login_user: "{{ ansible_ssh_user }}"
+db_login_password: passw0rd
+db_login_host: "{{ hostvars[inventory_hostname].hostaddr }}"
+db_user: opsmgr
+db_password: passw0rd
+db_host: "{{ hostvars[inventory_hostname].hostaddr }}"
+
+install_ui: False
+ui_enabled: /etc/opsmgr/ui
+
+import_containers: []
+
+
+

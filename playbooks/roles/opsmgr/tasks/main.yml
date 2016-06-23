@@ -1,111 +1,145 @@
 ---
 
-# install pre-reqs
+    # install pre-reqs
 
-- name: installs prereq packages with aptitude
-  apt: name={{ item }} state=present update_cache=true
-  with_items: "{{ apt_packages }}"
+    - name: installs prereq packages with aptitude
+      apt: name={{ item }} state=present update_cache=true
+      with_items: "{{ apt_packages }}"
+      when: use_proxy is undefined or use_proxy != false
 
-- name: installs prereq packages with pip
-  pip: name={{ item }}
-  with_items: "{{ pip_packages }}"
+    - name: installs prereq packages with pip
+      pip: name={{ item }} extra_args='--allow-unverified'
+      with_items: "{{ pip_packages }}"
 
-# copy the code to server
+    # copy the code to server
 
-- name: create tmp director for the code
-  file:
-    path: "{{ tmp_install_directory }}"
-    state: directory
-    mode: 0700
+    - name: create tmp directory
+      file:
+        path: "{{ tmp_dir }}"
+        state: directory
+        mode: 0700
 
-- name: copy code to server
-  copy:
-    src: "{{ playbook_dir }}/.."
-    dest: "{{ tmp_install_directory }}"
+    - name: copy code to server
+      copy:
+        src: "{{ playbook_dir }}/.."
+        dest: "{{ tmp_dir }}"
 
-# opstmgr python package integration
+    # opsmgr python package integration
 
-- name: install opsmgr modules
-  command: python setup.py install
-  args:
-    chdir: "{{ tmp_install_directory }}/{{ item }}"
-  with_items: "{{ opsmgr_modules }}"
-  notify: restart apache
+    - name: install opsmgr modules
+      command: python setup.py install
+      args:
+        chdir: "{{ tmp_dir }}/{{ item }}"
+      with_items: "{{ opsmgr_modules }}"
 
-# drop enabled files for horizon
-- name: find the enabled directory
-#  shell: find / -type d -print0 2> /dev/null | grep -FzZ '/site-packages/openstack_dashboard/local/enabled'
-  shell: echo /openstack/venvs/horizon-13.1.0/lib/python2.7/site-packages/openstack_dashboard/local
-  register: enabled_directory
+    # create /etc/opsmgr and /var/log/opsmgr
+    
+    - name: create /etc/opsmgr
+      file:
+        path: "/etc/opsmgr"
+        state: directory
+        mode: 0755
 
-- name: Copy the ui files into the enabled directory
-  copy:
-    src: "{{ playbook_dir }}/../horizon/enabled"
-    dest: "{{ enabled_directory.stdout }}"
-  notify: restart apache
+    - name: create /etc/opsmgr/logging.yaml
+      template:
+        src: logging.yaml.j2
+        dest: /etc/opsmgr/logging.yaml
 
-# Create /etc/opsmgr and /var/log/opsmgr
-- name: Create /etc/opsmgr
-  file:
-    path: "/etc/opsmgr"
-    state: directory
-    mode: 0755
+    - name: copy ssh keys for service access
+      copy:
+        src: "~/.ssh/{{ item }}"
+        dest: "/etc/opsmgr"
+        owner: root
+        group: root
+        mode: 0600
+      with_items:
+        - id_rsa
+        - id_rsa.pub
 
-- name: Create /etc/opsmgr/logging.yaml
-  template:
-    src: logging.yaml.j2
-    dest: /etc/opsmgr/logging.yaml
+    - name: generate random passphrase to encrypt passwords in the db
+      shell: python -c "import base64;import os;print(str(base64.b64encode(os.urandom(32))))"
+      register: random_passphrase  
 
-- name: Generate a random passpharse to encrypt the passwords in the db with
-  shell: python -c "import base64;import os;print(str(base64.b64encode(os.urandom(32))))"
-  register: random_passphrase  
+    - name: create opsmgr.conf
+      template:
+        src: opsmgr.conf.j2
+        dest: /etc/opsmgr/opsmgr.conf
+        force: no
 
-- name: Create /etc/opsmgr/opsmgr.conf
-  template:
-    src: opsmgr.conf.j2
-    dest: /etc/opsmgr/opsmgr.conf
-    force: no
+    - name: update opsmgr.conf with container access info
+      blockinfile:
+        dest: /etc/opsmgr/opsmgr.conf
+        block: |
+            [NAGIOS]
+            server = "{{ item.0.address }}"
+            web_protocol = http://
+            web_proxy = "{{ item.0.hostaddr }}"
+            web_port = "{{ item.1.host }}"
+            web_path = /nagios
+      when: item.0.role == 'nagios' and item.1.name == 'http'
+      with_subelements:
+        - "{{ opsmgr_containers }}"
+        - ports
 
-- name: Create /var/log/opsmgr
-  file:
-    path: "/var/log/opsmgr/"
-    state: directory
-    mode: 0777
+    - name: create /var/log/opsmgr
+      file:
+        path: "/var/log/opsmgr/"
+        state: directory
+        mode: 0777
 
-# Create the database
-- name: Create DB for service
-  mysql_db:
-    login_user: "{{ db_login_user }}"
-    login_password: "{{ db_login_password }}"
-    login_host: "{{ db_login_host }}"
-    name: "{{ db_name }}"
-    state: "present"
+    # create the database
 
-- name: Grant access to the DB for the service
-  mysql_user:
-    login_user: "{{ db_login_user }}"
-    login_password: "{{ db_login_password }}"
-    login_host: "{{ db_login_host }}"
-    name: "{{ db_user }}"
-    password: "{{ db_password }}"
-    host: "{{ item }}"
-    state: "present"
-    priv: "{{ db_name }}.*:ALL"
-  with_items:
-    - "localhost"
-    - "%"
+    - name: create db for service
+      mysql_db:
+        login_user: "{{ db_login_user }}"
+        login_password: "{{ db_login_password }}"
+        login_host: "{{ db_login_host }}"
+        name: "{{ db_name }}"
+        state: "present"
+      ignore_errors: yes # db might already exist
 
-- name: Creae the database tables
-  command: opsmgr-admin db_sync
+    - name: create service user and grant access to db
+      mysql_user:
+        login_user: "{{ db_login_user }}"
+        login_password: "{{ db_login_password }}"
+        login_host: "{{ db_login_host }}"
+        host: "{{ item }}"
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        state: "present"
+        priv: "{{ db_name }}.*:ALL,GRANT"
+      with_items:
+        - "%"
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+      ignore_errors: yes # user might already exist
 
-# Create the default rack
-- name: Create the default rack
-  command: opsmgr add_rack -l default
-  ignore_errors: yes # rack might already exist
+    - name: create the database tables
+      command: opsmgr-admin db_sync
+      ignore_errors: yes # tables might already exist
 
-# remove the code after it is installed
+    # create the default rack
+    
+    - name: create the default rack
+      command: opsmgr add_rack -l default
+      ignore_errors: yes # rack might already exist
 
-- name: Remove tmp directory for the code
-  file:
-    path: "{{ tmp_install_directory }}"
-    state: absent
+    # remove the code after it is installed
+
+    - name: Remove tmp directory for the code
+      file:
+        path: "{{ tmp_dir }}"
+        state: absent
+
+    # drop enabled files for horizon
+    
+    - name: Copy the ui files into the enabled directory
+      copy:
+        src: "{{ playbook_dir }}/../horizon/enabled"
+        dest: "{{ ui_enabled }}"
+      notify: restart apache
+      when: install_ui is defined and install_ui == True
+
+

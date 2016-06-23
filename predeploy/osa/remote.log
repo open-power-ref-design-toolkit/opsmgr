@@ -1,0 +1,210 @@
+2016-06-23 00:53:04,953 p=8888 u=root |   
+2016-06-23 00:53:04,954 p=8888 u=root |  /usr/local/bin/ansible-playbook -i inventory local.yml
+2016-06-23 00:53:04,954 p=8888 u=root |   
+2016-06-23 00:53:05,052 p=8888 u=root |  PLAY [all] ******************************************************************** 
+2016-06-23 00:53:05,052 p=8888 u=root |  GATHERING FACTS *************************************************************** 
+2016-06-23 00:53:05,894 p=8888 u=root |  ok: [localhost]
+2016-06-23 00:53:05,899 p=8888 u=root |  TASK: [command uname -r] ****************************************************** 
+2016-06-23 00:53:06,075 p=8888 u=root |  changed: [localhost -> 127.0.0.1]
+2016-06-23 00:53:06,082 p=8888 u=root |  TASK: [set_fact ] ************************************************************* 
+2016-06-23 00:53:06,084 p=8888 u=root |  ok: [localhost]
+2016-06-23 00:53:06,085 p=8888 u=root |  TASK: [command ./scripts/osrel.sh] ******************************************** 
+2016-06-23 00:53:06,185 p=8888 u=root |  changed: [localhost -> 127.0.0.1]
+2016-06-23 00:53:06,189 p=8888 u=root |  TASK: [set_fact ] ************************************************************* 
+2016-06-23 00:53:06,191 p=8888 u=root |  ok: [localhost]
+2016-06-23 00:53:06,192 p=8888 u=root |  TASK: [set_fact ] ************************************************************* 
+2016-06-23 00:53:06,193 p=8888 u=root |  ok: [localhost]
+2016-06-23 00:53:06,193 p=8888 u=root |  TASK: [clone this playbook to osa deployer for re-execution] ****************** 
+2016-06-23 00:53:06,915 p=9142 u=root |   
+2016-06-23 00:53:06,915 p=9142 u=root |  /usr/local/bin/ansible-playbook -e @/etc/openstack_deploy/user_conf_files.yml -e @/etc/openstack_deploy/user_secrets.yml -e @/etc/openstack_deploy/user_variables.yml remote.yml
+2016-06-23 00:53:06,916 p=9142 u=root |   
+2016-06-23 00:53:07,763 p=9142 u=root |  PLAY [all] ******************************************************************** 
+2016-06-23 00:53:07,764 p=9142 u=root |  GATHERING FACTS *************************************************************** 
+2016-06-23 00:53:09,044 p=9142 u=root |  ok: [aio1]
+2016-06-23 00:53:42,061 p=9142 u=root |  ok: [aio1_ceilometer_api_container-c8db03fd]
+2016-06-23 00:53:48,756 p=9142 u=root |  ok: [aio1_rsyslog_container-52a28f5b]
+2016-06-23 00:53:49,087 p=9142 u=root |  ok: [aio1_neutron_server_container-644c8624]
+2016-06-23 00:53:50,833 p=9142 u=root |  ok: [aio1_cinder_api_container-306781f6]
+2016-06-23 00:53:51,790 p=9142 u=root |  ok: [aio1_memcached_container-c90ca200]
+2016-06-23 00:53:52,396 p=9142 u=root |  ok: [aio1_rabbit_mq_container-876fbbab]
+2016-06-23 00:53:53,301 p=9142 u=root |  ok: [aio1_nova_api_os_compute_container-e372d96b]
+2016-06-23 00:54:01,340 p=9142 u=root |  ok: [aio1_nova_console_container-05416cde]
+2016-06-23 00:54:04,175 p=9142 u=root |  ok: [aio1_galera_container-be54eca1]
+2016-06-23 00:54:23,048 p=9142 u=root |  ok: [aio1_swift_proxy_container-d6758e9a]
+2016-06-23 00:54:39,330 p=9142 u=root |  ok: [aio1_aodh_container-4366c047]
+2016-06-23 00:54:42,434 p=9142 u=root |  ok: [aio1_nova_scheduler_container-7cb49dc3]
+2016-06-23 00:54:43,008 p=9142 u=root |  ok: [aio1_ceilometer_collector_container-3ca622f3]
+2016-06-23 00:54:46,163 p=9142 u=root |  ok: [aio1_utility_container-9b1d7c73]
+2016-06-23 00:54:54,963 p=9142 u=root |  ok: [aio1_cinder_scheduler_container-25c5dc68]
+2016-06-23 00:54:57,487 p=9142 u=root |  ok: [aio1_neutron_agents_container-32791f82]
+2016-06-23 00:55:01,405 p=9142 u=root |  ok: [aio1_repo_container-7c4f2d4a]
+2016-06-23 00:55:02,024 p=9142 u=root |  ok: [aio1_nova_api_metadata_container-859fc1b1]
+2016-06-23 00:55:03,115 p=9142 u=root |  ok: [aio1_glance_container-9ee84858]
+2016-06-23 00:55:07,452 p=9142 u=root |  ok: [aio1_heat_apis_container-3fa1e76f]
+2016-06-23 00:55:09,919 p=9142 u=root |  ok: [aio1_nova_conductor_container-3423f8d2]
+2016-06-23 00:55:10,315 p=9142 u=root |  ok: [aio1_horizon_container-c761af76]
+2016-06-23 00:55:11,392 p=9142 u=root |  ok: [aio1_heat_engine_container-fd1e3ff9]
+2016-06-23 00:55:12,729 p=9142 u=root |  ok: [aio1_nova_cert_container-cbe150a4]
+2016-06-23 00:55:12,917 p=9142 u=root |  ok: [aio1_keystone_container-b2624528]
+2016-06-23 00:55:13,093 p=9142 u=root |  TASK: [debug msg="done"] ****************************************************** 
+2016-06-23 00:55:13,273 p=9142 u=root |  ok: [aio1_ceilometer_api_container-c8db03fd] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,274 p=9142 u=root |  ok: [aio1_galera_container-be54eca1] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,274 p=9142 u=root |  ok: [aio1_ceilometer_collector_container-3ca622f3] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,278 p=9142 u=root |  ok: [aio1] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,279 p=9142 u=root |  ok: [aio1_utility_container-9b1d7c73] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,280 p=9142 u=root |  ok: [aio1_horizon_container-c761af76] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,281 p=9142 u=root |  ok: [aio1_cinder_scheduler_container-25c5dc68] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,283 p=9142 u=root |  ok: [aio1_neutron_server_container-644c8624] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,284 p=9142 u=root |  ok: [aio1_aodh_container-4366c047] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,285 p=9142 u=root |  ok: [aio1_nova_scheduler_container-7cb49dc3] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,285 p=9142 u=root |  ok: [aio1_nova_api_os_compute_container-e372d96b] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,286 p=9142 u=root |  ok: [aio1_keystone_container-b2624528] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,287 p=9142 u=root |  ok: [aio1_nova_cert_container-cbe150a4] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,287 p=9142 u=root |  ok: [aio1_neutron_agents_container-32791f82] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,289 p=9142 u=root |  ok: [aio1_glance_container-9ee84858] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,290 p=9142 u=root |  ok: [aio1_repo_container-7c4f2d4a] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,291 p=9142 u=root |  ok: [aio1_cinder_api_container-306781f6] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,292 p=9142 u=root |  ok: [aio1_memcached_container-c90ca200] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,293 p=9142 u=root |  ok: [aio1_rabbit_mq_container-876fbbab] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,294 p=9142 u=root |  ok: [aio1_nova_api_metadata_container-859fc1b1] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,294 p=9142 u=root |  ok: [aio1_heat_apis_container-3fa1e76f] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,294 p=9142 u=root |  ok: [aio1_heat_engine_container-fd1e3ff9] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,295 p=9142 u=root |  ok: [aio1_rsyslog_container-52a28f5b] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,295 p=9142 u=root |  ok: [aio1_swift_proxy_container-d6758e9a] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,297 p=9142 u=root |  ok: [aio1_nova_conductor_container-3423f8d2] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,301 p=9142 u=root |  ok: [aio1_nova_console_container-05416cde] => {
+    "msg": "done"
+}
+2016-06-23 00:55:13,368 p=9142 u=root |  PLAY [localhost] ************************************************************** 
+2016-06-23 00:55:13,373 p=9142 u=root |  TASK: [command uname -r] ****************************************************** 
+2016-06-23 00:55:14,710 p=9142 u=root |  changed: [localhost -> 127.0.0.1]
+2016-06-23 00:55:14,726 p=9142 u=root |  TASK: [set_fact ] ************************************************************* 
+2016-06-23 00:55:14,740 p=9142 u=root |  ok: [localhost]
+2016-06-23 00:55:14,740 p=9142 u=root |  TASK: [command ./scripts/osrel.sh] ******************************************** 
+2016-06-23 00:55:14,957 p=9142 u=root |  changed: [localhost -> 127.0.0.1]
+2016-06-23 00:55:14,962 p=9142 u=root |  TASK: [set_fact ] ************************************************************* 
+2016-06-23 00:55:14,965 p=9142 u=root |  ok: [localhost]
+2016-06-23 00:55:14,965 p=9142 u=root |  TASK: [set_fact ] ************************************************************* 
+2016-06-23 00:55:14,967 p=9142 u=root |  ok: [localhost]
+2016-06-23 00:55:14,967 p=9142 u=root |  TASK: [debug var=groups['all']] *********************************************** 
+2016-06-23 00:55:14,984 p=9142 u=root |  ok: [localhost] => {
+    "var": {
+        "groups['all']": [
+            "aio1_ceilometer_api_container-c8db03fd", 
+            "aio1_ceilometer_collector_container-3ca622f3", 
+            "aio1", 
+            "aio1_aodh_container-4366c047", 
+            "aio1_utility_container-9b1d7c73", 
+            "aio1_cinder_scheduler_container-25c5dc68", 
+            "aio1_swift_proxy_container-d6758e9a", 
+            "aio1_neutron_server_container-644c8624", 
+            "aio1_rsyslog_container-52a28f5b", 
+            "aio1_nova_api_os_compute_container-e372d96b", 
+            "aio1_galera_container-be54eca1", 
+            "aio1_rabbit_mq_container-876fbbab", 
+            "aio1_memcached_container-c90ca200", 
+            "aio1_nova_console_container-05416cde", 
+            "aio1_cinder_api_container-306781f6", 
+            "aio1_nova_scheduler_container-7cb49dc3", 
+            "aio1_horizon_container-c761af76", 
+            "aio1_keystone_container-b2624528", 
+            "aio1_nova_cert_container-cbe150a4", 
+            "aio1_repo_container-7c4f2d4a", 
+            "aio1_glance_container-9ee84858", 
+            "aio1_neutron_agents_container-32791f82", 
+            "aio1_nova_api_metadata_container-859fc1b1", 
+            "aio1_nova_conductor_container-3423f8d2", 
+            "aio1_heat_apis_container-3fa1e76f", 
+            "aio1_heat_engine_container-fd1e3ff9", 
+            "localhost"
+        ]
+    }
+}
+2016-06-23 00:55:14,990 p=9142 u=root |  TASK: [include_vars {{ item }}] *********************************************** 
+2016-06-23 00:55:15,071 p=9142 u=root |  ok: [localhost] => (item=/etc/openstack_deploy/user_secrets.yml)
+2016-06-23 00:55:15,101 p=9142 u=root |  ok: [localhost] => (item=/etc/openstack_deploy/openstack_user_config.yml)
+2016-06-23 00:55:15,180 p=9142 u=root |  ok: [localhost] => (item=/etc/ansible/roles/openstack_hosts/defaults/main.yml)
+2016-06-23 00:55:15,231 p=9142 u=root |  ok: [localhost] => (item=/etc/ansible/roles/os_horizon/defaults/main.yml)
+2016-06-23 00:55:15,284 p=9142 u=root |  ok: [localhost] => (item=/etc/ansible/roles/galera_client/defaults/main.yml)
+2016-06-23 00:55:15,285 p=9142 u=root |  TASK: [template ] ************************************************************* 
+2016-06-23 00:55:15,645 p=9142 u=root |  changed: [localhost]
+2016-06-23 00:55:15,651 p=9142 u=root |  TASK: [template ] ************************************************************* 
+2016-06-23 00:55:15,759 p=9142 u=root |  changed: [localhost]
+2016-06-23 00:55:15,765 p=9142 u=root |  PLAY RECAP ******************************************************************** 
+2016-06-23 00:55:15,765 p=9142 u=root |  aio1                       : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,765 p=9142 u=root |  aio1_aodh_container-4366c047 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,765 p=9142 u=root |  aio1_ceilometer_api_container-c8db03fd : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,765 p=9142 u=root |  aio1_ceilometer_collector_container-3ca622f3 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,765 p=9142 u=root |  aio1_cinder_api_container-306781f6 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,765 p=9142 u=root |  aio1_cinder_scheduler_container-25c5dc68 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,765 p=9142 u=root |  aio1_galera_container-be54eca1 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_glance_container-9ee84858 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_heat_apis_container-3fa1e76f : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_heat_engine_container-fd1e3ff9 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_horizon_container-c761af76 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_keystone_container-b2624528 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_memcached_container-c90ca200 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_neutron_agents_container-32791f82 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_neutron_server_container-644c8624 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_nova_api_metadata_container-859fc1b1 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_nova_api_os_compute_container-e372d96b : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_nova_cert_container-cbe150a4 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,766 p=9142 u=root |  aio1_nova_conductor_container-3423f8d2 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  aio1_nova_console_container-05416cde : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  aio1_nova_scheduler_container-7cb49dc3 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  aio1_rabbit_mq_container-876fbbab : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  aio1_repo_container-7c4f2d4a : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  aio1_rsyslog_container-52a28f5b : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  aio1_swift_proxy_container-d6758e9a : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  aio1_utility_container-9b1d7c73 : ok=2    changed=0    unreachable=0    failed=0   
+2016-06-23 00:55:15,767 p=9142 u=root |  localhost                  : ok=9    changed=4    unreachable=0    failed=0   

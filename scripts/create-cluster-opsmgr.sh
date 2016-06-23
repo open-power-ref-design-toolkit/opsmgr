@@ -23,8 +23,8 @@ if [ "$1" == "--help" ]; then
     exit 1
 fi
 
-if [ ! -e scripts/bootstrap-opsmgr.sh ]; then
-    echo "This script must be run from /root/os-services/opsmgr or opsmgr"
+if [ ! -e scripts/create-cluster-opsmgr.sh ]; then
+    echo "This script must be run from the opsmgr directory"
     exit 1
 fi
 
@@ -46,6 +46,7 @@ pushd /opt/openstack-ansible >/dev/null 2>&1
 popd >/dev/null 2>&1
 
 echo "Running elk playbooks"
-pushd playbooks_elk >/dev/null 2>&1
-run_ansible elk.yml
+pushd predeploy/elk >/dev/null 2>&1
+run_ansible site.yml
 popd >/dev/null 2>&1
+

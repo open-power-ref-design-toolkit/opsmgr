@@ -1,11 +1,13 @@
 ---
 - hosts: opsmgr_hosts
   become: true
-
   vars_files:
-    - vars/containers.yml
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
 
   tasks:
+
     - name: start containers if stopped
       lxc_container:
           name: "{{ ansible_hostname }}-{{ item.name }}"
@@ -18,18 +20,33 @@
       register: iptablesrules
       always_run: yes
     
-    - name: remove iptables rule to forward container port
+    - name: remove iptables prerouting rule to forward port to container
       command: |
           iptables -t nat -D PREROUTING -p tcp
           -d {{ ansible_default_ipv4.address }}
           --dport {{ item.1.host }} -j DNAT -m comment
           --to {{ lxc_info | lxcaddress(item.0.name) }}:{{ item.1.container }}
           --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}"
-      when: iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}") == -1
+      when: iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}") != -1
       with_subelements:
         - "{{ containers }}"
         - ports
+      ignore_errors: true
     
+    - name: remove iptables masquerade rule to allow mysql connection
+      command: |
+          iptables -t nat -D POSTROUTING -p tcp
+          -d "{{ lxc_info | lxcaddress(item.0.name) }}/32"
+          --dport {{ item.1.host }} -j MASQUERADE -m comment
+          --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-masq"
+      when: |
+          item.1.name == 'mysql' and
+          iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-masq") != -1
+      with_subelements:
+        - "{{ containers }}"
+        - ports
+      ignore_errors: true
+
     - name: save the iptables change
       shell: iptables-save > /etc/iptables.rules
     
@@ -38,6 +55,12 @@
           name: "{{ ansible_hostname }}-{{ item.name }}"
           state: absent
       with_items: "{{ containers }}"
+
+    - name: clean extra-vars file
+      become: false
+      file:
+          path: "{{ playbook_dir }}/../ext/shared.yml"
+          state: absent
 
     - name: shows container information on the screen
       debug: msg="removed lxc container {{ ansible_hostname }}-{{ item.name }}"

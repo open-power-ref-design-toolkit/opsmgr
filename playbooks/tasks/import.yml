@@ -1,0 +1,53 @@
+---
+
+    - name: register opsmgr-created containers into dynamic inventory
+      add_host:
+          name:     "{{ item.hostname }}"
+          group:    "opsmgr_{{ item.role }}"
+          host:     "{{ item.host }}"
+          address:  "{{ item.address }}"
+          hostaddr: "{{ item.hostaddr }}"
+          lxc:      "{{ item }}"
+      with_items: "{{ opsmgr_containers }}"
+      when: opsmgr_containers is defined
+
+    - name: register opsmgr-created containers into dynamic inventory
+      add_host:
+          name:     "{{ item.hostname }}"
+          group:    "opsmgr_containers"
+          host:     "{{ item.host }}"
+          address:  "{{ item.address }}"
+          hostaddr: "{{ item.hostaddr }}"
+          lxc:      "{{ item }}"
+      with_items: "{{ opsmgr_containers }}"
+      when: opsmgr_containers is defined
+
+    - name: register externally-created containers into dynamic inventory
+      add_host:
+          name:     "{{ item.hostname }}"
+          group:    "opsmgr_{{ item.role }}"
+          host:     "{{ item.host }}"
+          address:  "{{ item.address }}"
+          hostaddr: "{{ item.hostaddr }}"
+          lxc:      "{{ item }}"
+          use_proxy: false
+          ansible_ssh_user: root
+          ansible_ssh_private_key_file: "{{ playbook_dir }}/../ext/id_rsa"
+      with_items: "{{ import_containers }}"
+      when: import_containers is defined
+
+    - name: register externally-created containers into dynamic inventory
+      add_host:
+          name:     "{{ item.hostname }}"
+          group:    "opsmgr_containers"
+          host:     "{{ item.host }}"
+          address:  "{{ item.address }}"
+          hostaddr: "{{ item.hostaddr }}"
+          lxc:      "{{ item }}"
+          use_proxy: false
+          ansible_ssh_user: root
+          ansible_ssh_private_key_file: "{{ playbook_dir }}/../ext/id_rsa"
+      with_items: "{{ import_containers }}"
+      when: import_containers is defined
+
+

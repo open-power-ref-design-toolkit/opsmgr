@@ -1,6 +1,23 @@
 ---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
+
 - hosts: opsmgr_targets
+  gather_facts: no
   become: true
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
   roles:
     - target
 

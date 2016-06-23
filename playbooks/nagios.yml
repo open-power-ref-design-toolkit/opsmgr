@@ -1,21 +1,23 @@
 ---
+
 - hosts: localhost
+  gather_facts: no
+  connection: local
   become: false
   vars_files:
-    - etc/vars.yml
-  tasks:
-    - name: register containers in dynamic inventory opsmgr_nagios group
-      add_host:
-          name:    "{{ item.hostname }}"
-          group:   "opsmgr_{{ item.role }}"
-          host:    "{{ item.host }}"
-          address: "{{ item.address }}"
-          lxc:     "{{ item }}"
-      with_items: "{{ opsmgr_containers }}"
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
 
 - hosts: opsmgr_nagios
   gather_facts: no
   become: true
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
   roles:
     - nagios
 

@@ -1,0 +1,58 @@
+---
+
+    # install pre-reqs
+
+    - name: installs prereq packages with aptitude
+      apt: name={{ item }} state=present update_cache=true
+      with_items: "{{ apt_packages }}"
+
+    # configure service
+    
+    - name: change bind address to allow remote connections
+      lineinfile:
+        dest: "/etc/mysql/my.cnf"
+        regexp: "^bind-address"
+        line: "#bind-address = 127.0.0.1"
+
+    - name: update mysql root user
+      mysql_user:
+        host: "{{ item }}"
+        name: "{{ mysql_root_user }}"
+        password: "{{ mysql_root_password }}"
+        state: present
+        priv: "*.*:ALL,GRANT"
+      with_items:
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+
+    - name: create root .my.cnf file
+      template:
+        src: "my.cnf.j2"
+        dest: "~/.my.cnf"
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: create remote login user
+      mysql_user:
+        host: "{{ item }}"
+        name: "{{ db_login_user }}"
+        password: "{{ db_login_password }}"
+        state: "present"
+        priv: "*.*:ALL,GRANT"
+      with_items:
+        - "%"
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+
+    - name: Remove the test database
+      mysql_db: name=test state=absent
+      notify:
+        - restart service
+      ignore_errors: yes # might not exist
+
+
