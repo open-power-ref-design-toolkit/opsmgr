@@ -37,34 +37,6 @@ class TestInventory(helpers.OpsMgrTestCase):
     HOST_NAME = "localhost"
     IP_ADDRESS = "x.xx.xx.xx"
     SSH_KEY = """-----BEGIN RSA PRIVATE KEY-----
-Proc-Type: 4,ENCRYPTED
-DEK-Info: AES-128-CBC,A019CCF70FBCE51F86FB8FDCC44FE188
-
-MKmP7J811ya5oUtErpWZp5Wgorpi/h4cfCxxsiMvestnR1MeT3OGvmTyWjZuAYKR
-3vJOOnDDOOe+pMWcSzZGbsKjuNOkhrUfgVb3nUngoVjkb7mWY5aErkEBrK5gWhZj
-0BFH8e0yXslQlhul5He9gXqf01ncwZf+zWJ3DoyXGJ2iYimif+esJt1Vk5r0NX6n
-cNe3ME1OJ/ScVBxrdvB0/T5M0rpIJQz/FdhzXwMDzZ0eJi8dE5unHRjLL0VFxW7z
-tnD6BdM/VpZumjgTB/NdpiWUlfYG5dVIvLCD1yOWtF/8HmTlTllYMET/ZDYFQReH
-TzY5BQFfnIIYAm71lMjGIdbt4YQeoj+mRN50zhaAQjpH2MQR8Yaj+8L89dkw8s31
-ZkFCVw88HIG2F4zSV1BUPueYyFm2/ahy7pEN1dvYXgsEYG0je9Z9Gufhi0VNM0qD
-IEkTYnzDk+T+qJaQllzZH+663VsD40TasYI4AFNdmrw78OjUSGD/e+xfqYnmk7p/
-Homhw2ZpRq7/wNCfImaE39ESZc7Bg5EGGyXx9gTchD+4i9SRzNCWmgCtX5VSdyp4
-a5NsVVyt1+MNTzdKGL1jI0M4GYU3i9ITbi9EPVS6PlaJU7dnXgFpT55gg7UIvNFy
-OoOLzL6+GaOgs1AB7rJLe02ZWoeof0sb084LJx3rFnI7a0/8iH9IKEuAudmU3eN7
-2IAnrI1w0DgX5jDu2ZJquwGKoBF4u9RSz4S1jd5GBK7aDR/OoqQdEQe3jwndgoq6
-ZJsiSwz/LG4DsHqgT4qxMgDN2IUixGlTH4GZ85Jz/7L294jBaUmAGlfZ8Lsu/v+b
-D/PsrOThwPza1SZAFDfchYmM8esMZ1lSSs0/65nJR7i1DJdUfCgWMkl28QpHEK57
-q3lTSXkR6kMTrPAL+E5afyc6HcL1vQVZmv4WRMKIJfUIbebv1ISpe1kagJLYei6t
-7OCODbxt8FrjnrmnBlVQbIASA64mTftY/9Jhf4GwIFGMaP9KlR7qe8VKX3JgipEd
-9sX1I7+efc6vzV+x6YsDYy9IXtSyOGsQKAoJSvCPJMHlbs7g0b9fK+icCREhA/Cd
-sG8mMilcggAPYJHQMayj2zK8hB498BCS8CBCLwhfJiBlVSVahBC8x7ZAhnPSO12U
-PZSWodamybmDsnWUKkD/4hWyEafgOnckt5UAHdlapmQlDp9969Z2TYxdhZ9uSX5V
-OI86+n7cd9hrCJAqn9oDCzZK2RT54k57Sf8XRy0dld3vxLqoxfJxiwVtwNnYA1oI
-4dYWrEuC7TPLvpzFIEltOUiCTzpsATPVVjL90S3gbcgKRHtAKGDVQMJjI/7vAlj/
-uNjthZCdGQZSoz2mwNbnwtocOwN4ZUnuhAlVTLnHAoqvryWmxNLtiWAiqQMmBUzH
-D92e0ZC4KX0dgRqY30Nt4pzfS+ILUhSy1yg8SNyZ477e2njOHYJ28WI2ujpEd3Fj
-KmM+NdVIvSEOZJUF9FgoOfW82OH7h/tLxPOZgC1enoL1tU0C4ZMnLbh0Y3TiuZ3K
-jYeOtp0Xk/uU2g03fizO0NIg09CenygUCkoncidU0Ze/RGV8+W2SGYMqoyCOFXxp
 -----END RSA PRIVATE KEY-----"""
     INITIAL_PASSWORD = "xxxxxxx"
     PASSPHRASE = "xxxxxxxx"
@@ -84,6 +56,15 @@ jYeOtp0Xk/uU2g03fizO0NIg09CenygUCkoncidU0Ze/RGV8+W2SGYMqoyCOFXxp
     NEW_ROW = "new row" 
     NEW_NOTES = "These notes are updated"
 
+    class SecurityInfo(object):
+        def __init__(self, auth_method, user_id, password, ssh_key,
+                     passphrase):
+            self.auth_method = auth_method
+            self.user_id = user_id
+            self.password = password
+            self.ssh_key = ssh_key
+            self.passphrase = passphrase
+
     def test_inventory(self):
         # Go to inventory page
         inv_page = self.home_pg.go_to_operationalmanagement_inventorypage()
@@ -92,74 +73,66 @@ jYeOtp0Xk/uU2g03fizO0NIg09CenygUCkoncidU0Ze/RGV8+W2SGYMqoyCOFXxp
         # Open rack details and edit them
         inv_page.edit_rack(self.NEW_RACK_NAME, self.NEW_DATA_CENTER,
                            self.NEW_ROOM, self.NEW_ROW, self.NEW_NOTES)
-        self.assertTrue(inv_page.find_message_and_dismiss(
-                        messages.SUCCESS))
-        self.assertFalse(inv_page.find_message_and_dismiss(
-                         messages.ERROR))
+        self.assertTrue(inv_page.find_message_and_dismiss(messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(messages.ERROR))
 
         # Attempt to add a resource by localhost (should succeed)
+        security_info = self.SecurityInfo(self.PWD_AUTH_METHOD,
+                                          self.HOST_USERID,
+                                          self.INITIAL_PASSWORD, "", "")
         inv_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA,
-                              self.HOST_NAME, self.PWD_AUTH_METHOD,
-                              self.HOST_USERID, self.INITIAL_PASSWORD,
-                              "", "")
-        self.assertTrue(inv_page.find_message_and_dismiss(
-                        messages.SUCCESS))
-        self.assertFalse(inv_page.find_message_and_dismiss(
-                         messages.ERROR))
+                              self.HOST_NAME, security_info)
+        self.assertTrue(inv_page.find_message_and_dismiss(messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(messages.ERROR))
 
         # Verify the resource exists
-        self.assertTrue(inv_page.is_resource_present(
-                        self.HOST_RESOURCE_NAME))
+        self.assertTrue(inv_page.is_resource_present(self.HOST_RESOURCE_NAME))
 
         # Verify the resource is using password authentication
-        self.assertTrue(inv_page.is_authMethod_set(self.HOST_RESOURCE_NAME, 0))
+        self.assertTrue(
+            inv_page.is_auth_method_set(self.HOST_RESOURCE_NAME, 0))
 
         # Attempt to add the resource a second time (should fail)
-        #inv_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA,
-        #                      self.HOST_NAME, self.PWD_AUTH_METHOD,
-        #                      self.HOST_USERID, self.INITIAL_PASSWORD, 
-        #                      "", "")
-        #self.assertTrue(inv_page.find_message_and_dismiss(
+        # inv_page.add_resource(self.HOST_RESOURCE_NAME, self.HOST_EIA,
+        #                      self.HOST_NAME, security_info)
+        # self.assertTrue(inv_page.find_message_and_dismiss(
         #                messages.ERROR))
-        #self.assertFalse(inv_page.find_message_and_dismiss(
+        # self.assertFalse(inv_page.find_message_and_dismiss(
         #                 messages.SUCCESS))
 
         # Attempt to remove the resource (should succeed)
         inv_page.remove_resource(self.HOST_RESOURCE_NAME)
-        self.assertTrue(inv_page.find_message_and_dismiss(
-                        messages.SUCCESS))
-        self.assertFalse(inv_page.find_message_and_dismiss(
-                         messages.ERROR))
+        self.assertTrue(inv_page.find_message_and_dismiss(messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(messages.ERROR))
 
         # Verify the resource no longer exists
-        self.assertFalse(inv_page.is_resource_present(
-                         self.HOST_RESOURCE_NAME))
+        self.assertFalse(inv_page.is_resource_present(self.HOST_RESOURCE_NAME))
 
         # Attempt to add a resource a resource by IP address
         # (should succeed)
+        security_info = self.SecurityInfo(self.SSH_AUTH_METHOD,
+                                          self.IP_USERID2, "", self.SSH_KEY,
+                                          self.PASSPHRASE)
+
         inv_page.add_resource(self.IP_RESOURCE_NAME, self.IP_EIA,
-                              self.IP_ADDRESS, self.SSH_AUTH_METHOD,
-                              self.IP_USERID2, "", self.SSH_KEY,
-                              self.PASSPHRASE)
-        self.assertTrue(inv_page.find_message_and_dismiss(
-                        messages.SUCCESS))
-        self.assertFalse(inv_page.find_message_and_dismiss(
-                         messages.ERROR))
+                              self.IP_ADDRESS, security_info)
+        self.assertTrue(inv_page.find_message_and_dismiss(messages.SUCCESS))
+        self.assertFalse(inv_page.find_message_and_dismiss(messages.ERROR))
 
         # Verify the resource exists
-        self.assertTrue(inv_page.is_resource_present(
-                        self.IP_RESOURCE_NAME))
+        self.assertTrue(inv_page.is_resource_present(self.IP_RESOURCE_NAME))
 
         # Verify the resource is using sshkey authentication
-        self.assertTrue(inv_page.is_authMethod_set(self.IP_RESOURCE_NAME, 1))
+        self.assertTrue(inv_page.is_auth_method_set(self.IP_RESOURCE_NAME, 1))
 
         # Attempt to edit the resource
         # (change auth method: so sshkey/passphrase)
-        inv_page.edit_resource(self.IP_RESOURCE_NAME,
-                               self.NEW_RESOURCE_NAME,
-                               self.IP_EIA2, self.IP_ADDRESS,
-                               self.PWD_AUTH_METHOD, self.IP_USERID,
-                               self.INITIAL_PASSWORD, "", "")
+        security_info = self.SecurityInfo(self.PWD_AUTH_METHOD,
+                                          self.IP_USERID,
+                                          self.INITIAL_PASSWORD, "", "")
+
+        inv_page.edit_resource(self.IP_RESOURCE_NAME, self.NEW_RESOURCE_NAME,
+                               self.IP_EIA2, self.IP_ADDRESS, security_info)
         self.assertTrue(inv_page.find_message_and_dismiss
                         (messages.SUCCESS))
         self.assertFalse(inv_page.find_message_and_dismiss
@@ -170,13 +143,12 @@ jYeOtp0Xk/uU2g03fizO0NIg09CenygUCkoncidU0Ze/RGV8+W2SGYMqoyCOFXxp
                         (self.NEW_RESOURCE_NAME))
 
         # Verify the resource is now PWD authentication
-        self.assertTrue(inv_page.is_authMethod_set(self.NEW_RESOURCE_NAME, 0))
+        self.assertTrue(inv_page.is_auth_method_set(self.NEW_RESOURCE_NAME, 0))
 
         # Attempt to change the password for the user on that resource
         # (should succeed)
-        inv_page.change_password(self.NEW_RESOURCE_NAME, self.IP_USERID,
-                                 self.INITIAL_PASSWORD, self.NEW_PASSWORD,
-                                 self.NEW_PASSWORD)
+        inv_page.change_password(self.NEW_RESOURCE_NAME, self.INITIAL_PASSWORD,
+                                 self.NEW_PASSWORD, self.NEW_PASSWORD)
         self.assertTrue(inv_page.find_message_and_dismiss
                         (messages.SUCCESS))
         self.assertFalse(inv_page.find_message_and_dismiss

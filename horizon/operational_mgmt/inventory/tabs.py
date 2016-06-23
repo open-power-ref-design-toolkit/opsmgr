@@ -223,6 +223,14 @@ class InventoryRacksTabs(tabs.TabGroup):
 
         all_racks = result_dict['racks']
 
+        if len(all_racks) <= 0:
+            # Display this message at the warning-level so that it remains
+            # visible until dismissed.  If sent at the info-level, it will only
+            # display for a few seconds before disapparing automatically.
+            messages.warning(self.request, _('No racks exist in the '
+                                             'Operational Management '
+                                             'inventory.'))
+
         # loop through each rack (creating a defined tab for each)
         for a_rack in all_racks:
             # For each rack, build a defined rack tab
