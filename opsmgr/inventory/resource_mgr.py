@@ -337,7 +337,8 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
             temp_password = password
         else:
             if device.password is not None:
-                temp_password = persistent_mgr.decrypt_data(device.password)
+                if new_auth is None: #only lookup old password if auth hasn't changed
+                    temp_password = persistent_mgr.decrypt_data(device.password)
         if ssh_key:
             temp_ssh_key = ssh_key
         else:
@@ -345,7 +346,8 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
                 key = device.key
                 temp_ssh_key = key.value
                 if key.password:
-                    password = persistent_mgr.decrypt_data(key.password)
+                    if new_auth is None: #only lookup old password if auth hasn't changed
+                        temp_password = persistent_mgr.decrypt_data(key.password)
 
         if new_auth == "key":
             rc, message = _change_device_key(device, ip_address, temp_userid,
