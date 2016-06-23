@@ -584,17 +584,17 @@ class RemoveRackForm(forms.SelfHandlingForm):
             # rack ID so the API knows which rack to act on.  Also pass in
             # False so the API knows to NOT remove all racks
             (rc, result_dict) = rack_mgr.remove_rack(
-                None, False, [data['rack_id']])
+                None, False, [int(data['rack_id'])])
             if rc is not 0:
                 msg = str(
-                    'Attempt to remove rack with rack id ' +
-                    data['rack_id'] + ' was not successful.  Details of ' +
-                    ' the attempt: ' + result_dict)
+                    'Attempt to remove rack with label ' +
+                    data['label'] + ' was not successful. ' +
+                    'Details of the attempt: ' + result_dict)
                 messages.error(request, msg)
                 logging.error(
                     '%s: Unable to remove rack with label "%s".  Return '
                     'code "%s" received.  Details of the failure: "%s"',
-                    __method__, self.initial['label'], rc, result_dict)
+                    __method__, data['label'], rc, result_dict)
 
                 # Return false in this case so that the dialog is not
                 # dismissed.  This gives the end-user a chance to
@@ -610,59 +610,6 @@ class RemoveRackForm(forms.SelfHandlingForm):
             logging.error("%s: Exception received trying to remove the "
                           "selected rack.  Exception is: %s", __method__, e)
             exceptions.handle(request, _('Unable to remove rack.'))
-            # In this case, return True so that the dialog closes.
-            # In theory, there are no values the end-user could change
-            # to the dialog inputs that would allow us to proceed.
-            return True
-
-
-class RemoveResourceForm(forms.SelfHandlingForm):
-    label = forms.CharField(
-        label=_("Label"),
-        max_length=255, required=True)
-    resourceId = forms.CharField(label=_("Resource ID"),
-                                 widget=forms.HiddenInput())
-
-    def __init__(self, *args, **kwargs):
-        super(RemoveResourceForm, self).__init__(*args, **kwargs)
-        read_only_input = forms.TextInput(attrs={'readonly': 'readonly'})
-        self.fields["label"].widget = read_only_input
-
-    def handle(self, request, data):
-        __method__ = 'forms.RemoveResourceForm.handle'
-        try:
-            # pass in "None" for resource label -- we'll instead pass
-            # in the resource ID so the API knows which resource is being
-            # removed
-            (rc, result_dict) = resource_mgr.remove_resource(
-                None, False, [data['resourceId']])
-            if rc is not 0:
-                # failure case -- so use the initial label for logging/message
-                msg = str('Attempt to remove resource ' +
-                          self.initial['label'] + " was not successful." +
-                          ' Details of the attempt: ' + result_dict)
-                messages.error(request, msg)
-                logging.error('%s: Unable to remove resource "%s".  Return '
-                              'code "%s" received.  Details of the failure:'
-                              '"%s"', __method__, self.initial['label'],
-                              rc, result_dict)
-
-                # Return false in this case so that the dialog is not
-                # dismissed.  This gives the end-user a chance to
-                # update the dialog w/o having to re-enter all the
-                # information a second time.
-                return False
-            else:
-                # must have a 0 rc -- display completion msg -- use current
-                # label for message
-                msg = str('Resource ' + data['label'] + ' removed.')
-                messages.success(request, msg)
-                return True
-        except Exception as e:
-            logging.error("%s: Exception received trying to remove resource."
-                          " Exception is: %s", __method__, e)
-            exceptions.handle(request, _('Unable to remove selected '
-                                         'resource.'))
             # In this case, return True so that the dialog closes.
             # In theory, there are no values the end-user could change
             # to the dialog inputs that would allow us to proceed.

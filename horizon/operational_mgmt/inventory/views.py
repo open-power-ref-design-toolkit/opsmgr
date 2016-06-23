@@ -21,11 +21,13 @@ from django.views.decorators.debug import sensitive_post_parameters  # noqa
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
+from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
 
 import logging
 
+from operational_mgmt import resource
 from operational_mgmt.inventory import forms as project_forms
 from operational_mgmt.inventory import tables as project_tables
 from operational_mgmt.inventory import tabs as inventoryRacks_tabs
@@ -387,34 +389,24 @@ class RemoveRackView(forms.ModalFormView):
         return context
 
 
-class RemoveResourceView(forms.ModalFormView):
-    template_name = 'op_mgmt/inventory/removeResource.html'
-    modal_header = _("Remove Resource")
-    form_id = "remove_resource_form"
-    form_class = project_forms.RemoveResourceForm
-    submit_label = _("Remove Resource")
-    submit_url = "horizon:op_mgmt:inventory:removeResource"
-    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
-    page_title = _("Remove Resource")
-
-    def get_initial(self):
-        # Need the resource being edited
-        selected_resource = self.get_object()
-        if selected_resource:
-            return {'label': selected_resource['label'],
-                    'resourceId': selected_resource['resourceid']}
-        else:
-            return
+class RemoveResourcesView(tables.DataTableView, forms.ModalFormView):
+    table_class = project_tables.RemoveResourcesTable
+    modal_header = _("Remove Resources")
+    modal_id = "remove_resources_modal"
+    template_name = 'op_mgmt/inventory/removeResources.html'
+    submit_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+    submit_label = _("Close")
+    page_title = _("Remove Resources")
 
     @memoized.memoized_method
     def get_object(self):
-        __method__ = 'views.RemoveResourceView.get_object'
-        failure_message = str("Unable to retrieve resource information" +
-                              " for the resource being removed.")
-        if "resource_id" in self.kwargs:
+        __method__ = 'views.RemoveResourcesView.get_object'
+        failure_message = str("Unable to retrieve rack information" +
+                              " for the resources being removed.")
+        if "rack_id" in self.kwargs:
             try:
-                (rc, result_dict) = resource_mgr.list_resources(
-                    None, False, None, [self.kwargs['resource_id']])
+                (rc, result_dict) = rack_mgr.list_racks(
+                    None, False, [self.kwargs["rack_id"]])
             except Exception as e:
                 logging.error("%s: Exception received trying to retrieve"
                               " resource information.  Exception is: %s",
@@ -422,10 +414,10 @@ class RemoveResourceView(forms.ModalFormView):
                 exceptions.handle(self.request, failure_message)
                 return
         else:
-            # This is unexpected.  RemoveResourceView called with no context
-            # of what to edit.  Need to display an error message because the
-            # dialog will not be primed with required data
-            logging.error("%s: RemoveResourceView called with no context.",
+            # This is unexpected.  RemoveResourcesView called with no context
+            # of what to edit.  Need to display an error message because
+            # the dialog will not be primed with required data
+            logging.error("%s: RemoveResourcesView called with no context.",
                           __method__)
             messages.error(self.request, failure_message)
             return
@@ -434,20 +426,45 @@ class RemoveResourceView(forms.ModalFormView):
             messages.error(self.request, failure_message)
             return
         else:
-            # We should have at least one resource in the results...just
+            # We should have at least one rack in the results...just
             # return the first value
-            if len(result_dict['resources']) > 0:
-                return result_dict['resources'][0]
+            if len(result_dict['racks']) > 0:
+                return result_dict['racks'][0]
             else:
-                logging.error("%s: list_resources returned no information for"
-                              " resource with resource id %s",
-                              __method__, self.kwargs["resource_id"])
+                logging.error("%s: list_racks returned no information for"
+                              " rack with rack id %s",
+                              __method__, self.kwargs["rack_id"])
                 messages.error(self.request, failure_message)
                 return
 
-    def get_context_data(self, **kwargs):
-        # place the resource id on to the submit url
-        context = super(RemoveResourceView, self).get_context_data(**kwargs)
-        args = (self.get_object()['resourceid'],)
-        context['submit_url'] = reverse(self.submit_url, args=args)
-        return context
+    # Used to populate the table of resources to remove (for the given rack)
+    def get_data(self):
+        __method__ = 'views.RemoveResourcesView.get_data'
+        resources = []
+        rack_id = int(self.kwargs["rack_id"])
+
+        logging.debug("%s: before retrieving resources for rack: %s",
+                      __method__, rack_id)
+
+        # retrieve resources for the rack id passed in (rack_id may be -1 on
+        # the initial pass)
+        (rc, result_dict) = resource_mgr.list_resources(None, False, None,
+                                                        None, False, False,
+                                                        [rack_id])
+        if rc != 0:
+            messages.error(self.request, _('Unable to retrieve Operational'
+                                           ' Management inventory information'
+                                           ' for resources.'))
+            logging.error('%s: Unable to retrieve Operational Management'
+                          'inventory information. A Non-0 return code returned'
+                          ' from resource_mgr.list_resources.  The return code'
+                          ' is: %s', __method__, rc)
+        else:
+            all_resources = result_dict['resources']
+            for raw_resource in all_resources:
+                resources.append(resource.Resource(raw_resource))
+
+        logging.debug("%s: Found %s resources",
+                      __method__, len(resources))
+
+        return resources

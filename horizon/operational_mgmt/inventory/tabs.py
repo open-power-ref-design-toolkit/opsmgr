@@ -153,6 +153,8 @@ class RackTabBase(tabs.TableTab):
         # Store the rack_id of the current rack into
         # the AddResource action
         tables.AddResourceLink.rack_id = self.rack_id
+        # ... and the RemoveResources action
+        tables.RemoveResourcesLink.rack_id = self.rack_id
         # Return the list of resources
         return retrieve_rack_resources(self)
 

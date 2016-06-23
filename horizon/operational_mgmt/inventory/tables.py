@@ -13,10 +13,12 @@
 # limitations under the License.
 
 from django.core.urlresolvers import reverse
-from django import shortcuts
+from django.core.urlresolvers import reverse_lazy
+
 from django.template import defaultfilters as filters
 from django.utils.translation import ugettext_lazy as _
-from horizon import exceptions
+from django.utils.translation import ungettext_lazy
+
 from horizon import messages
 from horizon import tables
 
@@ -34,70 +36,125 @@ class AddResourceLink(tables.LinkAction):
     rack_id = ""
 
     # required to prime the add resource dialog with the rack id
-    def get_link_url(self):
+    def get_link_url(self, datum=None):
         if self.rack_id != "":
             return reverse(self.url, args=[self.rack_id])
         else:
             return self.url
 
 
-class RemoveResources(tables.Action):
+class RemoveResources(tables.DeleteAction):
     name = "removeResources"
-    verbose_name = "Remove Resource"
-    action_type = "danger"
+    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Remove Resource",
+            u"Remove Resources",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Removed Resource",
+            u"Removed Resources",
+            count
+        )
+
+    def delete(self, request, obj_id):
+        __method__ = 'tables.RemoveResources.delete'
+        logging.debug("%s: Attempt to remove resource %s ",
+                      __method__, obj_id)
+
+        (rc, result_dict) = resource_mgr.remove_resource(None, False,
+                                                         [obj_id])
+
+        if rc != 0:
+            # Log details of the unsuccessful attempt.
+            logging.error("%s: Attempt to remove resource with id: %s"
+                          " failed.", __method__, obj_id)
+            logging.error(
+                "%s: Unable to remove resource with id: %s. A Non-0 "
+                " return code returned from resource_mgr.remove_resource."
+                " The return code is: %s. Details of the attempt: "
+                " %s", __method__, obj_id, rc, result_dict)
+
+            # Show failure details
+            msg = str(
+                'Attempt to remove resource was not successful.  ' +
+                'Details of the attempt: ' + result_dict)
+            messages.error(request, msg)
+            # Raise exception so that tables.delete shows generic failure
+            raise Exception(msg)
+        else:
+            return
+
+
+class RemoveResourcesLink(tables.LinkAction):
+    # Link opens custom dialog to remove multiple resources from
+    # a rack definition
+    name = "removeResourcesLink"
+    verbose_name = _("Remove Resources")
+    url = "horizon:op_mgmt:inventory:removeResources"
+    classes = ("ajax-modal", "btn-danger")
     icon = "trash"
-    classes = ('btn-danger', )
-    help_text = _("This action cannot be undone.")
+    rack_id = ""
 
-    def get_default_attrs(self):
-        """Returns a list of the default HTML attributes for the action."""
-        attrs = super(RemoveResources, self).get_default_attrs()
-        # This action must behave like a batch-action activity with
-        # regards to enablement/disablement...
-        attrs.update({'data-batch-action': 'true'})
-        return attrs
+    # required to prime the remove resources dialog with the rack id
+    def get_link_url(self, datum=None):
+        if self.rack_id != "":
+            return reverse(self.url, args=[self.rack_id])
+        else:
+            return self.url
 
-    def get_success_url(self, request):
-        return reverse('horizon:op_mgmt:inventory:index')
+    def allowed(self, request, datum):
+        __method__ = 'tables.RemoveResourcesLink.allowed'
+        # The Remove Resources button should always be displayed, but we want
+        # it to be disabled when there are NO resources present.  For now
+        # assume button is NOT disabled.
+        disable_remove = False
+        if self.rack_id != "":
+            # Retrieve the resources for the selected rack
+            logging.debug("%s: before retrieving resources for rack: %s",
+                          __method__, self.rack_id)
 
-    def handle(self, data_table, request, object_ids):
-        __method__ = 'tables.RemoveResources.handle'
-        logging.debug("%s: Attempt to remove resources %s ",
-                      __method__, object_ids)
+            (rc, result_dict) = resource_mgr.list_resources(None, False, None,
+                                                            None, False, False,
+                                                            [self.rack_id])
 
-        if len(object_ids) <= 0:
-            return shortcuts.redirect(self.get_success_url(request))
-
-        try:
-            (rc, result_dict) = resource_mgr.remove_resource(None, False,
-                                                             object_ids)
             if rc != 0:
-                # Log details of the unsuccessful attempt.
-                logging.error("%s: Attempt to remove resources "
-                              "failed.", __method__)
-                logging.error(
-                    "%s: Unable to remove resources. A Non-0 "
-                    " return code returned from resource_mgr.remove_resource."
-                    " The return code is: %s. Details of the attempt: "
-                    " %s", __method__, rc, result_dict)
-                # Show generic failure message
-                msg = str(
-                    'Attempt to remove resources was not successful.  ' +
-                    'Details of the attempt: ' + result_dict)
+                # Unexpected.  Unable to retrieve rack information for selected
+                # rack.  Log that fact, and allow the remove rack button to be
+                # active
+                msg = str('Unable to retrieve Operational Management inventory'
+                          ' information for resources.')
                 messages.error(request, msg)
+                logging.error('%s: Unable to retrieve Operational Management'
+                              ' inventory information. A Non-0 return code'
+                              ' returned from resource_mgr.list_resources.'
+                              ' The return code is: %s', __method__, rc)
             else:
-                # Show generic success message
-                msg = str('Resources successfully removed.')
-                messages.success(request, msg)
-        except Exception as e:
-            redirect = reverse('horizon:op_mgmt:inventory:index')
-            logging.error("%s: Exception received trying to remove  "
-                          "resources with ids %s.  Exception is: %s",
-                          __method__, object_ids, e)
-            exceptions.handle(request, _('Unable to remove resources.'),
-                              redirect=redirect)
+                resources = result_dict['resources']
+                # if the rack doesn't have any resources associated with it in
+                # the inventory don't allow the user to delete it
+                logging.debug("%s: got resource info for rack %s.  Number of "
+                              "resources for this rack is: %s",
+                              __method__, self.rack_id, len(resources))
+                if len(resources) <= 0:
+                    disable_remove = True
 
-        return shortcuts.redirect(self.get_success_url(request))
+        if disable_remove:
+            # Add the disabled class to the button (if it's not already
+            # there)
+            if 'disabled' not in self.classes:
+                self.classes = list(self.classes) + ['disabled']
+        else:
+            # Remove the disabled class from the button (if it's still there)
+            if 'disabled' in self.classes:
+                self.classes.remove('disabled')
+        return True
 
 
 class EditResourceLink(tables.LinkAction):
@@ -116,18 +173,6 @@ class ChangePasswordLink(tables.LinkAction):
     icon = "pencil"
 
 
-# Link opens default remove/delete dialog to individual resources
-# from a rack definition
-class RemoveResourceLink(tables.LinkAction):
-    name = "removeResource"
-    verbose_name = _("Remove Resource")
-    url = "horizon:op_mgmt:inventory:removeResource"
-    # consider adding class to indicate action is 'dangerous' --
-    # btn-danger makes the words black, and background red: a bit much
-    classes = ("ajax-modal",)
-    icon = "trash"
-
-
 class EditRackLink(tables.LinkAction):
     name = "editRack"
     verbose_name = _("Edit Rack")
@@ -137,7 +182,7 @@ class EditRackLink(tables.LinkAction):
     rack_id = ""
 
     # required to prime the edit rack dialog with the rack id
-    def get_link_url(self):
+    def get_link_url(self, datum=None):
         if self.rack_id != "":
             return reverse(self.url, args=[self.rack_id])
         else:
@@ -153,7 +198,7 @@ class RemoveRackLink(tables.LinkAction):
     rack_id = ""
 
     # required to prime the remove rack dialog with the rack id
-    def get_link_url(self):
+    def get_link_url(self, datum=None):
         if self.rack_id != "":
             return reverse(self.url, args=[self.rack_id])
         else:
@@ -226,7 +271,7 @@ class NameLinkColumn(tables.Column):
     # Will make the label column a link if there is a web_url associated with
     # the resource. Also ensure the link opens to a new window (that is a
     # unique window for that particular resource)
-    def get_link_url(self, datum):
+    def get_link_url(self, datum=None):
         if datum.web_url:
             self.link_attrs['target'] = datum.name
             return datum.web_url
@@ -273,8 +318,8 @@ class ResourcesTable(tables.DataTable):
         multi_select = False
         row_actions = (EditResourceLink, ChangePasswordLink,
                        RemoveResources)
-        table_actions = (ResourceFilterAction, AddResourceLink,)
-        #                 RemoveResources)
+        table_actions = (ResourceFilterAction, AddResourceLink,
+                         RemoveResourcesLink)
 
 
 class RackDetailsTable(tables.DataTable):
@@ -296,3 +341,22 @@ class RackDetailsTable(tables.DataTable):
         # remove rack to be present (Remove Rack is hidden
         # via its 'allowed' function)
         table_actions = (EditRackLink, RemoveRackLink)
+
+
+class RemoveResourcesTable(tables.DataTable):
+    name = NameLinkColumn('name',
+                          verbose_name=_('Label'))
+    type = tables.Column('type',
+                         verbose_name=_("Type"))
+    hostname = tables.Column('hostname',
+                             verbose_name=_("Host Name"))
+    ip_address = tables.Column('ip_address',
+                               verbose_name=_("IP Address"))
+
+    class Meta(object):
+        name = "removeResources"
+        verbose_name = _("Remove Resources")
+        multi_select = True
+        # Allow resource filtering, and the ability to remove
+        # multiple resources as table actions
+        table_actions = (ResourceFilterAction, RemoveResources)
