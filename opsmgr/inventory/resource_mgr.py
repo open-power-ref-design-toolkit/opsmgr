@@ -332,6 +332,7 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
             temp_userid = device.userid
 
         temp_password = None
+        temp_ssh_key = None
         if password:
             temp_password = password
         else:
