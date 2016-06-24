@@ -2,13 +2,19 @@
 
     # install pre-reqs
 
+    - name: hack to allow unauthenticated packages to install
+      copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
+
     - name: installs prereq packages with apt
-      apt: name={{ item }} state=present update_cache=true
+      apt: name={{ item }} state=present update_cache=true force=yes
       with_items: "{{ apt_packages }}"
       when: is_monitored == true
 
+    - name: remove hack that allows unauthenticated packages to install
+      file: path=/etc/apt/apt.conf.d/99temp state=absent
+
     - name: installs prereq packages with pip
-      pip: name={{ item }} state=present
+      pip: name={{ item }} state=present extra_args='--allow-unverified'
       with_items: "{{ pip_packages }}"
       when: is_monitored == true
 

@@ -1,0 +1,42 @@
+---
+
+    - name: get iptables rules
+      shell: iptables -t nat -L
+      register: iptablesrules
+      always_run: yes
+    
+    - name: create iptables prerouting rule to forward port to container
+      command: |
+          iptables -t nat -I PREROUTING -p tcp
+          -d {{ item.0.hostaddr }} --dport {{ item.1.host }} -j DNAT
+          --to {{ item.0.address }}:{{ item.1.container }} -m comment
+          --comment "opsmgr-{{ item.0.host }}-{{ item.0.name }}-{{ item.1.name }}"
+      when: |
+          item.0.host == ansible_hostname and
+          iptablesrules.stdout.find("opsmgr-{{ item.0.host }}-{{ item.0.name }}-{{ item.1.name }}") == -1
+      with_subelements:
+        - "{{ opsmgr_containers }}"
+        - ports
+    
+    - name: create iptables masquerade rule to allow mysql connection
+      command: |
+          iptables -t nat -I POSTROUTING -p tcp
+          -d "{{ item.0.address }}/32" --dport {{ item.1.host }} -j MASQUERADE
+          -m comment --comment "opsmgr-{{ item.0.host }}-{{ item.0.name }}-masq"
+      when: |
+          item.0.host == ansible_hostname and
+          item.1.name == 'mysql' and
+          iptablesrules.stdout.find("opsmgr-{{ item.0.host }}-{{ item.0.name }}-masq") == -1
+      with_subelements:
+        - "{{ opsmgr_containers }}"
+        - ports
+    
+    - name: save the iptables change
+      shell: iptables-save > /etc/iptables.rules
+    
+    - name: load iptables on boot
+      lineinfile:
+          line: "pre-up iptables-restore < /etc/iptables.rules"
+          dest: "/etc/network/interfaces"
+    
+

@@ -3,7 +3,7 @@
     # install nrpe agent
 
     - name: installs nrpe packages
-      apt: name={{item}} state=present update_cache=true
+      apt: name={{item}} state=present update_cache=true force=yes
       with_items: "{{ nrpe_packages }}"
 
     - name: create nrpe.cfg from template

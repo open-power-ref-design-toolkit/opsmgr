@@ -1,0 +1,13 @@
+---
+
+    # configure proxying
+    
+    - name: apply proxy configuration with iptables
+      include: iptables.yml
+      when: proxy_mode == 'iptables'
+    
+    - name: apply proxy configuration with iptables
+      include: haproxy.yml
+      when: proxy_mode == 'haproxy'
+    
+

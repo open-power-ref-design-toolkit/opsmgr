@@ -98,7 +98,7 @@
       with_items: "{{ containers }}"
     
     - name: copy script to check on network
-      template:
+      copy:
         src: etc/waitip.sh
         dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/tmp/waitip.sh"
         owner: root
@@ -134,63 +134,19 @@
           host: "{{ lxc_info | lxcaddress(item.name) }}"
       with_items: "{{ containers }}"
 
-    # configure host iptables parameters for each container
-    
-    - name: get iptables rules
-      shell: iptables -t nat -L
-      register: iptablesrules
-      always_run: yes
-    
-    - name: create iptables prerouting rule to forward port to container
-      command: |
-          iptables -t nat -I PREROUTING -p tcp
-          -d {{ ansible_default_ipv4.address }}
-          --dport {{ item.1.host }} -j DNAT -m comment
-          --to {{ lxc_info | lxcaddress(item.0.name) }}:{{ item.1.container }}
-          --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}"
-      when: iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-{{ item.1.name }}") == -1
-      with_subelements:
-        - "{{ containers }}"
-        - ports
-    
-    - name: create iptables masquerade rule to allow mysql connection
-      command: |
-          iptables -t nat -I POSTROUTING -p tcp
-          -d "{{ lxc_info | lxcaddress(item.0.name) }}/32"
-          --dport {{ item.1.host }} -j MASQUERADE -m comment
-          --comment "opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-masq"
-      when: |
-          item.1.name == 'mysql' and
-          iptablesrules.stdout.find("opsmgr-{{ ansible_hostname }}-{{ item.0.name }}-masq") == -1
-      with_subelements:
-        - "{{ containers }}"
-        - ports
-    
-    - name: save the iptables change
-      shell: iptables-save > /etc/iptables.rules
-    
-    - name: load iptables on boot
-      lineinfile:
-          line: "pre-up iptables-restore < /etc/iptables.rules"
-          dest: "/etc/network/interfaces"
-    
     # add containers to dynamic inventory
     
-    - name: register containers in dynamic inventory
-      add_host:
-          name: "{{ ansible_hostname }}-{{ item.name }}"
-          group: "opsmgr_containers"
-          host: "{{ ansible_hostname }}"
-          hostaddr: "{{ ansible_default_ipv4.address }}"
-          address: "{{ lxc_info | lxcaddress(item.name) }}"
-          lxc: "{{ item }}"
-          #ansible_connection: lxc
+    - name: ensure the temporary directory exists
+      become: false
+      run_once: true
+      ignore_errors: yes
+      local_action: file path={{ playbook_dir }}/etc/lxcs state=directory
+    
+    - name: create shared file fragments
+      become: false
+      local_action: template
+          src=container.j2
+          dest={{ playbook_dir }}/etc/lxcs/lxc-{{ ansible_hostname }}-{{ item.name }}
       with_items: "{{ containers }}"
-
-    - debug: var=hostvars[item]
-      when: hostvars[item].host == ansible_hostname
-      with_items: groups['opsmgr_containers']
-
-
-
+    
 

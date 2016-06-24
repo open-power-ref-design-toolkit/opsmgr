@@ -1,0 +1,8 @@
+  - name:     {{ item.name }}
+    role:     {{ item.role }}
+    mount:    {{ item.mount }}
+    ports:    {{ item.ports }}
+    address:  {{ lxc_info | lxcaddress(item.name) }}
+    host:     {{ ansible_hostname }}
+    hostaddr: {{ ansible_ssh_host }}
+    hostname: {{ ansible_hostname }}-{{ item.name }}

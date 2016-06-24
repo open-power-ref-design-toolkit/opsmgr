@@ -1,47 +1,37 @@
 # {{ ansible_managed }}
 #
-{% if hostvars[item].use_proxy is defined and hostvars[item].use_proxy == False %}
-# skipping proxy for {{ item }}
+{% if hostvars[item.hostname].use_proxy is defined and hostvars[item.hostname].use_proxy == False %}
+# skipping proxy for {{ item.hostname }}
 {% else %}
-{% for proxy in groups['opsmgr_hosts'] %}
-Host {{ item }}
-{% if hostvars[item].ansible_ssh_host is defined %}
-  Hostname {{ hostvars[item].ansible_ssh_host }}
-{% else %}
-  Hostname {{ hostvars[item].address }}
-{% endif %}
+Host {{ item.hostname }}
+  Hostname {{ item.address }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-{% if hostvars[item].ansible_ssh_user is defined %}
-  ProxyCommand ssh -q {{ hostvars[item].ansible_ssh_user }}@{{ proxy }} nc -q0 %h %p
+{% if hostvars[item.hostname].ansible_ssh_user is defined %}
+  ProxyCommand ssh -q {{ hostvars[item.hostname].ansible_ssh_user }}@{{ item.host }} nc -q0 %h %p
 {% else %}
-  ProxyCommand ssh -q %r@{{ proxy }} nc -q0 %h %p
+  ProxyCommand ssh -q %r@{{ item.host }} nc -q0 %h %p
 {% endif %}
-{% if hostvars[item].ansible_ssh_private_key_file is defined %}
-  IdentityFile {{ hostvars[item].ansible_ssh_private_key_file }}
+{% if hostvars[item.hostname].ansible_ssh_private_key_file is defined %}
+  IdentityFile {{ hostvars[item.hostame].ansible_ssh_private_key_file }}
 {% else %}
   IdentityFile ~/.ssh/id_rsa
 {% endif %}
 
-{% if hostvars[item].ansible_ssh_host is defined %}
-Host {{ hostvars[item].ansible_ssh_host }}
-{% else %}
-Host {{ hostvars[item].address }}
-{% endif %}
-  Hostname {{ item }}
+Host {{ item.address }}
+  Hostname {{ item.hostname }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-{% if hostvars[item].ansible_ssh_user is defined %}
-  ProxyCommand ssh -q {{ hostvars[item].ansible_ssh_user }}@{{ proxy }} nc -q0 %h %p
+{% if hostvars[item.hostname].ansible_ssh_user is defined %}
+  ProxyCommand ssh -q {{ hostvars[item.hostname].ansible_ssh_user }}@{{ item.host }} nc -q0 %h %p
 {% else %}
-  ProxyCommand ssh -q %r@{{ proxy }} nc -q0 %h %p
+  ProxyCommand ssh -q %r@{{ item.host }} nc -q0 %h %p
 {% endif %}
-{% if hostvars[item].ansible_ssh_private_key_file is defined %}
-  IdentityFile {{ hostvars[item].ansible_ssh_private_key_file }}
+{% if hostvars[item.hostname].ansible_ssh_private_key_file is defined %}
+  IdentityFile {{ hostvars[item.hostame].ansible_ssh_private_key_file }}
 {% else %}
   IdentityFile ~/.ssh/id_rsa
 {% endif %}
 
-{% endfor %}
 {% endif %}
 

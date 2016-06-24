@@ -100,15 +100,15 @@
     - name: create ssh config entries for containers from inventory
       template:
           src: ssh.lxc.j2
-          dest: "~/.ssh/config.d/ssh.lxc-{{ item }}"
+          dest: "~/.ssh/config.d/ssh.lxc-{{ item.hostname }}"
           mode: 0644
-      with_items: groups.opsmgr_containers
-      when: groups.opsmgr_containers is defined
+      with_items: opsmgr_containers
+      when: opsmgr_containers is defined
 
     - name: create ssh config entries for containers from extravars
       template:
           src: ssh.lxc.j2
-          dest: "~/.ssh/config.d/ssh.lxc-{{ item }}"
+          dest: "~/.ssh/config.d/ssh.lxc-{{ item.hostname }}"
           mode: 0644
       with_items: ssh_containers
       when: ssh_containers is defined

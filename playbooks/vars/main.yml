@@ -14,6 +14,10 @@ db_name: opsmgr
 mysql_root_user: root
 mysql_root_password: passw0rd
 
+# proxy mode - valid values: iptables or haproxy
+# obs: it doesn't actually install packages, just configure
+proxy_mode: haproxy
+
 # defines containers used to integrate management applications
 # name: container name (unique)
 # roles: corresponds to ansible role used to deploy application

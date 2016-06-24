@@ -1,6 +1,6 @@
 [opsmgr_hosts]
-aio
+localhost
 
 [opsmgr_targets]
-aio
+localhost
 

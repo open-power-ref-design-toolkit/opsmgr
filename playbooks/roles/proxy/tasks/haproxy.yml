@@ -1,0 +1,23 @@
+---
+
+    - name: create haproxy config file for container
+      template:
+        src: haproxy.j2
+        dest: "/etc/haproxy/conf.d/{{ item.0.name }}-{{ item.1.name }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_subelements:
+        - "{{ opsmgr_containers }}"
+        - ports
+
+    - name: add backend servers to the pools
+      lineinfile:
+        dest: "/etc/haproxy/conf.d/{{ item.0.name }}-{{ item.1.name }}"
+        line: "server {{ item.0.hostname }} {{ item.0.address }}:{{ item.1.container }} check port {{ item.1.container }} inter 12000 rise 1 fall 1"
+        insertafter: EOF
+      with_subelements:
+        - "{{ opsmgr_containers }}"
+        - ports
+      notify: restart haproxy
+

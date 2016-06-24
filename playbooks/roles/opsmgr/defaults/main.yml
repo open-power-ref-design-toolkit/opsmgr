@@ -17,7 +17,7 @@ apt_packages:
 pip_packages:
   - pbr
   - setuptools
-  - pymysql
+  - PyMySQL
   - pycrypto
   - paramiko>=1.16.0
   - sqlalchemy>=1.0.12
