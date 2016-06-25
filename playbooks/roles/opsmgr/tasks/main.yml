@@ -8,7 +8,7 @@
       when: use_proxy is undefined or use_proxy != false
 
     - name: installs prereq packages with pip
-      pip: name={{ item }} extra_args='--allow-unverified'
+      pip: name={{ item }} extra_args='--isolated'
       with_items: "{{ pip_packages }}"
 
     # copy the code to server

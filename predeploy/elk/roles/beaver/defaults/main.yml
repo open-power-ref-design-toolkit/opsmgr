@@ -20,7 +20,7 @@
 beaver_pip_packages:
   - "beaver==36.2.0"
 
-pip_install_options: "--time 120 --isolated"
+pip_install_options: "--isolated"
 
 # the beaver daemon settings
 beaver_daemon_log: "/var/log/beaver/beaver.log"
