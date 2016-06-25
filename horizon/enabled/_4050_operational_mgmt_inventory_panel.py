@@ -18,5 +18,4 @@ PANEL = 'inventory'
 PANEL_DASHBOARD = 'op_mgmt'
 
 # Python panel class of the PANEL to be added.
-ADD_PANEL = ('openstack_dashboard.dashboards.operational_mgmt.inventory'
-             '.panel.Inventory')
+ADD_PANEL = ('operational_mgmt.inventory.panel.Inventory')
