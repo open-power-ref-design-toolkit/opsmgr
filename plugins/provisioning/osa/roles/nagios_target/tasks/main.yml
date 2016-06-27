@@ -1,9 +1,10 @@
 ---
 
-    # install pre-reqs
+    # install monitoring pre-reqs
 
     - name: hack to allow unauthenticated packages to install
       copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
+      when: is_monitored == true
 
     - name: installs prereq packages with apt
       apt: name={{ item }} state=present update_cache=true force=yes
@@ -12,6 +13,7 @@
 
     - name: remove hack that allows unauthenticated packages to install
       file: path=/etc/apt/apt.conf.d/99temp state=absent
+      when: is_monitored == true
 
     - name: installs prereq packages with pip
       pip: name={{ item }} state=present extra_args='--allow-unverified'
@@ -34,7 +36,22 @@
       service: name=sysstat state=restarted
       when: is_monitored == true
 
-    # install configuration
+    # install monitoring agent
+
+    - name: installs nrpe packages
+      apt: name={{item}} state=present update_cache=true force=yes
+      with_items: "{{ nrpe_packages }}"
+      when: has_agent == true
+
+    - name: create nrpe.cfg from template
+      template: >
+        src=nrpe.cfg.j2
+        dest={{ nrpe_dir }}/nrpe.cfg
+        owner=root group=root mode=0644
+      when: has_agent == true
+      notify: restart nrpe service
+
+    # install monitoring configuration
 
     - name: ensures plugins directory exists
       file:
@@ -74,5 +91,28 @@
           dest: "{{ nrpe_dir }}/commands/"
           mode: 0644
       when: has_agent == true
+
+    # register this target in opsmgr
+
+    - name: register resource in opsmgr (activate monitoring)
+      shell: >
+          opsmgr add_resource -l "{{ inventory_hostname }}" -a "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+          -u "{{ ansible_ssh_user }}" --key "/etc/opsmgr/opsmgr.key"
+      when: has_agent == true and inventory_hostname in groups['hosts']
+      delegate_to: "{{ opsmgr }}"
+
+    - name: register host resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ inventory_hostname }}" -r "osa_host"
+      when: has_agent == true and inventory_hostname in groups['hosts']
+      delegate_to: "{{ opsmgr }}"
+
+    - name: register resource roles in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ hostvars[inventory_hostname].physical_host }}" -r "osa_{{ hostvars[inventory_hostname].component }}"
+      with_items: "{{ osa_services }}"
+      when: has_agent == true and inventory_hostname in groups['all_containers']
+      delegate_to: "{{ opsmgr }}"
+
 
 

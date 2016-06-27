@@ -467,7 +467,7 @@ def main(argv=sys.argv[1:]):
     par.add_argument('-l', '--label', required=True, help='Label for the resource with the role')
     par.add_argument('-r', '--role', required=True, help='Role the resource plays in the ' \
                                                          'environment. Multiple roles are ' \
-                                                         'comma seperated')
+                                                         'comma separated')
     par.add_argument('-d', '--data', help='additional data inputed as key=value pairs saved ' \
                                           'in a python dictonary')
 

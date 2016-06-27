@@ -141,12 +141,14 @@
       run_once: true
       ignore_errors: yes
       local_action: file path={{ playbook_dir }}/etc/lxcs state=directory
+      
+    - debug: var=hostvars[inventory_hostname]
     
     - name: create shared file fragments
       become: false
       local_action: template
           src=container.j2
-          dest={{ playbook_dir }}/etc/lxcs/lxc-{{ ansible_hostname }}-{{ item.name }}
+          dest={{ playbook_dir }}/etc/lxcs/lxc-{{ inventory_hostname }}-{{ item.name }}
       with_items: "{{ containers }}"
     
 

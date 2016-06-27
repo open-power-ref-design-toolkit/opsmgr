@@ -1,9 +1,21 @@
 ---
 
+# load osa inventory
 - hosts: all
   become: true
 
-- include: local.yml
+# load opsmgr nagios servers
+- hosts: localhost
+  become: true
+  pre_tasks:
+    - name: register servers into dynamic inventory
+      add_host:
+          name:    "{{ item.hostname }}"
+          group:   "nagios_servers"
+          share:   "/{{ item.mount }}"
+      when: item.role == 'nagios'
+      with_items: "{{ opsmgr_containers }}"
+    - debug: var=groups.nagios_servers
+
 - include: nagios.yml
-- include: nrpe.yml
 

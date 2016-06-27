@@ -15,41 +15,51 @@
         - id_rsa
         - id_rsa.pub
       register: user_keys
+    
+    - debug: var=user_keys
 
     - name: decide if we use user's keys or not
       set_fact:
-        use_user_keys: user_keys.0.stat.exists and user_keys.1.stat.exists
+        use_user_keys: "{{ user_keys.results[0].stat.exists and user_keys.results[1].stat.exists }}"
+        
+    - debug: var=use_user_keys
 
+    - name: ensure keys/current directory exists
+      file:
+        path: "{{ opsmgr_dir }}/keys/current"
+        state: directory
+        mode: 0700
+    
     - name: copy keys from user
       copy:
-        src: "~/.ssh/{{ item }}"
-        dest: "{{ opsmgr_dir }}/keys/current"
-        mode: 0600
-      with_items:
-        - id_rsa
-        - id_rsa.pub
-      when: use_user_keys == true
-    
-    - name: fallback to use opsmgr master key instead
-      copy:
-        src: "{{ opsmgr_dir }}/keys/master/{{ item.0 }}"
+        src: "~/.ssh/{{ item.0 }}"
         dest: "{{ opsmgr_dir }}/keys/current/{{ item.1 }}"
         mode: 0600
       with_together:
-        - [ 'opsmgr.key', 'opsmgr.pub' ]
         - [ 'id_rsa',     'id_rsa.pub' ]
-      when: use_user_keys == false
+        - [ 'opsmgr.key', 'opsmgr.pub' ]
+      when: use_user_keys | bool == true
     
-    - name: copy master keys to ~/.ssh
+    - name: fallback to use opsmgr master key instead
       copy:
-        src: "{{ opsmgr_dir }}/keys/current/{{ item }}"
-        dest: "~/.ssh"
+        src: "{{ opsmgr_dir }}/keys/master/{{ item }}"
+        dest: "{{ opsmgr_dir }}/keys/current"
+        mode: 0600
+      with_items:
+        - opsmgr.key
+        - opsmgr.pub
+      when: use_user_keys | bool == false
+    
+    - name: copy master keys to ~/.ssh if needed
+      copy:
+        src: "{{ opsmgr_dir }}/keys/current/{{ item.0 }}"
+        dest: "~/.ssh/{{ item.1 }}"
         mode: 0600
         backup: yes
-      with_items:
-        - id_rsa
-        - id_rsa.pub
-      when: use_user_keys == false
+      with_together:
+        - [ 'opsmgr.key', 'opsmgr.pub' ]
+        - [ 'id_rsa',     'id_rsa.pub' ]
+      when: use_user_keys | bool == false
     
     # assemble ~/.ssh/config file for proxying through hosts
     

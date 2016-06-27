@@ -1,8 +1,12 @@
-  - name:     {{ item.name }}
+  - hostname: {{ ansible_hostname }}-{{ item.name }}
+    name:     {{ item.name }}
     role:     {{ item.role }}
     mount:    {{ item.mount }}
     ports:    {{ item.ports }}
     address:  {{ lxc_info | lxcaddress(item.name) }}
-    host:     {{ ansible_hostname }}
+    host:     {{ inventory_hostname }}
+{% if ansible_ssh_host is defined and ansible_ssh_host | ipv4 %}
     hostaddr: {{ ansible_ssh_host }}
-    hostname: {{ ansible_hostname }}-{{ item.name }}
+{% else %}
+    hostaddr: {{ hostvars[inventory_hostname].ansible_default_ipv4.address }}
+{% endif %}

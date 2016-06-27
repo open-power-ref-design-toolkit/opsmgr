@@ -1,5 +1,7 @@
 ---
 
+    # determine spefic playbook to be applied to this target
+    
     - name: fetch remote spec file
       fetch: src=/etc/opsmgr/.spec dest=etc/spec-{{ inventory_hostname }}.yml flat=yes
     
@@ -16,6 +18,8 @@
     
     - debug: var=spec_plays
     
+    # prepare data to pass along to target playbook
+    
     - name: copy spec vars file
       become: false
       copy:
@@ -23,12 +27,21 @@
           dest: "{{ playbook_dir }}/etc/vars-{{ inventory_hostname }}.yml"
       delegate_to: localhost
 
-    - name: register target variable to spec vars file
+    - name: add target host
       become: false
       lineinfile:
           dest: "{{ playbook_dir }}/etc/vars-{{ inventory_hostname }}.yml"
           line: "target: {{ inventory_hostname }}"
           state: present
+      delegate_to: localhost
+
+    - name: add opsmgr server address
+      become: false
+      lineinfile:
+          dest: "{{ playbook_dir }}/etc/vars-{{ inventory_hostname }}.yml"
+          line: "opsmgr: {{ item.address }}"
+          state: present
+      with_items: "{{ groups.opsmgr_core }}"
       delegate_to: localhost
 
     - name: clean spec play files
@@ -47,6 +60,8 @@
           mode: 0755
       with_items: spec_plays.results
       delegate_to: localhost
+      
+    # call target plugin provisioning playbook
 
     - name: spawns spec play calls (go grab a coffee!)
       become: true
@@ -60,46 +75,4 @@
     - name: show output of role-specific integration playbooks
       debug: var=play_output.results
 
-    #- name: fetch list of nagios servers to use from containers
-    #  set_fact: servers="{{ '\"' + lxcaddrs | join('\", \"', attribute='address') + '\"' }}"
-    
-    #- name: remap lxc info on a per-role basis for extra-vars
-    #  set_fact: servers="{{ hostvars | lxcservers(groups['opsmgr_containers']) }}"
-
-    #- debug: servers
-    
-    #- name: create extra-vars files with variable line
-    #  become: false
-    #  lineinfile:
-    #      dest: "{{ playbook_dir }}/etc/vars-{{ item.item }}"
-    #      line: "containers:"
-    #      state: present
-    #      create: yes
-    #  with_items: spec_plays.results
-    #  delegate_to: localhost
-
-    #- name: populate extra-vars files with addresses to pass
-    #  become: false
-    #  lineinfile:
-    #      dest: "{{ playbook_dir }}/etc/vars-{{ item.0.item }}"
-    #      line: "  - {{ hostvars[item.1].address }}"
-    #      state: present
-    #  with_nested:
-    #      - spec_plays.results
-    #      - groups['opsmgr_containers']
-    #  delegate_to: localhost
-
-    ## Ansible 1.x has deprecated include with_items due to a bug and reintroduced it in 2.x
-    ## So, for now we need to hard-code which inludes we want to call here
-    ## ps. we should ***really*** move to Ansible 2.x as soon as possible!
-    ##
-    #- name: call role-specific integration playbooks
-    #  include: >
-    #      {{ playbook_dir }}/../plugins/provisioning/{{ item.item }}/main.yml
-    #      delegate_host="{{ ansible_hostname }}"
-    #      servers='"{{ containers | map(attribute='address') | list | unique }}"'
-    #      
-    #  with_items: role_playbooks.results
-    #  when: item.stat.exists == true
-    
 

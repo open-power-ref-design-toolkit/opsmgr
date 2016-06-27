@@ -18,10 +18,9 @@
           iptables -t nat -D PREROUTING -p tcp
           -d {{ item.0.hostaddr }} --dport {{ item.1.host }} -j DNAT
           --to {{ item.0.address }}:{{ item.1.container }} -m comment
-          --comment "opsmgr-{{ item.0.host }}-{{ item.0.name }}-{{ item.1.name }}"
+          --comment "opsmgr-{{ item.0.hostname }}-{{ item.1.name }}"
       when: |
-          item.0.host == ansible_hostname and
-          iptablesrules.stdout.find("opsmgr-{{ item.0.host }}-{{ item.0.name }}-{{ item.1.name }}") != -1
+          iptablesrules.stdout.find("opsmgr-{{ item.0.hostname }}-{{ item.1.name }}") != -1
       with_subelements:
         - "{{ opsmgr_containers }}"
         - ports
@@ -30,11 +29,10 @@
       command: |
           iptables -t nat -D POSTROUTING -p tcp
           -d "{{ item.0.address }}/32" --dport {{ item.1.host }} -j MASQUERADE
-          -m comment --comment "opsmgr-{{ item.0.host }}-{{ item.0.name }}-masq"
+          -m comment --comment "opsmgr-{{ item.0.hostname }}-masq"
       when: |
-          item.0.host == ansible_hostname and
           item.1.name == 'mysql' and
-          iptablesrules.stdout.find("opsmgr-{{ item.0.host }}-{{ item.0.name }}-masq") != -1
+          iptablesrules.stdout.find("opsmgr-{{ item.0.hostname }}-masq") != -1
       with_subelements:
         - "{{ opsmgr_containers }}"
         - ports

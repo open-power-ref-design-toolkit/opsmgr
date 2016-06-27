@@ -1,12 +1,6 @@
 ---
 
-db_name: opsmgr
-mysql_root_user: root
-mysql_root_password: passw0rd
-
 apt_packages:
-  - git
-  - python-pip
   - build-essential
   - python-dev
   - libssl-dev
@@ -17,14 +11,14 @@ apt_packages:
 pip_packages:
   - pbr
   - setuptools
-  - PyMySQL
+  - pymysql
   - pycrypto
-  - paramiko>=1.16.0
-  - sqlalchemy>=1.0.12
-  - stevedore>=1.12.0
-  - pyyaml>=3.11
-  - enum-compat>=0.0.2
-  - configparser>=3.5.0b2
+  - paramiko
+  - sqlalchemy
+  - stevedore
+  - pyyaml
+  - enum-compat
+  - configparser
 
 opsmgr_modules:
   - opsmgr
@@ -39,4 +33,17 @@ opsmgr_modules:
   - opsmgr/plugins/discovery/cobbler
   - opsmgr/plugins/hooks/ulysses
 
-tmp_dir: /tmp/opsmgr
+tmp_dir: /tmp/sync
+
+old_pip_packages:
+  - pbr>=1.9
+  - setuptools>=20.3.1
+  - pymysql>=0.7.4
+  - pycrypto>=2.6.1
+  - paramiko>=1.16.0
+  - sqlalchemy>=1.0.12
+  - stevedore>=1.12.0
+  - pyyaml>=3.11
+  - enum-compat>=0.0.2
+  - configparser>=3.5.0b2
+

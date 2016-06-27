@@ -153,38 +153,51 @@
     
     - name: ensures commands directory exists
       file:
-          path: /usr/local/nagios/opsmgr/nagios_config/commands
+          path: "{{ hostvars[inventory_hostname].share }}/commands"
           state: directory
     
     - name: copy custom commands
       copy:
           src: "{{ item }}"
-          dest: /usr/local/nagios/opsmgr/nagios_config/commands
+          dest: "{{ hostvars[inventory_hostname].share }}/commands/"
           mode: 0644
       with_fileglob:
           - commands/*
     
     - name: ensures hosts directory exists
       file:
-          path: /usr/local/nagios/opsmgr/nagios_config/hosts
+          path: "{{ hostvars[inventory_hostname].share }}/hosts"
           state: directory
     
     - name: copy custom hosts
       copy:
           src: "{{ item }}"
-          dest: /usr/local/nagios/opsmgr/nagios_config/hosts
+          dest: "{{ hostvars[inventory_hostname].share }}/hosts/"
           mode: 0644
       with_fileglob:
           - hosts/*
     
+    - name: ensures roles directory exists
+      file:
+          path: "{{ hostvars[inventory_hostname].share }}/roles"
+          state: directory
+    
+    - name: copy custom roles
+      copy:
+          src: "{{ item }}"
+          dest: "{{ hostvars[inventory_hostname].share }}/roles/"
+          mode: 0644
+      with_fileglob:
+          - roles/*
+    
     - name: tell nagios to read the commands files in our directory
       lineinfile:
-          line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/commands"
+          line: "cfg_dir={{ hostvars[inventory_hostname].share }}/commands"
           dest: "/usr/local/nagios/etc/nagios.cfg"
     
     - name: tell nagios to read the hosts files in our directory
       lineinfile:
-          line: "cfg_dir=/usr/local/nagios/opsmgr/nagios_config/hosts"
+          line: "cfg_dir={{ hostvars[inventory_hostname].share }}/hosts"
           dest: "/usr/local/nagios/etc/nagios.cfg"
     
     - name: validate nagios config

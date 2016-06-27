@@ -60,6 +60,11 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
         ipv4 = address
         hostname = ""
 
+    # adding default hostname for cases where dns doesn't resolve the address
+    # we need *some* hostname to use on Nagios configuration
+    if hostname == "":
+        hostname = address
+
     rc, message = validate_address(ipv4)
     if rc != 0:
         return rc, message
@@ -133,7 +138,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
             hook_plugin.add_device_pre_save(device_info)
     except Exception as e:
         logging.exception(e)
-        message = _("Error in plugin (%s). Unable to add device: Reason: %s") % (hook_name, e)
+        message = _("Before device was added. Error in plugin (%s): %s") % (hook_name, e)
         return 102, message
 
     persistent_mgr.add_devices(session, [device_info])
@@ -348,7 +353,6 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
                 if key.password:
                     if new_auth is None: #only lookup old password if auth hasn't changed
                         temp_password = persistent_mgr.decrypt_data(key.password)
-
         if new_auth == "key":
             rc, message = _change_device_key(device, ip_address, temp_userid,
                                              temp_ssh_key, temp_password)
@@ -705,7 +709,28 @@ def add_resource_roles(resource_label=None, resource_id=None, roles=None, additi
     roles_to_add = []
     for role in roles:
         roles_to_add.append(ResourceRole(resource_id, role, additional_data))
+
+    hooks = _load_inventory_device_plugins()
+    hook_name = 'unknown' #keeps pylint happy
+
+    #pre_save hooks
+    try:
+        for hook_name, hook_plugin in hooks.items():
+            hook_plugin.add_role_pre_save(resource, roles_to_add)
+    except Exception as e:
+        logging.exception(e)
+        message = _("Before role was added. Error in plugin (%s): %s") % (hook_name, e)
+
     persistent_mgr.add_device_roles(session, roles_to_add)
+
+    #post_save hooks
+    try:
+        for hook_name, hook_plugin in hooks.items():
+            hook_plugin.add_role_post_save(resource, roles_to_add)
+    except Exception as e:
+        logging.exception(e)
+        message = _("After role was added. Error in plugin (%s): %s") % (hook_name, e)
+
     session.close()
     if message is None:
         message = _("added role successfully.")
@@ -1026,3 +1051,5 @@ def _check_address(address):
         except Exception:
             pass # host not valid or offline
     return ipv4, hostname
+
+

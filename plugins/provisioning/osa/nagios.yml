@@ -1,79 +1,18 @@
 ---
 
-- hosts: localhost
-  become: true
-  vars_files:
-    - roles/nagios/vars/main.yml
-    - roles/nagios/vars/osa-deployers.yml
-  roles:
-    - nagios
-
 - hosts: hosts
   become: true
-  vars_files:
-    - roles/nagios/vars/main.yml
-    - roles/nagios/vars/osa-hosts.yml
   roles:
-    - nagios
+    - { role: nagios_target, is_monitored: true, has_agent: true }
 
 - hosts: all_containers
   become: true
-  vars_files:
-    - roles/nagios/vars/main.yml
-    - roles/nagios/vars/osa-containers.yml
   roles:
-    - nagios
+    - { role: nagios_target, is_monitored: true, has_agent: false }
 
-- hosts: hosts
+- hosts: nagios_servers
   become: true
-  vars:
-    - osa_services:
-        - aodh_api
-        - ceilometer_agent_central
-        - ceilometer_collector
-        - cinder_api
-        - cinder_scheduler
-        - galera
-        - glance_api
-        - heat_api_cloudwatch
-        - heat_engine
-        - horizon
-        - keystone
-        - memcached
-        - neutron_agent
-        - neutron_server
-        - nova_api_metadata
-        - nova_api_os_compute
-        - nova_cert
-        - nova_conductor
-        - nova_console
-        - nova_scheduler
-        - rabbitmq
-        - pkg_repo
-        - rsyslog
-        - swift_acc
-        - swift_proxy
-        - utility
-
-  tasks:
-
-    - file: path=./loop-{{ inventory_hostname }} state=absent
-
-    - local_action: |
-          shell echo 'ssh -i opsmgr.key "{{ ansible_ssh_user }}"@"{{ hostvars[item].container_address }}"'
-          >> ./loop-{{ inventory_hostname }}
-      with_items: "{{ groups['horizon_container'] }}"
-
-    - local_action: |
-          shell echo 'add_resource -l "{{ inventory_hostname }}" -a "{{ hostvars[inventory_hostname].container_address }}"
-          -u "{{ ansible_ssh_user }}" --key opsmgr.key' >> ./loop-{{ inventory_hostname }}
-
-    - local_action: |
-          shell echo 'add_role -l "{{ inventory_hostname }}" -r "{{ hostvars[item].component }}" --lxcname "{{ item }}"
-          --lxcaddr "{{ hostvars[item].container_address }}"' >> ./loop-{{ inventory_hostname }}
-      when: |
-        (hostvars[item].physical_host == inventory_hostname) and
-        (hostvars[item].component in osa_services)
-      with_items: "{{ groups['all_containers'] }}"
+  roles:
+    - nagios_server
 
 

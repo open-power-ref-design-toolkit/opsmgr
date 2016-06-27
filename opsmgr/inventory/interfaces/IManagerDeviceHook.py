@@ -29,6 +29,11 @@ class IManagerDeviceHook(object):
 
     @staticmethod
     @abstractmethod
+    def add_role_pre_save(device, role):
+        pass
+
+    @staticmethod
+    @abstractmethod
     def remove_device_pre_save(device):
         pass
 
@@ -44,6 +49,11 @@ class IManagerDeviceHook(object):
 
     @staticmethod
     @abstractmethod
+    def add_role_post_save(device, role):
+        pass
+
+    @staticmethod
+    @abstractmethod
     def remove_device_post_save(device):
         pass
 
@@ -51,3 +61,7 @@ class IManagerDeviceHook(object):
     @abstractmethod
     def change_device_post_save(device, old_device_info):
         pass
+
+
+
+

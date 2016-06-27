@@ -1,10 +1,14 @@
 ---
 
+# opsmgr version
+opsmgr_version: 0.9.9
+
 # opsmgr directory
 opsmgr_dir: "{{ playbook_dir }}/.."
 
-# version of pip to use
-pip_cmd: pip
+# tweak use of pip
+pipexec: pip
+pipargs: ''
 
 # name of sudoers file
 sudoers_filename: opsmgr_sudoers
@@ -16,7 +20,7 @@ mysql_root_password: passw0rd
 
 # proxy mode - valid values: iptables or haproxy
 # obs: it doesn't actually install packages, just configure
-proxy_mode: haproxy
+proxy_mode: iptables
 
 # defines containers used to integrate management applications
 # name: container name (unique)
@@ -34,18 +38,18 @@ proxy_mode: haproxy
 # nameserver: ipv4 nameserver (optional, used if static address)
 #
 containers:
-#  - name: core
-#    role: core
-#    release: trusty
-#    ports:
-#      - { name: "http", host: 8000, container:   80 }
-#    mount: etc/opsmgr/shared
-#  - name: mysql
-#    role: mysql
-#    release: trusty
-#    ports:
-#      - { name: "mysql", host: 3306, container: 3306 }
-#    mount: etc/opsmgr/shared
+  - name: core
+    role: core
+    release: trusty
+    ports:
+      - { name: "http", host: 8000, container:   80 }
+    mount: etc/opsmgr/shared
+  - name: mysql
+    role: mysql
+    release: trusty
+    ports:
+      - { name: "mysql", host: 3306, container: 3306 }
+    mount: etc/opsmgr/shared
   - name: nagios
     role: nagios
     release: trusty

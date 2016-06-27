@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 #
-{% if hostvars[item.hostname].use_proxy is defined and hostvars[item.hostname].use_proxy == False %}
+{% if hostvars[item.hostname].imported is defined and hostvars[item.hostname].imported == true %}
 # skipping proxy for {{ item.hostname }}
 {% else %}
 Host {{ item.hostname }}
@@ -15,11 +15,11 @@ Host {{ item.hostname }}
 {% if hostvars[item.hostname].ansible_ssh_private_key_file is defined %}
   IdentityFile {{ hostvars[item.hostame].ansible_ssh_private_key_file }}
 {% else %}
-  IdentityFile ~/.ssh/id_rsa
+  IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
 {% endif %}
 
 Host {{ item.address }}
-  Hostname {{ item.hostname }}
+  Hostname {{ item.address }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
 {% if hostvars[item.hostname].ansible_ssh_user is defined %}
@@ -30,7 +30,7 @@ Host {{ item.address }}
 {% if hostvars[item.hostname].ansible_ssh_private_key_file is defined %}
   IdentityFile {{ hostvars[item.hostame].ansible_ssh_private_key_file }}
 {% else %}
-  IdentityFile ~/.ssh/id_rsa
+  IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
 {% endif %}
 
 {% endif %}

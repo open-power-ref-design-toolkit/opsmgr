@@ -1,0 +1,38 @@
+---
+
+    # install server-side monitoring configuration
+
+    - name: ensures hosts directory exits
+      file:
+          path: "{{ hostvars[inventory_hostname].share }}/hosts"
+          state: directory
+    
+    - name: copy custom hosts
+      copy:
+          src: "hosts/"
+          dest: "{{ hostvars[inventory_hostname].share }}/hosts/"
+          mode: 0644
+    
+    - name: ensures plugins directory exists
+      file:
+          path: "{{ hostvars[inventory_hostname].share }}/plugins"
+          state: directory
+    
+    - name: copy custom plugins
+      copy:
+          src: "plugins/"
+          dest: "{{ hostvars[inventory_hostname].share }}/plugins/"
+          mode: 0755
+    
+    - name: ensures roles directory exists
+      file:
+          path: "{{ hostvars[inventory_hostname].share }}/roles"
+          state: directory
+    
+    - name: copy custom roles
+      copy:
+          src: "roles/"
+          dest: "{{ hostvars[inventory_hostname].share }}/roles/"
+          mode: 0644
+
+
