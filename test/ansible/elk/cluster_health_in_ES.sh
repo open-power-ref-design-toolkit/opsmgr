@@ -19,7 +19,7 @@
 # ELK_IP, and ELASTIC_PORT must be passed from the command line
 #
 
-source /home/ubuntu/development/opsmgr/test/ansible/elk/test_options.sh
+source test_options.sh
 
 # Make sure all required options were passed
 if [ -z ${ELK_IP} ] || [ -z ${ELASTIC_PORT} ];

@@ -27,15 +27,17 @@ Syntax:
  -d dashboard (enclose in quotes if it contains spaces)
  -i IP address for elk
  -e port for elasticsearch
+ -c Component
 EOT
 )
-while getopts "d:i:e:x" FLAG;
+while getopts "d:i:e:c:x" FLAG;
 do 
   case ${FLAG} in
     x) set -x ;;
     d) export DASHBOARD=${OPTARG} ;;
     i) export ELK_IP=${OPTARG} ;;
     e) export ELASTIC_PORT=${OPTARG} ;;
+    c) export COMPONENT=${OPTARG} ;;
     *) echo "${SYNTAX}" && exit 1 ;;
   esac
 done

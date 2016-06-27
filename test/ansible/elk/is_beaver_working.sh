@@ -17,22 +17,23 @@
 # This script checks if Beaver is sending logs to logstash on
 # a particular ELK host.
 #
-# ELK_IP, and ELASTIC_PORT must be passed from the command line
+# ELK_IP, and ELASTIC_PORT and COMPONENT must be passed from the command line
 #
 
-source /home/ubuntu/development/opsmgr/test/ansible/elk/test_options.sh
+source test_options.sh
 
 # Make sure all required options were passed
-if [ -z ${ELK_IP} ] || [ -z ${ELASTIC_PORT} ];
+if [ -z ${ELK_IP} ] || [ -z ${ELASTIC_PORT} ] || [ -z ${COMPONENT} ];
 then
    echo
-   echo "ELK IP, and Elasticsearch port are required inputs for check_for_dashboard"
+   echo "ELK IP, and Elasticsearch port and Component are required inputs for check_for_dashboard"
    echo
    echo "${SYNTAX}"
    exit 1
 fi
 echo "ELK_IP:      ${ELK_IP}"
 echo "ELASTIC_PORT:    ${ELASTIC_PORT}"
+echo "COMPONENT: ${COMPONENT}"
 
 statement="http://${ELK_IP}:${ELASTIC_PORT}/_cat/indices"
 output1=`curl --silent $statement`
@@ -43,13 +44,10 @@ difference=`diff <(echo "$output1") <(echo "$output2")`
 
 difference=`echo "$difference" | grep logstash`
 
-difference=(${difference[@]})
+difference=(${difference[@]}) 
 logstash_index="${difference[3]}"
 
-echo "Enter the component followed by [ENTER]:"
-read component
-
-statement="http://${ELK_IP}:${ELASTIC_PORT}/${logstash_index}/_search?pretty&fields=file&size=100&q=tags:${component}" 
+statement="http://${ELK_IP}:${ELASTIC_PORT}/${logstash_index}/_search?pretty&fields=file&size=100&q=tags:${COMPONENT}"
 output1=`curl --silent $statement | grep total`
 result="$output1"
 
@@ -60,9 +58,9 @@ result="${result::-1}"
 
 if [ $result -eq 0 ]
 then
-   echo "Beaver is not sending $component logs"
+   echo "Beaver is not sending ${COMPONENT} logs"
    exit 1
 else
-   echo "Beaver is sending $component logs"
+   echo "Beaver is sending ${COMPONENT} logs"
    exit 0
 fi
