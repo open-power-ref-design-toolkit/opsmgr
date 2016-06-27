@@ -50,3 +50,6 @@ pushd predeploy/elk >/dev/null 2>&1
 run_ansible site.yml
 popd >/dev/null 2>&1
 
+### calls main OpsMgr installation and Nagios integration playbooks
+scripts/ops.sh
+
