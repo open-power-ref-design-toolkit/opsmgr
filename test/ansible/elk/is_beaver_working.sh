@@ -14,10 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script processes the common test case command line options
-# Source this file in your script to read command line options and set variables
+# This script checks if Beaver is sending logs to logstash on
+# a particular ELK host.
+#
+# ELK_IP, and ELASTIC_PORT must be passed from the command line
+#
 
 source /home/ubuntu/development/opsmgr/test/ansible/elk/test_options.sh
+
+# Make sure all required options were passed
+if [ -z ${ELK_IP} ] || [ -z ${ELASTIC_PORT} ];
+then
+   echo
+   echo "ELK IP, and Elasticsearch port are required inputs for check_for_dashboard"
+   echo
+   echo "${SYNTAX}"
+   exit 1
+fi
+echo "ELK_IP:      ${ELK_IP}"
+echo "ELASTIC_PORT:    ${ELASTIC_PORT}"
 
 statement="http://${ELK_IP}:${ELASTIC_PORT}/_cat/indices"
 output1=`curl --silent $statement`
@@ -31,46 +46,23 @@ difference=`echo "$difference" | grep logstash`
 difference=(${difference[@]})
 logstash_index="${difference[3]}"
 
-count="0"
-component=""
+echo "Enter the component followed by [ENTER]:"
+read component
 
-while [ $count -lt 7 ]
-do
+statement="http://${ELK_IP}:${ELASTIC_PORT}/${logstash_index}/_search?pretty&fields=file&size=100&q=tags:${component}" 
+output1=`curl --silent $statement | grep total`
+result="$output1"
 
-   case "$count" in
-   "0")
-       component="nova"
-       ;;
-   "1")
-       component="neutron"
-       ;;
-   "2")
-       component="heat"
-       ;;
-   "3")
-       component="cinder"
-       ;;
-   "4")
-       component="keystone"
-       ;;
-   "5")
-       component="glance"
-       ;;
-   "6")
-       component="horizon"
-       ;;
-   *)
-       ;;
-   esac
+result=(${result[@]})
+result="${result[5]}"
 
-   statement="http://${ELK_IP}:${ELASTIC_PORT}/${logstash_index}/_search?pretty&fields=file&size=100&q=tags:${component}" 
-   output1=`curl --silent $statement`
-   if [ -z "$output1" ]
-   then
-      echo "Beaver is not sending $component logs"
-   else
-      echo "Beaver is sending $component logs"
-   fi
+result="${result::-1}"
 
-count=$[$count+1]
-done
+if [ $result -eq 0 ]
+then
+   echo "Beaver is not sending $component logs"
+   exit 1
+else
+   echo "Beaver is sending $component logs"
+   exit 0
+fi

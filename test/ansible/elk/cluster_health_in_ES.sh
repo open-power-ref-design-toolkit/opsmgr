@@ -13,13 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script processes the common test case command line options
-# Source this file in your script to read command line options and set variables
+# This script checks the Health status of the cluster in Elastic Search on
+# a particular ELK host.
+#
+# ELK_IP, and ELASTIC_PORT must be passed from the command line
+#
 
 source /home/ubuntu/development/opsmgr/test/ansible/elk/test_options.sh
 
+# Make sure all required options were passed
+if [ -z ${ELK_IP} ] || [ -z ${ELASTIC_PORT} ];
+then
+   echo
+   echo "ELK IP, and Elasticsearch port are required inputs for check_for_dashboard"
+   echo
+   echo "${SYNTAX}"
+   exit 1
+fi
+echo "ELK_IP:      ${ELK_IP}"
+echo "ELASTIC_PORT:    ${ELASTIC_PORT}"
+
 statement="http://${ELK_IP}:${ELASTIC_PORT}/_cluster/health?pretty=true"
-status=`curl --silent $statement | grep status`
+result=`curl --silent $statement | grep status`
 
-echo $status
-
+if [[ "${result}" == *"red"* ]];
+then
+  echo "The cluster health status in Elastic Search is red"
+  exit 1
+else
+  echo "The cluster health status in Elastic Search is not red"
+  exit 0
+fi
