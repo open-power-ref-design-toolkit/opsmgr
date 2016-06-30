@@ -45,7 +45,7 @@ class ResourcesTable(tables.TableRegion):
         return forms.FormRegion(self.driver, self.conf,
                                 field_mappings=self.EDIT_RESOURCE_FORM_FIELDS)
 
-    @tables.bind_row_action('removeResources')
+    @tables.bind_row_action('RemoveResourceAction')
     def remove_resource(self, remove_button, row):
         remove_button.click()
         return forms.BaseFormRegion(self.driver, self.conf)

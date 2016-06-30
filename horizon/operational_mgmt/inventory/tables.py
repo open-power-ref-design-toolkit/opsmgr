@@ -13,12 +13,11 @@
 # limitations under the License.
 
 from django.core.urlresolvers import reverse
-from django.core.urlresolvers import reverse_lazy
-
+from django import shortcuts
 from django.template import defaultfilters as filters
 from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
 
+from horizon import exceptions
 from horizon import messages
 from horizon import tables
 
@@ -43,53 +42,61 @@ class AddResourceLink(tables.LinkAction):
             return self.url
 
 
-class RemoveResources(tables.DeleteAction):
-    name = "removeResources"
-    success_url = reverse_lazy('horizon:op_mgmt:inventory:index')
+class RemoveResourceAction(tables.Action):
+    name = "RemoveResourceAction"
+    verbose_name = "Remove Resource"
+    classes = ('btn-danger',)
+    help_text = _("This action cannot be undone.")
 
-    @staticmethod
-    def action_present(count):
-        return ungettext_lazy(
-            u"Remove Resource",
-            u"Remove Resources",
-            count
-        )
+    def get_default_attrs(self):
+        """Returns a list of the default HTML attributes for the action."""
+        attrs = super(RemoveResourceAction, self).get_default_attrs()
+        # This action must behave like a batch-action activity with
+        # regards to enablement/disablement...
+        attrs.update({'data-batch-action': 'true'})
+        return attrs
 
-    @staticmethod
-    def action_past(count):
-        return ungettext_lazy(
-            u"Removed Resource",
-            u"Removed Resources",
-            count
-        )
+    def get_success_url(self, request):
+        return reverse('horizon:op_mgmt:inventory:index')
 
-    def delete(self, request, obj_id):
-        __method__ = 'tables.RemoveResources.delete'
-        logging.debug("%s: Attempt to remove resource %s ",
-                      __method__, obj_id)
+    def handle(self, data_table, request, object_ids):
+        __method__ = 'tables.RemoveResourceAction.handle'
+        logging.debug("%s: Attempt to remove resources %s ",
+                      __method__, object_ids)
 
-        (rc, result_dict) = resource_mgr.remove_resource(None, False,
-                                                         [obj_id])
+        if len(object_ids) <= 0:
+            return shortcuts.redirect(self.get_success_url(request))
 
-        if rc != 0:
-            # Log details of the unsuccessful attempt.
-            logging.error("%s: Attempt to remove resource with id: %s"
-                          " failed.", __method__, obj_id)
-            logging.error(
-                "%s: Unable to remove resource with id: %s. A Non-0 "
-                " return code returned from resource_mgr.remove_resource."
-                " The return code is: %s. Details of the attempt: "
-                " %s", __method__, obj_id, rc, result_dict)
+        try:
+            (rc, result_dict) = resource_mgr.remove_resource(None, False,
+                                                             object_ids)
+            if rc != 0:
+                # Log details of the unsuccessful attempt.
+                logging.error("%s: Attempt to remove resources "
+                              "failed.", __method__)
+                logging.error(
+                    "%s: Unable to remove resources. A Non-0 "
+                    " return code returned from resource_mgr.remove_resource."
+                    " The return code is: %s. Details of the attempt: "
+                    " %s", __method__, rc, result_dict)
+                # Show generic failure message
+                msg = str(
+                    'Attempt to remove resources was not successful.  ' +
+                    'Details of the attempt: ' + result_dict)
+                messages.error(request, msg)
+            else:
+                # Show generic success message
+                msg = str('Resources successfully removed.')
+                messages.success(request, msg)
+        except Exception as e:
+            redirect = reverse('horizon:op_mgmt:inventory:index')
+            logging.error("%s: Exception received trying to remove  "
+                          "resources with ids %s.  Exception is: %s",
+                          __method__, object_ids, e)
+            exceptions.handle(request, _('Unable to remove resources.'),
+                              redirect=redirect)
 
-            # Show failure details
-            msg = str(
-                'Attempt to remove resource was not successful.  ' +
-                'Details of the attempt: ' + result_dict)
-            messages.error(request, msg)
-            # Raise exception so that tables.delete shows generic failure
-            raise Exception(msg)
-        else:
-            return
+        return shortcuts.redirect(self.get_success_url(request))
 
 
 class RemoveResourcesLink(tables.LinkAction):
@@ -317,7 +324,7 @@ class ResourcesTable(tables.DataTable):
         verbose_name = _("Resources")
         multi_select = False
         row_actions = (EditResourceLink, ChangePasswordLink,
-                       RemoveResources)
+                       RemoveResourceAction)
         table_actions = (ResourceFilterAction, AddResourceLink,
                          RemoveResourcesLink)
 
@@ -359,4 +366,4 @@ class RemoveResourcesTable(tables.DataTable):
         multi_select = True
         # Allow resource filtering, and the ability to remove
         # multiple resources as table actions
-        table_actions = (ResourceFilterAction, RemoveResources)
+        table_actions = (ResourceFilterAction, RemoveResourceAction)
