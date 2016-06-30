@@ -1,37 +1,44 @@
 # {{ ansible_managed }}
 #
-frontend {{ item.0.name }}-{{ item.1.name }}-front
+frontend {{ item.0.role }}-{{ item.1.name }}-front
 bind *:{{ item.1.host }}
 {% if item.1.name == 'http' %}
+    mode http
     option httplog
     option forwardfor except 127.0.0.0/8
     option http-server-close
-    mode http
 {% elif item.1.name == 'nrpe' %}
-    option  tcplog
-    timeout client 60m
     mode tcp
+    timeout client 60m
+    option  tcplog
 {% elif item.1.name == 'mysql' %}
-    option  tcplog
-    timeout client 60m
     mode tcp
+    timeout client 60m
+    option  tcplog
 {% endif %}
     default_backend {{ item.0.name }}-{{ item.1.name }}-back
   
 backend {{ item.0.name }}-{{ item.1.name }}-back
 {% if item.1.name == 'http' %}
     mode http
-    balance leastconn
     option forwardfor
     option httpchk
     option httplog
 {% elif item.1.name == 'nrpe' %}
     mode tcp
-    balance source
     timeout server 60m
 {% elif item.1.name == 'mysql' %}
     mode tcp
-    balance leastconn
-    option mysql-check user monitoring
     timeout server 60m
+    option mysql-check user monitoring
 {% endif %}
+{% for server in opsmgr_containers %}
+{% if server.role == item.0.role %}
+{% if loop.first %}
+    server {{ server.hostname }} {{ server.address }}:{{ item.1.container }} check port {{ item.1.container }} inter 10s fall 1 rise 1
+{% else %}
+    server {{ server.hostname }} {{ server.address }}:{{ item.1.container }} check backup
+{% endif %}
+{% endif %}
+{% endfor %}
+
