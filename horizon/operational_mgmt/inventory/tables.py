@@ -46,6 +46,7 @@ class RemoveResourceAction(tables.Action):
     name = "RemoveResourceAction"
     verbose_name = "Remove Resource"
     classes = ('btn-danger',)
+    icon = "trash"
     help_text = _("This action cannot be undone.")
 
     def get_default_attrs(self):
