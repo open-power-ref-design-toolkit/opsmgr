@@ -45,10 +45,14 @@
     - name: add static interface if static addressing
       template:
           src: interfaces.j2
-          dest: /var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/network/interfaces
+          dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/network/interfaces"
           mode: 0644
       with_items: "{{ containers }}"
       when: item.address is defined
+
+    # create lxc private network if requested
+    - include: lxcnet.yml
+      when: create_lxc_network is defined and create_lxc_network == true
     
     # configure connection parameters for each container
     
@@ -70,7 +74,7 @@
           mode: 0600
       with_items: "{{ containers }}"
     
-    - name: assures sudoers.d directory exists
+    - name: ensure sudoers.d directory exists
       file:
         path: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d"
         owner: root
@@ -79,7 +83,7 @@
         state: directory
       with_items: "{{ containers }}"
     
-    - name: assures sudoers has include
+    - name: ensure sudoers has include
       lineinfile:
         dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers"
         line: "#includedir /etc/sudoers.d"
@@ -99,7 +103,7 @@
     
     - name: copy script to check on network
       copy:
-        src: etc/waitip.sh
+        src: "{{ opsmgr_dir }}/scripts/waitip.sh"
         dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/tmp/waitip.sh"
         owner: root
         group: root
@@ -138,17 +142,13 @@
     
     - name: ensure the temporary directory exists
       become: false
-      run_once: true
-      ignore_errors: yes
-      local_action: file path={{ playbook_dir }}/etc/lxcs state=directory
+      local_action: command mkdir -p {{ playbook_dir }}/ext/lxcs
       
-    - debug: var=hostvars[inventory_hostname]
-    
     - name: create shared file fragments
       become: false
       local_action: template
           src=container.j2
-          dest={{ playbook_dir }}/etc/lxcs/lxc-{{ inventory_hostname }}-{{ item.name }}
+          dest={{ playbook_dir }}/ext/lxcs/lxc-{{ inventory_hostname }}-{{ item.name }}
       with_items: "{{ containers }}"
     
 

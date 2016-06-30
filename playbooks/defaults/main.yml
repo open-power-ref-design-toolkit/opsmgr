@@ -17,5 +17,21 @@ ui_enabled: /etc/opsmgr/ui
 
 import_containers: []
 
+create_lxc_network: false
+main_lxc_interface: eth0
+
+lxc_container_default_mtu: 1500
+address_pool: [ 172.29.236.41, 172.29.236.42, 172.29.236.43, 172.29.236.44, 172.29.236.45, 172.29.236.46, 172.29.236.47, 172.29.236.48, 172.29.236.49 ]
+
+# lxc container networks
+# defines additional networks to be created 
+container_networks:
+  - name: mgmt
+    bridge: "br-mgmt"
+    interface: "eth1"
+    netmask: "255.255.252.0"
+    type: "veth"
+
+
 
 

@@ -33,7 +33,6 @@ import_containers:
     host:     {{ physical_host }}
     hostaddr: {{ hostvars[physical_host].ansible_ssh_host }}
     hostname: {{ item }}
-
 {% endif %}
 {% endfor %}
 

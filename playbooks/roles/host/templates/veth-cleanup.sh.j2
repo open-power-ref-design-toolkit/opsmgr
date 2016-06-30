@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# LXC eth0 is considered special and not managed by the base container_networks
+#  data structure. This is being added outside of the loop for this reason.
+#ip link del {{ item.name[-8:].replace('-', '').replace('_', '') }}_eth0 || true
+
+# Veth cleanup for items in the container_networks data structure
+{% for value in container_networks %}
+{% if value.type is not defined or value.type == 'veth' %}
+ip link del {{ item.name[-8:].replace('-', '').replace('_', '') }}_{{ value.interface }} || true
+{% endif %}
+{% endfor %}
+

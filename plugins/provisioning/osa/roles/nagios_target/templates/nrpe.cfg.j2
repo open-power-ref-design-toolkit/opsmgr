@@ -66,7 +66,9 @@ nrpe_group={{ nrpe_group }}
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
 allowed_hosts=127.0.0.1
-allowed_hosts={{ opsmgr_containers|map(attribute='hostaddr')|list|unique|join(', ') }}
+{% for host in groups['nagios_servers'] %}
+allowed_hosts={{ hostvars[host].address }}
+{% endfor %}
 
 # COMMAND ARGUMENT PROCESSING
 # This option determines whether or not the NRPE daemon will allow clients

@@ -3,10 +3,10 @@
     # determine spefic playbook to be applied to this target
     
     - name: fetch remote spec file
-      fetch: src=/etc/opsmgr/.spec dest=etc/spec-{{ inventory_hostname }}.yml flat=yes
+      fetch: src=/etc/opsmgr/.spec dest=ext/spec-{{ inventory_hostname }}.yml flat=yes
     
     - name: load variables from spec file
-      include_vars: "etc/spec-{{ inventory_hostname }}.yml"
+      include_vars: "ext/spec-{{ inventory_hostname }}.yml"
     
     - debug: var=opsmgr_spec
     
@@ -24,22 +24,30 @@
       become: false
       copy:
           src:  "{{ opsmgr_dir }}/ext/shared.yml"
-          dest: "{{ playbook_dir }}/etc/vars-{{ inventory_hostname }}.yml"
+          dest: "{{ playbook_dir }}/ext/vars-{{ inventory_hostname }}.yml"
       delegate_to: localhost
 
     - name: add target host
       become: false
       lineinfile:
-          dest: "{{ playbook_dir }}/etc/vars-{{ inventory_hostname }}.yml"
+          dest: "{{ playbook_dir }}/ext/vars-{{ inventory_hostname }}.yml"
           line: "target: {{ inventory_hostname }}"
           state: present
       delegate_to: localhost
 
-    - name: add opsmgr server address
+    - name: add opsmgr server variable
       become: false
       lineinfile:
-          dest: "{{ playbook_dir }}/etc/vars-{{ inventory_hostname }}.yml"
-          line: "opsmgr: {{ item.address }}"
+          dest: "{{ playbook_dir }}/ext/vars-{{ inventory_hostname }}.yml"
+          line: "opsmgr_servers:"
+          state: present
+      delegate_to: localhost
+
+    - name: add opsmgr server hostnames
+      become: false
+      lineinfile:
+          dest: "{{ playbook_dir }}/ext/vars-{{ inventory_hostname }}.yml"
+          line: "  - {{ item }}"
           state: present
       with_items: "{{ groups.opsmgr_core }}"
       delegate_to: localhost
@@ -47,7 +55,7 @@
     - name: clean spec play files
       become: false
       file:
-          path: "{{ playbook_dir }}/etc/play-{{ item.item }}-{{ inventory_hostname }}.sh"
+          path: "{{ playbook_dir }}/ext/play-{{ item.item }}-{{ inventory_hostname }}.sh"
           state: absent
       with_items: spec_plays.results
       delegate_to: localhost
@@ -56,7 +64,7 @@
       become: false
       template:
           src: spec.play.j2
-          dest: "{{ playbook_dir }}/etc/play-{{ item.item }}-{{ inventory_hostname }}.sh"
+          dest: "{{ playbook_dir }}/ext/play-{{ item.item }}-{{ inventory_hostname }}.sh"
           mode: 0755
       with_items: spec_plays.results
       delegate_to: localhost
@@ -65,7 +73,7 @@
 
     - name: spawns spec play calls (go grab a coffee!)
       become: true
-      local_action: shell "{{ playbook_dir }}/etc/play-{{ item.item }}-{{ inventory_hostname }}.sh"
+      local_action: shell "{{ playbook_dir }}/ext/play-{{ item.item }}-{{ inventory_hostname }}.sh"
       args:
           chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item.item }}/"
       with_items: spec_plays.results

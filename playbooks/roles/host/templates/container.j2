@@ -3,7 +3,15 @@
     role:     {{ item.role }}
     mount:    {{ item.mount }}
     ports:    {{ item.ports }}
+{% if main_lxc_interface == 'eth0' %}
     address:  {{ lxc_info | lxcaddress(item.name) }}
+{% else %}
+{% for net in lxcnets %}
+{% if net.host == inventory_hostname and net.lxc == item.name and net.interface == main_lxc_interface %}
+    address:  {{ net.address }}
+{% endif %}
+{% endfor %}
+{% endif %}
     host:     {{ inventory_hostname }}
 {% if ansible_ssh_host is defined and ansible_ssh_host | ipv4 %}
     hostaddr: {{ ansible_ssh_host }}

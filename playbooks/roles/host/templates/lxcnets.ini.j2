@@ -1,0 +1,27 @@
+# {{ ansible_managed }}
+#
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+{% for net in container_networks %}
+lxc.network.type      = {{ net.type | default('veth') }}
+lxc.network.name      = {{ net.interface | default('eth1') }}
+lxc.network.veth.pair = {{ item.name[-8:].replace('-', '').replace('_', '') }}_{{ net.interface | default('eth1') }}
+lxc.network.link      = {{ net.bridge }}
+lxc.network.hwaddr    = 00:16:3e:xx:xx:xx
+lxc.network.flags     = up
+lxc.network.mtu       = {{ net.mtu | default(lxc_container_default_mtu) }}
+
+{% endfor %}
+

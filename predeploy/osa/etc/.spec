@@ -1,2 +1,0 @@
-opsmgr_spec:
-  - osa

@@ -1,8 +1,0 @@
-[opsmgr_hosts]
-sm7 ansible_ssh_host=172.29.236.7
-sm6 ansible_ssh_host=172.29.236.6
-
-[opsmgr_targets]
-localhost ansible_ssh_host=9.3.89.114 ansible_connection=local
-
-

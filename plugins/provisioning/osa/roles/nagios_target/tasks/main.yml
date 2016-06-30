@@ -65,7 +65,8 @@
           dest: "{{ nrpe_dir }}/plugins/"
           mode: 0755
       when: has_agent == true
-    
+      notify: restart nrpe service
+
     - name: ensures nrpe.d directory exists
       file:
           path: "{{ nrpe_dir }}/commands"
@@ -78,6 +79,7 @@
           dest: "{{ nrpe_dir }}/nrpe.d/"
           mode: 0644
       when: has_agent == true
+      notify: restart nrpe service
     
     - name: ensures commands directory exists
       file:
@@ -91,28 +93,31 @@
           dest: "{{ nrpe_dir }}/commands/"
           mode: 0644
       when: has_agent == true
+      notify: restart nrpe service
 
-    # register this target in opsmgr
+    - name: ensure sudoers.d directory exists
+      file:
+        path: /etc/sudoers.d
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
 
-    - name: register resource in opsmgr (activate monitoring)
-      shell: >
-          opsmgr add_resource -l "{{ inventory_hostname }}" -a "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
-          -u "{{ ansible_ssh_user }}" --key "/etc/opsmgr/opsmgr.key"
-      when: has_agent == true and inventory_hostname in groups['hosts']
-      delegate_to: "{{ opsmgr }}"
+    - name: ensure sudoers has include
+      lineinfile:
+        dest: /etc/sudoers
+        line: "#includedir /etc/sudoers.d"
+        state: present
+        validate: "/usr/sbin/visudo -cf %s"
 
-    - name: register host resource role in opsmgr
-      shell: >
-          opsmgr add_role -l "{{ inventory_hostname }}" -r "osa_host"
-      when: has_agent == true and inventory_hostname in groups['hosts']
-      delegate_to: "{{ opsmgr }}"
-
-    - name: register resource roles in opsmgr
-      shell: >
-          opsmgr add_role -l "{{ hostvars[inventory_hostname].physical_host }}" -r "osa_{{ hostvars[inventory_hostname].component }}"
-      with_items: "{{ osa_services }}"
-      when: has_agent == true and inventory_hostname in groups['all_containers']
-      delegate_to: "{{ opsmgr }}"
-
+    - name: create sudoers include file
+      template:
+        src: sudoers.d.j2
+        dest: "/etc/sudoers.d/nagios_sudoers"
+        owner: root
+        group: root
+        mode: 0440
+        validate: "/usr/sbin/visudo -cf %s"
+      notify: restart nrpe service
 
 

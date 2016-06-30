@@ -8,14 +8,22 @@
 - hosts: localhost
   become: true
   pre_tasks:
-    - name: register servers into dynamic inventory
+    - name: register nagios servers into dynamic inventory
       add_host:
           name:    "{{ item.hostname }}"
+          address: "{{ item.address }}"
           group:   "nagios_servers"
           share:   "/{{ item.mount }}"
       when: item.role == 'nagios'
       with_items: "{{ opsmgr_containers }}"
     - debug: var=groups.nagios_servers
+    - name: register opsmgr servers into dynamic inventory
+      add_host:
+          name:    "{{ item }}"
+          group:   "opsmgr_servers"
+      with_items: "{{ opsmgr_servers }}"
+    - debug: var=groups.opsmgr_servers
 
 - include: nagios.yml
+- include: opsmgr.yml
 

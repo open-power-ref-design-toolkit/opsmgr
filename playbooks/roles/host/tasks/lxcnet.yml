@@ -1,0 +1,75 @@
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+    - name: ensure the etc/ext directory exists
+      become: false
+      local_action: command mkdir -p {{ playbook_dir }}/ext
+
+    - name: lxcnets configuration for all hosts
+      template:
+        src: "lxcnets.yml.j2"
+        dest: "{{ playbook_dir }}/ext/lxcnets.yml"
+      delegate_to: localhost
+    
+    - include_vars: "{{ playbook_dir }}/ext/lxcnets.yml"
+
+    - name: drop veth cleanup script
+      template:
+        src: "veth-cleanup.sh.j2"
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/veth-cleanup.sh"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+      with_items: "{{ containers }}"
+
+    - name: lxc host config for container networks
+      template:
+        src: "lxcnets.ini.j2"
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/lxcnets.ini"
+        owner: "root"
+        group: "root"
+        mode: "0644"
+      with_items: "{{ containers }}"
+
+    - name: ensure interfaces file has include
+      lineinfile:
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/network/interfaces"
+        line: "source /etc/network/interfaces.d/*.cfg"
+        state: present
+      with_items: "{{ containers }}"
+    
+    - name: lxc container config for container networks
+      template:
+        src: "interfaces.d.j2"
+        dest: "/var/lib/lxc/{{ item.host }}-{{ item.lxc }}/rootfs/etc/network/interfaces.d/{{ item.interface }}.cfg"
+        owner: "root"
+        group: "root"
+        mode: "0644"
+      when: item.host == inventory_hostname
+      with_items: "{{ lxcnets }}"
+
+    - name: container config for container networks
+      lxc_container:
+        name: "{{ item.host }}-{{ item.lxc }}"
+        state: stopped
+        container_config:
+          - "lxc.include = /var/lib/lxc/{{ item.host }}-{{ item.lxc }}/lxcnets.ini"
+          - "lxc.hook.pre-start = /var/lib/lxc/{{ item.host }}-{{ item.lxc }}/veth-cleanup.sh"
+          - "lxc.hook.post-stop = /var/lib/lxc/{{ item.host }}-{{ item.lxc }}/veth-cleanup.sh"
+      when: item.host == inventory_hostname
+      with_items: "{{ lxcnets }}"
+
+
+
