@@ -509,13 +509,17 @@ class EditRackForm(forms.SelfHandlingForm):
                             max_length=255,
                             required=True)
     data_center = forms.CharField(label=_("Data Center"),
-                                  max_length=255)
+                                  max_length=255,
+                                  required=False)
     room = forms.CharField(label=_("Room"),
-                           max_length=255)
+                           max_length=255,
+                           required=False)
     row = forms.CharField(label=_("Row"),
-                          max_length=255)
+                          max_length=255,
+                          required=False)
     notes = forms.CharField(label=_("Notes"),
-                            max_length=255)
+                            max_length=255,
+                            required=False)
 
     def handle(self, request, data):
         __method__ = 'forms.EditRackForm.handle'
