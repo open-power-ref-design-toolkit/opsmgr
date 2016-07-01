@@ -118,6 +118,5 @@
         group: root
         mode: 0440
         validate: "/usr/sbin/visudo -cf %s"
-      notify: restart nrpe service
 
 

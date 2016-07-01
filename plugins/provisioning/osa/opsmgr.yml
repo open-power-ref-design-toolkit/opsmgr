@@ -5,3 +5,10 @@
   roles:
     - opsmgr_server
 
+- hosts: nagios_servers
+  become: true
+  tasks:
+    - name: restart nagios service
+      service: name="nagios" state=restarted
+
+

@@ -43,6 +43,5 @@
       when: |
           hostvars[item].component in osa_services
       with_items: "{{ groups['all_containers'] }}"
-      notify: restart nagios service
 
 

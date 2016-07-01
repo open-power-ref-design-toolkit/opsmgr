@@ -15,4 +15,3 @@ command[osa_lxc_rsyslogd] = sudo /etc/nagios/plugins/check-lxc.sh repo check-pro
 command[osa_lxc_sshd] = sudo /etc/nagios/plugins/check-lxc.sh repo check-procs.rb '-p sshd -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_cron] = sudo /etc/nagios/plugins/check-lxc.sh repo check-procs.rb '-p cron -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_dbus] = sudo /etc/nagios/plugins/check-lxc.sh repo check-procs.rb '-p dbus-daemon -w 15 -c 30 -W 1 -C 1'
-command[osa_lxc_memcached] = sudo /etc/nagios/plugins/check-lxc.sh repo check-procs.rb '-p memcached -w 15 -c 30 -W 1 -C 1'

@@ -13,6 +13,5 @@ command[osa_lxc_rsyslogd] = sudo /etc/nagios/plugins/check-lxc.sh cinder_schedul
 command[osa_lxc_sshd] = sudo /etc/nagios/plugins/check-lxc.sh cinder_scheduler check-procs.rb '-p sshd -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_cron] = sudo /etc/nagios/plugins/check-lxc.sh cinder_scheduler check-procs.rb '-p cron -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_dbus] = sudo /etc/nagios/plugins/check-lxc.sh cinder_scheduler check-procs.rb '-p dbus-daemon -w 15 -c 30 -W 1 -C 1'
-command[osa_lxc_tgtd] = sudo /etc/nagios/plugins/check-lxc.sh cinder_scheduler check-procs.rb '-p tgtd -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_rpcbind] = sudo /etc/nagios/plugins/check-lxc.sh cinder_scheduler check-procs.rb '-p rpcbind -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_rpcstatd] = sudo /etc/nagios/plugins/check-lxc.sh cinder_scheduler check-procs.rb '-p rpc.statd -w 15 -c 30 -W 1 -C 1'

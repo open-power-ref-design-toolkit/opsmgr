@@ -13,7 +13,6 @@ command[osa_lxc_linuxbridge] = sudo /etc/nagios/plugins/check-lxc.sh neutron_age
 command[osa_lxc_metering] = sudo /etc/nagios/plugins/check-lxc.sh neutron_agents check-procs.rb '-p neutron-metering-agent -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_l3] = sudo /etc/nagios/plugins/check-lxc.sh neutron_agents check-procs.rb '-p neutron-l3-agent -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_metadata] = sudo /etc/nagios/plugins/check-lxc.sh neutron_agents check-procs.rb '-p neutron-metadata-agent -w 15 -c 30 -W 1 -C 1'
-command[osa_lxc_proxy] = sudo /etc/nagios/plugins/check-lxc.sh neutron_agents check-procs.rb '-p neutron-ns-metadata-proxy -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_hatool] = sudo /etc/nagios/plugins/check-lxc.sh neutron_agents check-procs.rb '-p neutron-ha-tool -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_rsyslogd] = sudo /etc/nagios/plugins/check-lxc.sh neutron_agents check-procs.rb '-p rsyslogd -w 15 -c 30 -W 1 -C 1'
 command[osa_lxc_sshd] = sudo /etc/nagios/plugins/check-lxc.sh neutron_agents check-procs.rb '-p sshd -w 15 -c 30 -W 1 -C 1'

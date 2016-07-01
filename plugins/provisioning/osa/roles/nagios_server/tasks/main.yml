@@ -12,6 +12,11 @@
           src: "roles/"
           dest: "{{ hostvars[inventory_hostname].share }}/roles/"
           mode: 0644
-      notify: restart nagios service
 
+    - name: disable default localhost monitoring (covered by role)
+      lineinfile:
+          dest: "/usr/local/nagios/etc/nagios.cfg"
+          line: "#cfg_file=/usr/local/nagios/etc/objects/localhost.cfg"
+          regexp: "^cfg_file=/usr/local/nagios/etc/objects/localhost.cfg"
+      notify: restart nagios service
 
