@@ -1,0 +1,16 @@
+---
+elasticsearch_vip: 127.0.0.1
+elasticsearch_http_port: 9200
+
+dashboards:
+  - Log Analyze Dashboard - Logs-From GUI
+  - Log Management Dashboard - OpenStack API-From GUI
+
+components:
+  - nova
+  - neutron
+  - heat
+  - cinder
+  - keystone
+  - glance
+  - horizon
