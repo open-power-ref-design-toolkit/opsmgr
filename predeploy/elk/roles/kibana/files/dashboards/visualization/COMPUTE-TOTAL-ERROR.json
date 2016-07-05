@@ -1,0 +1,10 @@
+  {
+      "title": "TOTAL COMPUTE  ERROR",
+      "visState": "{\"title\":\"TOTAL COMPUTE  ERROR\",\"type\":\"metric\",\"params\":{\"fontSize\":30},\"aggs\":[{\"id\":\"1\",\"type\":\"count\",\"schema\":\"metric\",\"params\":{}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"loglevel:(ERROR OR TRACE OR CRITICAL) AND tags:nova\",\"analyze_wildcard\":true}},\"filter\":[]}"
+      }
+    }

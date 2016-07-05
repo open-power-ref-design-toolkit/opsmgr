@@ -132,13 +132,35 @@
     - kibana-apache
     - kibana-post-install
 
-# - name: Install Dashboards
-#   template:
-#    src: "{{ item }}"
-#     dest: "/opt/kibana/app/dashboards/{{ item }}"
-#     owner: "root"
-#     group: "root"
-#   with_items:
-#     - Event-Dashboard.json
-#   tags:
-#     - kibana-post-install
+- name: Create tmp directory for the dashboards
+  file:
+      path: "{{ kibana_temp_directory }}"
+      state: directory
+      mode: 0700
+  tags:
+    - kibana-post-install
+
+- name: copy visualizations and dashboards to server
+  synchronize:
+       src:  ./
+       dest: "{{ kibana_temp_directory }}"
+       mode: push
+       compress: yes
+  tags:
+    - kibana-post-install
+
+- name: Import the dashboards
+  shell: "./load.sh -l {{ elasticsearch_vip }}:{{ elasticsearch_http_port }}"
+  args:
+    chdir: "{{ kibana_temp_directory }}"
+  notify: Restart Apache
+  tags:
+    - kibana-apache
+    - kibana-post-install
+
+- name: Remove tmp directory for the code
+  file:
+       path: "{{ kibana_temp_directory }}"
+       state: absent
+  tags:
+    - kibana-post-install

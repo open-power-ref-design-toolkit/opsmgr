@@ -8,6 +8,4 @@ backend kibana_ssl-back
     mode tcp
     balance source
     option ssl-hello-chk
-{% for host_name in groups['kibana'] %}
-    server {{ host_name }} {{ hostvars[host_name]['ansible_ssh_host'] }}:8443 check port 8443 inter 12000 rise 2 fall 2
-{% endfor %}
+    server {{ groups['kibana'][0] }} {{ hostvars[groups['kibana'][0]]['container_address'] }}:8443 check port 8443 inter 12000 rise 2 fall 2
