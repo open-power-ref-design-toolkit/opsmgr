@@ -1,0 +1,11 @@
+  {
+      "title": "ERROR REQUEST",
+      "visState": "{\"aggs\":[{\"id\":\"1\",\"params\":{},\"schema\":\"metric\",\"type\":\"count\"}],\"listeners\":{},\"params\":{\"fontSize\":\"30\",\"handleNoResults\":true},\"title\":\"ERROR REQUEST\",\"type\":\"metric\"}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"response:(4?? OR 5??)\",\"analyze_wildcard\":true}},\"filter\":[]}"
+      }
+    }
+

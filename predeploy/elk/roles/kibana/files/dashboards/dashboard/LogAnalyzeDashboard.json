@@ -1,0 +1,15 @@
+  {
+      "title": "Log Analyze Dashboard - Logs-From GUI",
+      "hits": 0,
+      "description": "",
+      "panelsJSON": "[\n  {\n    \"col\": 3,\n    \"id\": \"ERROR-HISTORY\",\n    \"panelIndex\": 1,\n    \"row\": 3,\n    \"size_x\": 4,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 7,\n    \"id\": \"LOG-DISTRIBUTION\",\n    \"panelIndex\": 2,\n    \"row\": 1,\n    \"size_x\": 4,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 1,\n    \"id\": \"ERROR\",\n    \"panelIndex\": 3,\n    \"row\": 3,\n    \"size_x\": 2,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 3,\n    \"id\": \"LOG-HISTORY\",\n    \"panelIndex\": 4,\n    \"row\": 1,\n    \"size_x\": 4,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 7,\n    \"id\": \"COMPONENT-ERROR\",\n    \"panelIndex\": 5,\n    \"row\": 3,\n    \"size_x\": 4,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 1,\n    \"id\": \"TOTAL\",\n    \"panelIndex\": 6,\n    \"row\": 1,\n    \"size_x\": 2,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"id\": \"COMPUTE-NODE-ERROR\",\n    \"type\": \"visualization\",\n    \"panelIndex\": 7,\n    \"size_x\": 4,\n    \"size_y\": 2,\n    \"col\": 3,\n    \"row\": 5\n  },\n  {\n    \"id\": \"COMPUTE-TOTAL-ERROR\",\n    \"type\": \"visualization\",\n    \"panelIndex\": 8,\n    \"size_x\": 2,\n    \"size_y\": 2,\n    \"col\": 1,\n    \"row\": 5\n  },\n  {\n    \"id\": \"OVS-AGENT-ERROR\",\n    \"type\": \"visualization\",\n    \"panelIndex\": 10,\n    \"size_x\": 4,\n    \"size_y\": 2,\n    \"col\": 7,\n    \"row\": 5\n  }\n]",
+      "optionsJSON": "{\n  \"darkTheme\": false\n}",
+      "uiStateJSON": "{\n  \"P-5\": {\n    \"vis\": {\n      \"colors\": {\n        \"cinder-api\": \"#BF1B00\"\n      }\n    }\n  },\n  \"P-6\": {\n    \"spy\": {\n      \"mode\": {\n        \"fill\": false,\n        \"name\": null\n      }\n    }\n  },\n  \"P-4\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  }\n}",
+      "version": 1,
+      "timeRestore": true,
+      "timeTo": "now",
+      "timeFrom": "now-12h",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}]}"
+      }
+  }

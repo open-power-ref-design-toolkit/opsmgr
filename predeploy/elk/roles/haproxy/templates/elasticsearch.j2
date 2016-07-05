@@ -12,6 +12,4 @@ backend elasticsearch-back
     option forwardfor
     option httpchk
     option httplog
-{% for host_name in groups['elasticsearch'] %}
-    server {{ host_name }} {{ hostvars[host_name]['ansible_ssh_host'] }}:9200 check port 9200 inter 12000 rise 2 fall 2
-{% endfor %}
+    server {{ groups['elasticsearch'][0] }} {{ hostvars[groups['elasticsearch'][0]]['container_address'] }}:9200 check port 9200 inter 12000 rise 2 fall 2

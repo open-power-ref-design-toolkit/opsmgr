@@ -63,3 +63,7 @@ kibana_ssl_cipher_suite: '{{ ssl_cipher_suite|default("ECDH+AESGCM:DH+AESGCM:ECD
 # Directories to create
 kibana_directories:
   - { name: /var/log/kibana, mode: 755 }
+
+kibana_default_dashboard: LogManagementOpenStackAPI
+kibana_temp_directory: /tmp/kibana_dashboards
+

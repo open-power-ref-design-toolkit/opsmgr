@@ -77,3 +77,4 @@ elasticsearch.url: "http://{{ elasticsearch_vip }}:{{ elasticsearch_http_port}}"
 
 # Set this to true to log all events, including system usage information and all requests.
 logging.verbose: {{ kibana_verbose }}
+kibana.defaultAppId: "dashboard/{{ kibana_default_dashboard }}"
