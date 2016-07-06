@@ -150,7 +150,7 @@
     - kibana-post-install
 
 - name: Import the dashboards
-  shell: "./load.sh -l {{ elasticsearch_vip }}:{{ elasticsearch_http_port }}"
+  shell: "./load.sh -l {{ elasticsearch_ip }}:{{ elasticsearch_http_port }}"
   args:
     chdir: "{{ kibana_temp_directory }}"
   notify: Restart Apache

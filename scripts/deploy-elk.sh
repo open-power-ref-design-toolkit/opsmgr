@@ -60,7 +60,9 @@ echo "Generating passwords"
 set_passwd /etc/openstack_deploy/user_secrets_opsmgr.yml kibana_password $KIBANA_PASSWORD
 
 # Ensure all needed passwords and tokens are generated
+pushd /opt/openstack-ansible >/dev/null 2>&1
 ./scripts/pw-token-gen.py --file /etc/openstack_deploy/user_secrets_opsmgr.yml
+popd >/dev/null 2>&1
 
 echo "Running OSA playbooks"
 
@@ -82,5 +84,5 @@ popd >/dev/null 2>&1
 echo "Running ELK playbooks"
 
 cd predeploy/elk
-run_ansible elk.yml
+run_ansible site.yml
 

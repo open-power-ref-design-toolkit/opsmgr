@@ -29,6 +29,7 @@ kibana_apt_keys:
 elasticsearch_http_port: 9200
 elasticsearch_vip: "{{ internal_lb_vip_address }}"
 elasticsearch_public_url: '"https://"+window.location.hostname+":8443/elasticsearch/"'
+elasticsearch_ip: "{{ hostvars[groups['elasticsearch'][0]]['container_address'] }}"
 
 kibana_apt_packages:
   - kibana
