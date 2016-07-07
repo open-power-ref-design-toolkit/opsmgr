@@ -45,6 +45,12 @@
     - name: retrieve osa groups file
       fetch: src=/tmp/osa/osa_groups.json dest=ext/ flat=yes
 
+    - name: retrieve osa user secrets
+      fetch: src=/etc/openstack_deploy/user_secrets.yml dest=ext/user_secrets.yml flat=yes
+
+    - name: retrieve osa ips hosts
+      fetch: src=/opt/openstack-ansible/playbooks/inventory/group_vars/hosts.yml dest=ext/hosts.yml flat=yes
+
     - name: retrieve osa ips file
       fetch: src=/etc/openstack_deploy/openstack_hostnames_ips.yml dest=ext/osa_ips.json flat=yes
 
@@ -54,6 +60,12 @@
     - name: fix inventory file for import
       local_action: command ./scripts/osfix.sh
     
+    - name: imports osa user secrets
+      include_vars: ext/user_secrets.yml
+
+    - name: imports osa hosts
+      include_vars: ext/hosts.yml
+
     - name: imports osa inventory
       include_vars: ext/osa_inv.json
     

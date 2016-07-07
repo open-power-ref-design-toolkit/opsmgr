@@ -2,7 +2,8 @@
 #set -x
 
 NICK=$1
-NAME=$(/usr/bin/sudo /usr/bin/lxc-ls | grep $NICK)
+NAMEX=$(/usr/bin/sudo /usr/bin/lxc-ls -1 | grep $NICK)
+NAME="$(echo -e "${NAMEX}" | sed -e 's/[[:space:]]*$//')"
 shift
 FILE=$1
 shift
