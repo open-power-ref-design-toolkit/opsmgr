@@ -118,6 +118,8 @@ def retrieve_application_links(self, request):
 
     # Since the server could have multiple IP addresses, for
     # now we will use the host value from the request instead.
+    # Note that (with automated unit test) there may be NO
+    # http request -- so we need to handle that exception
     try:
         host_address = request.META.get('HTTP_HOST').split(':')[0]
     except Exception as e:
@@ -126,10 +128,13 @@ def retrieve_application_links(self, request):
     for app in applications:
         # build the list of URLs
         # use host value from the request instead
-        # app_url = app.protocol + host
+        # app_url = app.protocol + (host value)
         if host_address == None:
+            # for whatever reason, the request did not have a host value
+            # so use whatever was returned from the server
             app_url = app.protocol + app.host
         else:
+            # use host value from the request
             app_url = app.protocol + host_address
         if app.port is not None:
             app_url += ":" + app.port
