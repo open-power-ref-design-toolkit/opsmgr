@@ -118,13 +118,19 @@ def retrieve_application_links(self, request):
 
     # Since the server could have multiple IP addresses, for
     # now we will use the host value from the request instead.
-    host_address = request.META.get('HTTP_HOST').split(':')[0]
-
+    try:
+        host_address = request.META.get('HTTP_HOST').split(':')[0]
+    except Exception as e:
+        host_address = None
+    
     for app in applications:
         # build the list of URLs
         # use host value from the request instead
         # app_url = app.protocol + host
-        app_url = app.protocol + host_address
+        if host_address == None:
+            app_url = app.protocol + app.host
+        else:
+            app_url = app.protocol + host_address
         if app.port is not None:
             app_url += ":" + app.port
         if app.path is not None:
