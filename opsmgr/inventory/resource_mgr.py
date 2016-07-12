@@ -749,71 +749,46 @@ def validate(address, userid, password, device_type, ssh_key=None):
         device_type string identifying device type to validate as.
         ssh_key:   string containing the ssh private key
     Returns:
-        rc, device_type, mtm, serialnum, version_details, Interfaces
+        rc, device_type, mtm, serialnum, version, architecture
 
         where rc defined to be one of:
             0 - Success
             1 - failed to connect
             2 - userid/password invalid
             3 - device type error
-            4 - SVC not using superuser
-            9 - root is required
-            10  device type does not support function
     '''
     _method_ = 'resource_mgr.validate'
     logging.info("ENTER %s::address=%s userid=%s device_type=%s",
                  _method_, address, userid, device_type)
+    validate_failure = constants.validation_codes.DEVICE_TYPE_ERROR.value
     plugins = _load_device_plugins()
 
-    if device_type:
-        plugin = plugins[device_type]
+    for plugin_device_type, plugin in plugins.items():
         try:
-            plugin = plugins[device_type]
+            #if device_type was specified skip other plugins
+            if device_type:
+                if plugin_device_type != device_type:
+                    continue
             plugin.connect(address, userid, password, ssh_key)
             mtm = plugin.get_machine_type_model()
             serialnum = plugin.get_serial_number()
             version = plugin.get_version()
             architecture = plugin.get_architecture()
+            device_type = plugin_device_type
             return (constants.validation_codes.SUCCESS.value, device_type, mtm,
                     serialnum, version, architecture)
-        except KeyError:
-            logging.error("%s::plugin(%s) not found", _method_, device_type)
-            return (constants.validation_codes.DEVICE_TYPE_ERROR.value,
-                    None, None, None, None, None)
         except exceptions.ConnectionException:
-            return (constants.validation_codes.FAILED_TO_CONNECT.value,
-                    None, None, None, None, None)
+            validate_failure = constants.validation_codes.FAILED_TO_CONNECT.value
         except exceptions.AuthenticationException:
-            return (constants.validation_codes.CREDENTIALS_INVALID.value,
-                    None, None, None, None, None)
+            validate_failure = constants.validation_codes.CREDENTIALS_INVALID.value
         except Exception as e:
             logging.exception(e)
             logging.warning("%s:plugin(%s). Exception running validate: %s",
                             _method_, plugin.__class__.__name__, e)
         finally:
             plugin.disconnect()
-    else: #Try all plugins
-        for plugin_device_type, plugin in plugins.items():
-            try:
-                plugin.connect(address, userid, password, ssh_key)
-                mtm = plugin.get_machine_type_model()
-                serialnum = plugin.get_serial_number()
-                version = plugin.get_version()
-                architecture = plugin.get_architecture()
-                device_type = plugin_device_type
-                break
-            except Exception as e:
-                logging.exception(e)
-                logging.warning("%s:plugin(%s). Exception running validate: %s",
-                                _method_, plugin.__class__.__name__, e)
-                continue
-            finally:
-                plugin.disconnect()
-        if device_type:
-            return (constants.validation_codes.SUCCESS.value, device_type, mtm,
-                    serialnum, version, architecture)
 
-    return (constants.validation_codes.DEVICE_TYPE_ERROR.value, None, None, None, None, None)
+    return (validate_failure, None, None, None, None, None)
 
 @entry_exit(exclude_index=[2, 4], exclude_name=["password", "ssh_key"])
 def _validate(address, userid, password, device_type, ssh_key=None):
@@ -838,17 +813,11 @@ def _validate(address, userid, password, device_type, ssh_key=None):
     if rc == 0:
         logging.info("%s::validate device data successfully.", _method_)
         message = _("Validated device data successfully.")
-    elif rc == 10:
-        # validate does not work on device type  so can't tell if change pw
-        # will work.
-        logging.info(
-            "%s::unable to validate device data with device.", _method_)
     else:
         # rc we go indicates no attempt to change password should be tried get
         # response message and return
         logging.error(
             "%s::failed to validate device info for (%s) return value(%d).", _method_, address, rc)
-
         if rc == 1:
             message = _("Failed to connect the device.")
         elif rc == 2:
@@ -1051,5 +1020,3 @@ def _check_address(address):
         except Exception:
             pass # host not valid or offline
     return ipv4, hostname
-
-

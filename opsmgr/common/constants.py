@@ -36,7 +36,6 @@ class validation_codes(Enum):
     FAILED_TO_CONNECT = 1
     CREDENTIALS_INVALID = 2
     DEVICE_TYPE_ERROR = 3
-    UNSUPPORTED_FUNCTION = 10
 
 class auth_method(Enum):
     """ Authentication method used to access a device
