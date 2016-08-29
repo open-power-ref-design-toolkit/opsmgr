@@ -22,6 +22,7 @@
   with_items:
     - elasticsearch
     - kibana_ssl
+    - logstash
   notify: Restart HAProxy
   tags:
     - haproxy-reconfig

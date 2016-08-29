@@ -1,0 +1,10 @@
+frontend logstash-front
+bind *:5140
+    option tcplog
+    mode tcp
+    default_backend logstash-back
+
+backend logstash-back
+    mode tcp
+    balance leastconn
+    server {{ groups['logstash'][0] }} {{ hostvars[groups['logstash'][0]]['container_address'] }}:5140 check port 5140 inter 12000 rise 2 fall 2
