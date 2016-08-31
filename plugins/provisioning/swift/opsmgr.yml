@@ -1,0 +1,28 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - [ ../../../ext/overrides.yml, defaults/overrides.yml ]
+    - [ ../../../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
+
+- hosts: swift_proxies:swift_servers
+  gather_facts: yes
+
+- hosts: opsmgr_core
+  become: true
+  roles:
+    - opsmgr_server
+
+- hosts: opsmgr_nagios
+  become: true
+  tasks:
+    - name: restart nagios service
+      service: name="nagios" state=restarted
+
+

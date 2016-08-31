@@ -1,0 +1,11 @@
+[swift_proxies]
+bloom-proxy ansible_ssh_host=172.29.236.20
+
+[swift_servers]
+bloom-1 ansible_ssh_host=172.29.236.21
+bloom-2 ansible_ssh_host=172.29.236.22
+bloom-3 ansible_ssh_host=172.29.236.23
+bloom-4 ansible_ssh_host=172.29.236.24
+bloom-5 ansible_ssh_host=172.29.236.25
+bloom-6 ansible_ssh_host=172.29.236.26
+
