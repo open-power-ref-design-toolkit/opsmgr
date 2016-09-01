@@ -1,0 +1,15 @@
+{
+      "title": "SWIFT Dashboard",
+      "hits": 0,
+      "description": "",
+      "panelsJSON": "[{\"col\":4,\"id\":\"SWIFT-ERROR-HTTP-METHODS\",\"panelIndex\":1,\"row\":3,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":1,\"id\":\"SWIFT-REQUEST-RATE\",\"panelIndex\":2,\"row\":5,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":4,\"id\":\"SWIFT-RESPONSE-TIME\",\"panelIndex\":3,\"row\":5,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":4,\"id\":\"SWIFT-API-STATUS\",\"panelIndex\":4,\"row\":1,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":1,\"id\":\"SWIFT-TOTAL-REQUEST\",\"panelIndex\":5,\"row\":1,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":1,\"id\":\"SWIFT-ERROR-REQUEST\",\"panelIndex\":6,\"row\":3,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":7,\"id\":\"SWIFT-API-ERROR-DISTRIBUTION\",\"panelIndex\":7,\"row\":3,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":7,\"id\":\"SWIFT-REQUEST-DISTRIBUTION\",\"panelIndex\":8,\"row\":1,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"id\":\"SWIFT-LOGS-BY-HOST\",\"type\":\"visualization\",\"panelIndex\":9,\"size_x\":3,\"size_y\":2,\"col\":7,\"row\":5}]",
+      "optionsJSON": "{\"darkTheme\":false}",
+      "uiStateJSON": "{\"P-2\":{\"vis\":{\"legendOpen\":false}},\"P-3\":{\"vis\":{\"legendOpen\":false}},\"P-7\":{\"vis\":{\"legendOpen\":true}},\"P-8\":{\"vis\":{\"legendOpen\":true}}}",
+      "version": 1,
+      "timeRestore": true,
+      "timeTo": "now",
+      "timeFrom": "now-15m",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"SWIFT Dashboard\"}}}]}"
+      }
+    }

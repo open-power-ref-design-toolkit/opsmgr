@@ -1,0 +1,10 @@
+{
+      "title": "SWIFT TOTAL REQUEST",
+      "visState": "{\"title\":\"SWIFT TOTAL REQUEST\",\"type\":\"metric\",\"params\":{\"fontSize\":\"30\",\"handleNoResults\":true},\"aggs\":[{\"id\":\"1\",\"type\":\"count\",\"schema\":\"metric\",\"params\":{}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"response:* and tags:swift\",\"analyze_wildcard\":true}},\"filter\":[]}"
+      }
+    }
