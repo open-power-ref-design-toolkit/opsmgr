@@ -1,0 +1,26 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - [ ../../../ext/overrides.yml, defaults/overrides.yml ]
+    - [ ../../../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
+
+- hosts: opsmgr_nagios
+  become: true
+  roles:
+    - { role: nagios_server }
+    - { role: nagios_agent, install_server: false, install_plugin: true }
+
+- hosts: swift_proxies:swift_servers
+  become: true
+  roles:
+    - { role: nagios_agent, install_server: true, install_plugin: false }
+    - { role: nagios_target, is_monitored: true, has_agent: true }
+
+

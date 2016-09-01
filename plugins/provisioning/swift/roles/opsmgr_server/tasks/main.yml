@@ -1,0 +1,41 @@
+---
+
+    # ensure opsmgr server can resolve hosts
+
+    - name: update hosts file for nodes that have br-mgmt interface address
+      lineinfile: |
+          dest=/etc/hosts regexp='.*{{ item }}$'
+          line="{{ hostvars[item].ansible_br_mgmt.ipv4.address }} {{ item }}" state=present
+      when: hostvars[item].ansible_br_mgmt.ipv4.address is defined and item != 'localhost'
+      with_items: groups['all']
+
+    # register this target in opsmgr
+
+    - name: clear resources if they already exist
+      shell: >
+          opsmgr remove_resource -l "{{ item }}"
+      with_items: "{{ groups['swift_proxies'] | union(groups['swift_servers']) }}"
+      ignore_errors: true
+
+    - name: register resource in opsmgr (activate monitoring)
+      shell: >
+          opsmgr add_resource -l "{{ item }}" -a "{{ hostvars[item].ansible_br_mgmt.ipv4.address }}"
+          -u "{{ ansible_ssh_user }}" --key "/etc/opsmgr/opsmgr.key"
+      with_items: "{{ groups['swift_proxies'] | union(groups['swift_servers']) }}"
+
+    - name: register swift_cluster resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ item }}" -r "swift_cluster"
+      with_items: "{{ groups['swift_proxies'] }}"
+
+    - name: register swift_proxy resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ item }}" -r "swift_proxy"
+      with_items: "{{ groups['swift_proxies'] }}"
+
+    - name: register swift_server resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ item }}" -r "swift_server"
+      with_items: "{{ groups['swift_servers'] }}"
+
+

@@ -1,0 +1,47 @@
+diff -urNp nrpe-2.15_a/contrib/nrpe_check_control.c nrpe-2.15_b/contrib/nrpe_check_control.c
+--- nrpe-2.15_a/contrib/nrpe_check_control.c	2013-09-06 17:27:13.000000000 +0200
++++ nrpe-2.15_b/contrib/nrpe_check_control.c	2014-01-30 12:08:38.359474748 +0100
+@@ -2,7 +2,7 @@
+ #include <string.h>
+ #include <time.h>
+ 
+-#define MAX_CHARS	1024
++#define MAX_CHARS	4096
+ #define SERVICE_COUNT	12
+ 
+ #define COMMAND_FILE	"/usr/local/nagios/var/rw/nagios.cmd"
+diff -urNp nrpe-2.15_a/include/common.h nrpe-2.15_b/include/common.h
+--- nrpe-2.15_a/include/common.h	2013-09-06 17:27:13.000000000 +0200
++++ nrpe-2.15_b/include/common.h	2014-01-30 12:08:08.892343621 +0100
+@@ -41,7 +41,7 @@
+ #define DEFAULT_SOCKET_TIMEOUT	10	/* timeout after 10 seconds */
+ #define DEFAULT_CONNECTION_TIMEOUT 300	/* timeout if daemon is waiting for connection more than this time */
+ 
+-#define MAX_INPUT_BUFFER	2048	/* max size of most buffers we use */
++#define MAX_INPUT_BUFFER	4096	/* max size of most buffers we use */
+ #define MAX_FILENAME_LENGTH     256
+ 
+ #define MAX_HOST_ADDRESS_LENGTH	256	/* max size of a host address */
+@@ -60,7 +60,7 @@
+ #define NRPE_PACKET_VERSION_2   2               
+ #define NRPE_PACKET_VERSION_1	1		/* older packet version identifiers (no longer supported) */
+ 
+-#define MAX_PACKETBUFFER_LENGTH	1024		/* max amount of data we'll send in one query/response */
++#define MAX_PACKETBUFFER_LENGTH	4096		/* max amount of data we'll send in one query/response */
+ 
+ typedef struct packet_struct{
+ 	int16_t   packet_version;
+diff -urNp nrpe-2.15_a/src/snprintf.c nrpe-2.15_b/src/snprintf.c
+--- nrpe-2.15_a/src/snprintf.c	2013-09-06 17:27:13.000000000 +0200
++++ nrpe-2.15_b/src/snprintf.c	2014-01-30 12:09:18.602610912 +0100
+@@ -1264,8 +1264,8 @@ int smb_snprintf(char *str,size_t count,
+ 
+  int main (void)
+ {
+-	char buf1[1024];
+-	char buf2[1024];
++	char buf1[4096];
++	char buf2[4096];
+ 	char *buf3;
+ 	char *fp_fmt[] = {
+ 		"%1.1f",

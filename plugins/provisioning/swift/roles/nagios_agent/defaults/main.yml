@@ -1,0 +1,30 @@
+---
+
+# pre-req packages
+apt_packages:
+    - wget
+    - libssl-dev
+    - openssl
+    - gcc
+    - make
+
+install_server: true
+install_plugin: true
+patch_nrpe: false
+
+nrpe_download_site: https://sourceforge.net/projects/nagios/files/nrpe-2.x/nrpe-2.15
+nrpe_download_file: nrpe-2.15.tar.gz
+temp_dir: /tmp
+
+# defaults for nagios nrpe agent configuration
+nrpe_service: nagios-nrpe-server
+nrpe_dir: /etc/nagios
+nrpe_plugins_dir: /usr/lib/nagios/plugins
+nrpe_group: nagios
+nrpe_user: nagios
+nrpe_pass: nagios
+nrpe_bind_address: 127.0.0.1
+nrpe_bind_port: 5666
+nrpe_pid: /var/run/nagios/nrpe.pid
+
+
