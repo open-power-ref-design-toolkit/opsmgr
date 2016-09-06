@@ -1,4 +1,4 @@
-  - hostname: {{ ansible_hostname }}-{{ item.name }}
+  - hostname: {{ inventory_hostname }}-{{ item.name }}
     name:     {{ item.name }}
     role:     {{ item.role }}
     mount:    {{ item.mount }}

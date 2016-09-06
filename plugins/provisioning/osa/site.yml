@@ -10,7 +10,7 @@
   pre_tasks:
     - name: register nagios servers into dynamic inventory
       add_host:
-          name:    "{{ item.hostname }}"
+          name:    "{{ item.host }}-{{ item.name }}"
           address: "{{ item.address }}"
           group:   "nagios_servers"
           share:   "/{{ item.mount }}"
@@ -26,4 +26,3 @@
 
 - include: nagios.yml
 - include: opsmgr.yml
-

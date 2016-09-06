@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 #
 Host {{ item }}
-{% if hostvars[item].ansible_ssh_host is defined and ansible_ssh_host | ipv4 %}
+{% if hostvars[item].ansible_ssh_host is defined and hostvars[item].ansible_ssh_host | ipv4 %}
   Hostname {{ hostvars[item].ansible_ssh_host }}
 {% else %}
   Hostname {{ hostvars[item].ansible_default_ipv4.address }}
@@ -11,12 +11,12 @@ Host {{ item }}
   UserKnownHostsFile=/dev/null
   IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
 
-{% if hostvars[item].ansible_ssh_host is defined and ansible_ssh_host | ipv4 %}
+{% if hostvars[item].ansible_ssh_host is defined and hostvars[item].ansible_ssh_host | ipv4 %}
 Host {{ hostvars[item].ansible_ssh_host }}
 {% else %}
 Host {{ hostvars[item].ansible_default_ipv4.address }}
 {% endif %}
-{% if hostvars[item].ansible_ssh_host is defined and ansible_ssh_host | ipv4 %}
+{% if hostvars[item].ansible_ssh_host is defined and hostvars[item].ansible_ssh_host | ipv4 %}
   Hostname {{ hostvars[item].ansible_ssh_host }}
 {% else %}
   Hostname {{ hostvars[item].ansible_default_ipv4.address }}
@@ -25,5 +25,3 @@ Host {{ hostvars[item].ansible_default_ipv4.address }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
   IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
-
-

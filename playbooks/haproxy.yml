@@ -13,10 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: restart haproxy
-  service:
-    name: haproxy
-    state: restarted
-    pattern: haproxy
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/overrides.yml ]
+    - defaults/main.yml
+  pre_tasks:
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "../ext/shared.yml"
+        - "defaults/shared.yml"
+    - include: tasks/import.yml
 
-
+- hosts: opsmgr_hosts
+  gather_facts: yes
+  become: true
+  vars_files:
+    - [ ../ext/overrides.yml, defaults/overrides.yml ]
+    - [ ../ext/shared.yml, defaults/shared.yml ]
+    - defaults/main.yml
+  roles:
+    - haproxy

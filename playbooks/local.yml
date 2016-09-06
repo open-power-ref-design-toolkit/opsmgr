@@ -17,9 +17,9 @@
   gather_facts: yes
   become: true
   vars_files:
-    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/overrides.yml, defaults/overrides.yml ]
     - [ ../ext/shared.yml, defaults/shared.yml ]
-    - vars/main.yml
+    - defaults/main.yml
   roles:
     - provisioned
 
@@ -28,12 +28,10 @@
   connection: local
   become: false
   vars_files:
-    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/overrides.yml, defaults/overrides.yml ]
     - [ ../ext/shared.yml, defaults/shared.yml ]
-    - vars/main.yml
+    - defaults/main.yml
   pre_tasks:
     - include: tasks/import.yml
   roles:
     - provisioner
-
-

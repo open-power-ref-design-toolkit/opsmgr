@@ -9,6 +9,9 @@
 
 controller_ip: {{ global_overrides.external_lb_vip_address }}
 
+create_lxc_network: true
+main_lxc_interface: eth1
+
 install_mysql: False
 
 db_login_user: "{{ galera_root_user }}"
@@ -23,6 +26,8 @@ install_ui: True
 
 ui_enabled: "{{ horizon_lib_dir | dirname | replace('untagged', ostag) }}/site-packages/openstack_dashboard/local"
 
+install_haproxy: false
+
 import_containers:
 {% for item in groups['horizon_container'] %}
 {% if hostvars[item].component == 'horizon' %}
@@ -36,4 +41,11 @@ import_containers:
 {% endif %}
 {% endfor %}
 
-
+containers:
+  - name: nagios
+    role: nagios
+    release: trusty
+    ports:
+      - { name: "http", host: 8001, container:   80 }
+      - { name: "nrpe", host: 5601, container: 5666 }
+    mount: usr/local/nagios/opsmgr/nagios_config

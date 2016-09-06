@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-opsmgr_containers: []
+- include: haproxy_install.yml
+  when: install_haproxy is defined and install_haproxy == true
 
-
+- include: haproxy_configure.yml

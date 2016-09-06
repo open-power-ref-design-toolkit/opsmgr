@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-    # configure proxying
-    
-    - name: apply proxy configuration with iptables
-      include: iptables.yml
-      when: proxy_mode == 'iptables'
-    
-    - name: apply proxy configuration with iptables
-      include: haproxy.yml
-      when: proxy_mode == 'haproxy'
-    
-
+- name: create haproxy config file for container
+  template:
+     src: haproxy.j2
+     dest: "/etc/haproxy/conf.d/{{ item.0.role }}-{{ item.1.name }}"
+     owner: root
+     group: root
+     mode: 0644
+  with_subelements:
+     - "{{ opsmgr_containers }}"
+     - ports
+  notify: Restart haproxy

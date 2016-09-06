@@ -85,7 +85,7 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
         else:
             key_string = None
             password = persistent_mgr.decrypt_data(device.password)
-        NagiosPlugin._write_creds_file(hostname, userid, password, key_string)
+        NagiosPlugin._write_creds_file(address, userid, password, key_string)
         NagiosPlugin._write_host_config_file(label, device_type, address, hostname)
         NagiosPlugin._reload_nagios()
 
@@ -139,7 +139,7 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
             client.close()
 
     @staticmethod
-    def _write_creds_file(hostname, userid, password, key_string):
+    def _write_creds_file(address, userid, password, key_string):
         #try:
             client = NagiosPlugin._connect()
             sftp = client.open_sftp()
@@ -149,7 +149,7 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
             except IOError:
                 #directory already exist
                 pass
-            target_file = "/tmp/" + hostname + ".crd"
+            target_file = "/tmp/" + address + ".crd"
             file_handle = sftp.open(target_file, 'w')
             if password is None:
                 password = ""

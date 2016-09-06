@@ -15,11 +15,13 @@
 
 apt_packages:
   - build-essential
+  - python-pip
   - python-dev
   - libssl-dev
   - libffi-dev
   - mysql-client
   - python-mysqldb
+  - rsync
 
 pip_packages:
   - pbr

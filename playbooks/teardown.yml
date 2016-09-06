@@ -16,9 +16,9 @@
 - hosts: opsmgr_hosts
   become: true
   vars_files:
-    - [ ../ext/overrides.yml, defaults/main.yml ]
+    - [ ../ext/overrides.yml, defaults/overrides.yml ]
     - [ ../ext/shared.yml, defaults/shared.yml ]
-    - vars/main.yml
+    - defaults/main.yml
 
   tasks:
 
@@ -31,19 +31,19 @@
 
     - name: destroy containers
       lxc_container:
-          name: "{{ ansible_hostname }}-{{ item.name }}"
+          name: "{{ inventory_hostname }}-{{ item.name }}"
           state: absent
       with_items: "{{ containers }}"
 
     - name: shows container information on the screen
-      debug: msg="removed lxc container {{ ansible_hostname }}-{{ item.name }}"
+      debug: msg="removed lxc container {{ inventory_hostname }}-{{ item.name }}"
       with_items: "{{ containers }}"
 
 - hosts: localhost
   become: false
   gather_facts: no
   vars_files:
-    - vars/main.yml
+    - defaults/main.yml
   tasks:
     - name: clean shared file
       file:

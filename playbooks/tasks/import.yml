@@ -37,6 +37,15 @@
       with_items: "{{ opsmgr_containers }}"
       when: opsmgr_containers is defined
 
+    - name: create /etc/hosts entries for opsmgr-created containers
+      lineinfile:
+          dest: /etc/hosts
+          state: present
+          line: "{{ item.address }} {{ item.hostname }}"
+      become: true
+      with_items: "{{ opsmgr_containers }}"
+      when: opsmgr_containers is defined
+
     - name: register externally-created containers into dynamic inventory
       add_host:
           name:                         "{{ item.hostname }}"
