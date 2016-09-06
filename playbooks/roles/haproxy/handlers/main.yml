@@ -13,25 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: localhost
-  gather_facts: no
-  connection: local
-  become: false
-  vars_files:
-    - [ ../ext/overrides.yml, defaults/main.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - vars/main.yml
-  pre_tasks:
-    - include: tasks/import.yml
+- name: Restart haproxy
+  service:
+    name: haproxy
+    state: restarted
+    pattern: haproxy
+    enabled: yes
 
-- hosts: opsmgr_hosts
-  gather_facts: yes
-  become: true
-  vars_files:
-    - [ ../ext/overrides.yml, defaults/main.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - vars/main.yml
-  roles:
-    - proxy
-
-
+- name: Restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+    pattern: rsyslog
+    enabled: yes

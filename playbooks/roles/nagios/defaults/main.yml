@@ -38,13 +38,18 @@ apt_packages:
   - lxc-dev
   - python-dev
   - python-pip
+  - python3-pip
   - sendmail
   - snmp
   - unzip
   - wget
 
+#Using specific paramiko version until bug is fixed:
+#https://github.com/paramiko/paramiko/issues/750
 pip_packages:
   - lxc-python2
-  - paramiko
+  - paramiko==1.17.1
   - pyCrypto
 
+pip3_packages:
+  - paramiko==1.17.1

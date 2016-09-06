@@ -42,7 +42,7 @@
 
     - name: create containers
       lxc_container:
-          name: "{{ ansible_hostname }}-{{ item.name }}"
+          name: "{{ inventory_hostname }}-{{ item.name }}"
           template: ubuntu
           state: stopped
           template_options: >
@@ -58,7 +58,7 @@
     - name: add static interface if static addressing
       template:
           src: interfaces.j2
-          dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/network/interfaces"
+          dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/network/interfaces"
           mode: 0644
       with_items: "{{ containers }}"
       when: item.address is defined
@@ -71,7 +71,7 @@
     
     - name: create .ssh directory
       file:
-          path: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh"
+          path: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh"
           owner: "{{ ansible_ssh_user }}"
           group: "{{ ansible_ssh_user }}"
           mode: 0700
@@ -81,7 +81,7 @@
     - name: copy ssh key
       copy:
           src: "~/.ssh/id_rsa.pub"
-          dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh/authorized_keys"
+          dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh/authorized_keys"
           owner: "{{ ansible_ssh_user }}"
           group: "{{ ansible_ssh_user }}"
           mode: 0600
@@ -89,7 +89,7 @@
     
     - name: ensure sudoers.d directory exists
       file:
-        path: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d"
+        path: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d"
         owner: root
         group: root
         mode: 0755
@@ -98,7 +98,7 @@
     
     - name: ensure sudoers has include
       lineinfile:
-        dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers"
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers"
         line: "#includedir /etc/sudoers.d"
         state: present
         validate: "/usr/sbin/visudo -cf %s"
@@ -107,7 +107,7 @@
     - name: create sudoers include file
       template:
         src: sudoers.d.j2
-        dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d/{{ sudoers_filename }}"
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d/{{ sudoers_filename }}"
         owner: root
         group: root
         mode: 0440
@@ -117,7 +117,7 @@
     - name: copy script to check on network
       copy:
         src: "{{ opsmgr_dir }}/scripts/waitip.sh"
-        dest: "/var/lib/lxc/{{ ansible_hostname }}-{{ item.name }}/rootfs/tmp/waitip.sh"
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/tmp/waitip.sh"
         owner: root
         group: root
         mode: 0755
@@ -125,7 +125,7 @@
     
     - name: start containers, fix permissions, install python
       lxc_container:
-        name: "{{ ansible_hostname }}-{{ item.name }}"
+        name: "{{ inventory_hostname }}-{{ item.name }}"
         state: started
         container_command: |
             chown -R {{ ansible_ssh_user }}:{{ ansible_ssh_user }} /{{ lxc_home }}
@@ -149,6 +149,7 @@
           connect_timeout: 30
           timeout: 300
           host: "{{ lxc_info | lxcaddress(item.name) }}"
+          search_regex: OpenSSH
       with_items: "{{ containers }}"
 
     # add containers to dynamic inventory

@@ -22,6 +22,10 @@
     - name: installs prereq packages with pip
       pip: name={{ item }}
       with_items: "{{ pip_packages }}"
+
+    - name: For nagios plugins that use python3 , install pip3 packages
+      pip: name={{ item }} executable=pip3
+      with_items: "{{ pip3_packages }}"
     
     # finds out where temporary directories are located
     

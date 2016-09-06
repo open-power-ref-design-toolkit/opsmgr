@@ -13,30 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# opsmgr version
-opsmgr_version: 0.9.9
+# default vars
 
-# opsmgr directory
-opsmgr_dir: "{{ playbook_dir }}/.."
+controller_ip: 127.0.0.1
 
-# tweak use of pip
-pipexec: pip
-pipargs: ''
+# database installation
+install_mysql: True
+db_login_user: "{{ ansible_ssh_user }}"
+db_login_password: passw0rd
+db_login_host: "{{ hostvars[inventory_hostname].hostaddr }}"
+db_user: opsmgr
+db_password: passw0rd
+db_host: "{{ hostvars[inventory_hostname].hostaddr }}"
 
-# name of sudoers file
-sudoers_filename: opsmgr_sudoers
+# user interface installation
+install_ui: False
+ui_enabled: /etc/opsmgr/ui
 
-# internal database
-db_name: opsmgr
-mysql_root_user: root
-mysql_root_password: passw0rd
+# if haproxy is not already installed, set to true to install it
+install_haproxy: true
 
-# proxy mode - valid values: iptables or haproxy
-# obs: it doesn't actually install packages, just configure
-proxy_mode: haproxy
-
-# mtu to use for new interfaces
-lxc_container_default_mtu: 1500
+# containers that are already created
+import_containers: []
 
 # defines containers used to integrate management applications
 # name: container name (unique)
@@ -54,18 +52,18 @@ lxc_container_default_mtu: 1500
 # nameserver: ipv4 nameserver (optional, used if static address)
 #
 containers:
-  #- name: core
-  #  role: core
-  #  release: trusty
-  #  ports:
-  #    - { name: "http", host: 8000, container:   80 }
-  #  mount: etc/opsmgr/shared
-  #- name: mysql
-  #  role: mysql
-  #  release: trusty
-  #  ports:
-  #    - { name: "mysql", host: 3306, container: 3306 }
-  #  mount: etc/opsmgr/shared
+  - name: core
+    role: core
+    release: trusty
+    ports:
+      - { name: "http", host: 8000, container:   80 }
+    mount: etc/opsmgr/shared
+  - name: mysql
+    role: mysql
+    release: trusty
+    ports:
+      - { name: "mysql", host: 3306, container: 3306 }
+    mount: etc/opsmgr/shared
   - name: nagios
     role: nagios
     release: trusty
@@ -74,18 +72,5 @@ containers:
       - { name: "nrpe", host: 5601, container: 5666 }
     mount: usr/local/nagios/opsmgr/nagios_config
 
-create_lxc_network: true
-main_lxc_interface: eth1
-address_pool: [ 172.29.236.41, 172.29.236.42, 172.29.236.43, 172.29.236.44, 172.29.236.45, 172.29.236.46, 172.29.236.47, 172.29.236.48, 172.29.236.49 ]
-
-# lxc container networks
-# defines additional networks to be created 
-container_networks:
-  - name: mgmt
-    bridge: "br-mgmt"
-    interface: "eth1"
-    netmask: "255.255.252.0"
-    type: "veth"
-
-
-
+create_lxc_network: false
+main_lxc_interface: eth0

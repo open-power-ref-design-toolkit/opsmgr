@@ -14,9 +14,7 @@
 # limitations under the License.
 
 - include: local.yml
-- include: hosts.yml
-- include: local.yml
-- include: proxy.yml
+- include: haproxy.yml
 - include: mysql.yml
 - include: opsmgr.yml
 - include: nagios.yml

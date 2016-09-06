@@ -26,6 +26,8 @@
         dest: "/etc/mysql/my.cnf"
         regexp: "^bind-address"
         line: "#bind-address = 127.0.0.1"
+      notify:
+        - restart service
 
     - name: update mysql root user
       mysql_user:
@@ -48,6 +50,9 @@
         owner: root
         group: root
         mode: 0600
+      notify:
+        - restart service
+
 
     - name: create remote login user
       mysql_user:
@@ -62,6 +67,16 @@
         - 127.0.0.1
         - ::1
         - localhost
+
+    - name: create haproxy monitoring user
+      mysql_user:
+        host: "{{ item }}"
+        name: "monitoring"
+        state: "present"
+        password: ""
+      with_items:
+        - "10.0.3.1"
+
 
     - name: Remove the test database
       mysql_db: name=test state=absent
