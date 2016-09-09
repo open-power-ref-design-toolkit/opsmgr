@@ -10,6 +10,8 @@
     - vars/main.yml
   pre_tasks:
     - include: tasks/import.yml
+  roles:
+    - nagios_prereq
 
 - hosts: opsmgr_nagios
   become: true

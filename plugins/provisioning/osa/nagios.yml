@@ -1,5 +1,10 @@
 ---
 
+- hosts: localhost
+  become: false
+  roles:
+    - nagios_prereq
+
 - hosts: nagios_servers
   become: true
   roles:
