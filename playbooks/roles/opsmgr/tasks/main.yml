@@ -84,19 +84,6 @@
         src: opsmgr.conf.j2
         dest: /etc/opsmgr/opsmgr.conf
         force: yes
-
-    - name: update opsmgr.conf with container access info
-      blockinfile:
-        dest: /etc/opsmgr/opsmgr.conf
-        block: |
-            [NAGIOS]
-            server       = "{{ item.0.address }}"
-            userid       = "{{ ansible_ssh_user }}"
-            sshkey       = "/etc/opsmgr/opsmgr.key"
-            web_protocol = "http://"
-            web_proxy    = "{{ item.0.hostaddr }}"
-            web_port     = "{{ item.1.host }}"
-            web_path     = "/nagios"
       when: >
         item.0.role == 'nagios' and
         item.0.host == hostvars[inventory_hostname].host and
