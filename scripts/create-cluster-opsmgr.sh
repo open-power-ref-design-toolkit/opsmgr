@@ -48,8 +48,19 @@ popd >/dev/null 2>&1
 echo "Running elk playbooks"
 pushd predeploy/elk >/dev/null 2>&1
 run_ansible site.yml
+rc=$?
+if [ $rc != 0 ]; then
+    echo "Failed running predeploy/elk/site.yml rc=$rc"
+    exit 2
+fi
 popd >/dev/null 2>&1
 
 ### calls main OpsMgr installation and Nagios integration playbooks
 scripts/ops.sh
+rc=$?
+if [ $rc != 0 ]; then
+    echo "Failed running scripts/ops.sh rc=$rc"
+    exit 3
+fi
+
 
