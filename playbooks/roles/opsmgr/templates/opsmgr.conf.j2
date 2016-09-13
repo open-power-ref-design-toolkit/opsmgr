@@ -9,4 +9,12 @@ web_protocol = https://
 web_proxy = {{ controller_ip }}
 web_port = 8443
 
+[NAGIOS]
+server       = "{{ item.0.address }}"
+userid       = "{{ ansible_ssh_user }}"
+sshkey       = "/etc/opsmgr/opsmgr.key"
+web_protocol = "http://"
+web_proxy    = "{{ item.0.hostaddr }}"
+web_port     = "{{ item.1.host }}"
+web_path     = "/nagios"
 

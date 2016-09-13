@@ -1,5 +1,10 @@
 ---
 
+- hosts: localhost
+  become: false
+  roles:
+    - nagios_prereq
+
 - hosts: nagios_servers
   become: true
   roles:
@@ -14,4 +19,5 @@
   become: true
   roles:
     - { role: nagios_target, is_monitored: true, has_agent: false }
+
 

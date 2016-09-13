@@ -146,15 +146,6 @@
 
     # additional nagios configuration
     
-    - name: add command configuration for check_nrpe
-      blockinfile:
-          dest: /usr/local/nagios/etc/objects/commands.cfg
-          block: |
-            define command {
-                   command_name check_nrpe
-                   command_line /usr/lib/nagios/plugins/check_nrpe -H $HOSTADDRESS$ -t 30 -c $ARG1$ $ARG2$
-            }
-
     - name: ensures plugins directory exists
       file:
           path: /usr/local/nagios/libexec

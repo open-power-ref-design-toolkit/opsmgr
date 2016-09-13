@@ -1,3 +1,4 @@
+---
 # Copyright 2016, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def updatelxc(lxcs, host, lxc_info):
-    print lxc_info
-    for i, res in enumerate(lxc_info['results']):
-        for j, lxc in enumerate(lxcs):
-            if ('address' not in lxc) and (res['item']['name'] == lxc['name']):
-                lxc.update({'address': res['lxc_container']['ips'][0], 'host': host})
-                break
-    return lxcs
-
-class FilterModule(object):
-    def filters(self):
-        return {
-            'updatelxc': updatelxc,
-        }
+plugin_git_url: https://github.com/flackem/check_multi.git
+plugin_git_tag: 0.26
+temp_dir: /tmp/check_multi
 
