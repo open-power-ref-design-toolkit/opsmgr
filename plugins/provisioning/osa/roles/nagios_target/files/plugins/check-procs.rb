@@ -90,6 +90,9 @@ class CheckProcs < Sensu::Plugin::Check::CLI
   def run
     procs = get_procs
 
+    # map - new option to filter out anything called by check_multi
+    procs.reject! {|p| p[:command].include?("check_multi") }
+
     procs.reject! {|p| p[:pid].to_i != config[:file_pid] } if config[:file_pid]
     procs.reject! {|p| p[:pid].to_i == $$ } unless config[:match_self]
     procs.reject! {|p| p[:pid].to_i == Process.ppid } unless config[:match_parent]

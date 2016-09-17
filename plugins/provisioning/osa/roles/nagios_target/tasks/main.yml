@@ -69,7 +69,7 @@
 
     - name: ensures nrpe.d directory exists
       file:
-          path: "{{ nrpe_dir }}/commands"
+          path: "{{ nrpe_dir }}/nrpe.d"
           state: directory
       when: has_agent == true
     
