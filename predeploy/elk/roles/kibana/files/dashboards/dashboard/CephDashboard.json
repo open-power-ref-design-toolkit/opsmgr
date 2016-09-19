@@ -1,0 +1,15 @@
+    {
+      "title": "Ceph Dashboard",
+      "hits": 0,
+      "description": "",
+      "panelsJSON": "[\n  {\n    \"col\": 4,\n    \"id\": \"CEPH-BYTES-READ\",\n    \"panelIndex\": 6,\n    \"row\": 1,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 7,\n    \"id\": \"CEPH-BYTES-WRITTEN\",\n    \"panelIndex\": 7,\n    \"row\": 1,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 10,\n    \"id\": \"CEPH-OPERATIONS-PER-SECOND\",\n    \"panelIndex\": 8,\n    \"row\": 1,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 1,\n    \"id\": \"CEPH-AVAILABLE-SPACE-PERCENT-OVER-TIME\",\n    \"panelIndex\": 9,\n    \"row\": 3,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 7,\n    \"id\": \"CEPH-USED-SPACE-IN-MB-OVER-TIME\",\n    \"panelIndex\": 10,\n    \"row\": 3,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 4,\n    \"id\": \"CEPH-AVAILABLE-SPACE-IN-MB-OVER-TIME\",\n    \"panelIndex\": 11,\n    \"row\": 3,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 10,\n    \"id\": \"CEPH-TOTAL-SPACE-IN-MB-OVER-TIME\",\n    \"panelIndex\": 12,\n    \"row\": 3,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  },\n  {\n    \"col\": 1,\n    \"id\": \"CEPH-LOG-COUNT\",\n    \"panelIndex\": 13,\n    \"row\": 1,\n    \"size_x\": 3,\n    \"size_y\": 2,\n    \"type\": \"visualization\"\n  }\n]",
+      "optionsJSON": "{\n  \"darkTheme\": false\n}",
+      "uiStateJSON": "{\n  \"P-13\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  },\n  \"P-6\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  },\n  \"P-7\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  },\n  \"P-8\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  },\n  \"P-9\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  },\n  \"P-11\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  },\n  \"P-10\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  },\n  \"P-12\": {\n    \"vis\": {\n      \"legendOpen\": false\n    }\n  }\n}",
+      "version": 1,
+      "timeRestore": true,
+      "timeTo": "now",
+      "timeFrom": "now-4h",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\n  \"filter\": [\n    {\n      \"query\": {\n        \"query_string\": {\n          \"analyze_wildcard\": true,\n          \"query\": \"Ceph Dashboard\"\n        }\n      }\n    }\n  ]\n}"
+      }
+    }
