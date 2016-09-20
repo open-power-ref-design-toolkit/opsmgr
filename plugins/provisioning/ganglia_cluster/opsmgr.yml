@@ -1,0 +1,12 @@
+---
+
+- hosts: opsmgr_servers
+  become: true
+  roles:
+    - opsmgr_server
+
+- hosts: ganglia_servers
+  become: true
+  tasks:
+    - name: restart gmetad service
+      service: name="gmetad" state=restarted

@@ -1,0 +1,90 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+    # install pre-reqs
+
+    - name: installs prereq packages with aptitude
+      apt: name={{ item }} state=present update_cache=true
+      retries: 5
+      delay: 2
+      with_items: "{{ pre_apt_packages }}"
+
+    - name: installs prereq packages with pip
+      pip: name={{ item }}
+      retries: 5
+      delay: 2
+      with_items: "{{ pip_packages }}"
+
+    - name: install ganglia related packages with aptitude
+      apt: name={{ item }} state=present update_cache=true
+      retries: 5
+      delay: 2
+      with_items: "{{ ganglia_apt_packages }}"
+
+    - name: create ganglia group
+      group: name={{ ganglia_group }} state=present
+
+    - name: create ganglia user and add him to the ganglia group
+      user: name={{ ganglia_user }} groups={{ ganglia_group }}
+
+    - name: add the apache user www-data to the ganglia group
+      user: name=www-data groups={{ ganglia_group }} append=yes
+
+    - name: copy ganglia web front end configuration file
+      sudo: True
+      #copy:
+      #    src: "/etc/ganglia-webfrontend/apache.conf"
+      #    dest: "/etc/apache2/sites-enabled/ganglia.conf"
+      #    mode: 0644
+      command: cp /etc/ganglia-webfrontend/apache.conf /etc/apache2/sites-enabled/ganglia.conf
+
+    - name: modify gmetad configuration
+      sudo: True
+      replace: dest=/etc/ganglia/gmetad.conf regexp='data_source "my cluster" localhost' replace='data_source "{{cluster_name}}" 60 localhost' backup=yes
+
+    - name: modify cluster name in gmond configuration
+      sudo: True
+      replace: "dest=/etc/ganglia/gmond.conf regexp='name = \"unspecified\"' replace='name = \"{{cluster_name}}\"' backup=yes"
+
+    - name: modify mcast_join in gmond configuration
+      sudo: True
+      replace: dest=/etc/ganglia/gmond.conf regexp='^mcast_join = 239.2.11.71' replace='mcast_join = 239.2.11.71' backup=yes
+
+    - name: modify hostname in gmond configuration
+      sudo: True
+      lineinfile: dest=/etc/ganglia/gmond.conf state=present  insertafter='udp_send_channel' line='  host = localhost'
+
+    - name: modify recevice channel's bind in gmond configuration
+      sudo: True
+      replace: dest=/etc/ganglia/gmond.conf regexp='^bind = 239.2.11.71' replace='#bind = 239.2.11.71' backup=yes
+
+    - name: restart apache
+      sudo: True
+      service: name=apache2 state=restarted enabled=yes
+
+    - name: restart ganglia monitor
+      sudo: True
+      service: name=ganglia-monitor state=restarted enabled=yes
+
+    - name: restart gmetad
+      sudo: True
+      service: name=gmetad state=restarted enabled=yes
+
+
+
+
+
+
+

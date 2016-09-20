@@ -24,7 +24,7 @@
 
     - name: decide if to use pip in isolated mode
       set_fact: pipargs='--isolated'
-      when: imported is defined and imported == true 
+      when: imported is defined and imported == true
 
     - name: installs prereq packages with pip
       pip: name={{ item }} state=present executable={{ pipexec }} extra_args="{{ pipargs }}"
@@ -56,7 +56,7 @@
       with_items: "{{ opsmgr_modules }}"
 
     # create /etc/opsmgr and /var/log/opsmgr
-    
+
     - name: create /etc/opsmgr
       file:
         path: "/etc/opsmgr"
@@ -81,12 +81,24 @@
 
     - name: generate random passphrase to encrypt passwords in the db
       shell: python -c "import base64;import os;print(str(base64.b64encode(os.urandom(32))))"
-      register: random_passphrase  
+      register: random_passphrase
 
-    - name: create opsmgr.conf
+    - name: create /etc/opsmgr/tmp
+      file:
+        path: "/etc/opsmgr/tmp"
+        state: directory
+        mode: 0700
+
+    - name: create opsmgr_base.conf
       template:
-        src: opsmgr.conf.j2
-        dest: /etc/opsmgr/opsmgr.conf
+        src: opsmgr_base.conf.j2
+        dest: /etc/opsmgr/tmp/opsmgr_base.conf
+        force: yes
+
+    - name: create opsmgr_nagios.conf
+      template:
+        src: opsmgr_nagios.conf.j2
+        dest: /etc/opsmgr/tmp/opsmgr_nagios.conf
         force: yes
       when: >
         item.0.role == 'nagios' and
@@ -95,6 +107,29 @@
       with_subelements:
         - "{{ opsmgr_containers }}"
         - ports
+
+    - name: create opsmgr_ganglia.conf
+      template:
+        src: opsmgr_ganglia.conf.j2
+        dest: /etc/opsmgr/tmp/opsmgr_ganglia.conf
+        force: yes
+      when: >
+        item.0.role == 'ganglia' and
+        item.0.host == hostvars[inventory_hostname].host and
+        item.1.name == 'http'
+      with_subelements:
+        - "{{ opsmgr_containers }}"
+        - ports
+
+    - name: assemble containers info into opsmgr.conf
+      assemble:
+        src: /etc/opsmgr/tmp/
+        dest: /etc/opsmgr/opsmgr.conf
+
+    - name: remove /etc/opsmgr/tmp
+      file:
+        path: "/etc/opsmgr/tmp/"
+        state: absent
 
     - name: create /var/log/opsmgr
       file:
@@ -137,7 +172,7 @@
       ignore_errors: yes # tables might already exist
 
     # create the default rack
-    
+
     - name: create the default rack
       command: opsmgr add_rack -l default
       ignore_errors: yes # rack might already exist
@@ -150,7 +185,7 @@
         state: absent
 
     # drop enabled files for horizon
-    
+
     - name: Copy the ui files into the enabled directory
       copy:
         src: "{{ opsmgr_dir }}/horizon/enabled"

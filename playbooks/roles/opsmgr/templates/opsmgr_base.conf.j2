@@ -1,0 +1,10 @@
+[DEFAULT]
+passphrase = {{ random_passphrase.stdout }}
+
+[DATABASE]
+connection = mysql+pymysql://{{ db_user }}:{{ db_password }}@{{ db_host }}/{{ db_name }}_{{ inventory_hostname }}
+
+[ELK]
+web_protocol = https://
+web_proxy = {{ controller_ip }}
+web_port = 8443

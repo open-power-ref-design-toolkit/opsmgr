@@ -71,6 +71,12 @@ containers:
       - { name: "http", host: 8001, container:   80 }
       - { name: "nrpe", host: 5601, container: 5666 }
     mount: usr/local/nagios/opsmgr/nagios_config
+  - name: ganglia
+    role: ganglia
+    release: trusty
+    ports:
+      - { name: "http", host: 9001, container:   80 }
+    mount: etc/ganglia
 
 create_lxc_network: false
 main_lxc_interface: eth0

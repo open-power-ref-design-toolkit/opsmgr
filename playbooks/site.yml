@@ -18,6 +18,7 @@
 - include: mysql.yml
 - include: opsmgr.yml
 - include: nagios.yml
+- include: ganglia.yml
 - include: targets.yml
 
 

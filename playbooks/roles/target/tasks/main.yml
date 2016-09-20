@@ -14,25 +14,25 @@
 # limitations under the License.
 
     # determine spefic playbook to be applied to this target
-    
+
     - name: fetch remote spec file
       fetch: src=/etc/opsmgr/.spec dest=ext/spec-{{ inventory_hostname }}.yml flat=yes
-    
+
     - name: load variables from spec file
       include_vars: "ext/spec-{{ inventory_hostname }}.yml"
-    
+
     - debug: var=opsmgr_spec
-    
+
     - name: check if provisioning plays exist for specs
       become: false
       local_action: stat path={{ opsmgr_dir }}/plugins/provisioning/{{ item }}/site.yml
       with_items: "{{ opsmgr_spec }}"
       register: spec_plays
-    
+
     - debug: var=spec_plays
-    
+
     # prepare data to pass along to target playbook
-    
+
     - name: copy spec vars file
       become: false
       copy:
@@ -81,18 +81,18 @@
           mode: 0755
       with_items: spec_plays.results
       delegate_to: localhost
-      
+
     # call target plugin provisioning playbook
 
     - name: spawns spec play calls (go grab a coffee!)
-      become: true
+      become: false
       local_action: shell "{{ playbook_dir }}/ext/play-{{ item.item }}-{{ inventory_hostname }}.sh"
       args:
           chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item.item }}/"
       with_items: spec_plays.results
       when: item.stat.exists == true
       register: play_output
-    
+
     - name: show output of role-specific integration playbooks
       debug: var=play_output.results
 

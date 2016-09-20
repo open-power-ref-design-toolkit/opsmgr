@@ -100,6 +100,16 @@
       with_items: groups.opsmgr_hosts
       when: groups.opsmgr_hosts is defined
 
+    - name: copy ssh key
+      copy:
+          src: "~/.ssh/id_rsa.pub"
+          dest: "~/.ssh/authorized_keys"
+          owner: "{{ ansible_ssh_user }}"
+          group: "{{ ansible_ssh_user }}"
+          mode: 0600
+      with_items: groups.opsmgr_targets
+      when: groups.opsmgr_targets is defined
+
     - name: create ssh config entries for targets from inventory
       template:
           src: ssh.host.j2

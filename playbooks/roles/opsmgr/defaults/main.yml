@@ -45,6 +45,7 @@ opsmgr_modules:
   - opsmgr/plugins/devices/rhel
   - opsmgr/plugins/operations/elk
   - opsmgr/plugins/operations/nagios
+  - opsmgr/plugins/operations/ganglia
   - opsmgr/plugins/discovery/cobbler
   - opsmgr/plugins/hooks/ulysses
 
