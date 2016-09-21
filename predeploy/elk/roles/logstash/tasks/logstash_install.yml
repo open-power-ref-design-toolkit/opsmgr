@@ -27,3 +27,8 @@
   tags:
     - logstash-apt-packages
     - logstash-install
+
+- name: Enable Logstash Service
+  service:
+    name: logstash
+    enabled: yes
