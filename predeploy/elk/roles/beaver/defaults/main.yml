@@ -31,7 +31,7 @@ beaver_daemon_group: "beaver"
 beaver_daemon_group_extras: "adm,syslog"
 
 # the logstash IP address to send events to
-logstash_listen_address: "{{ hostvars[groups['logstash'][0]]['container_address'] }}"
+logstash_listen_address: "{{ internal_lb_vip_address }}"
 
 # the logstash TCP port to send events to
 logstash_tcp_port: 5140

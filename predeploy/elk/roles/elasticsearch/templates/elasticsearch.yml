@@ -71,7 +71,11 @@ http.port: {{ elasticsearch_http_port }}
 # Pass an initial list of hosts to perform discovery when new node is started:
 # The default list of hosts is ["127.0.0.1", "[::1]"]
 #
-# discovery.zen.ping.unicast.hosts: ["host1", "host2"]
+discovery.zen.ping.unicast.hosts: [
+{% for host_name in groups['elasticsearch'] %}
+"{{ hostvars[host_name]['ansible_ssh_host'] }}",
+{% endfor %}
+]
 #
 # Prevent the "split brain" by configuring the majority of nodes (total number of nodes / 2 + 1):
 #
