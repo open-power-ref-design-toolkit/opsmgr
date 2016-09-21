@@ -114,8 +114,6 @@ while getopts "i:c:s:" opt; do
 done
 shift $((OPTIND-1))                    # Now reference remaining arguments with $@, $1, $2, ...
 
-TARGET_OSA_DEPLOY="${1:-/etc}"         # Caller defines target osa deploy directory if arg1 is specified
-
 mkListsUnique $infraNodes $storageNodes $computeNodes
 allNodes=$uniqueList
 

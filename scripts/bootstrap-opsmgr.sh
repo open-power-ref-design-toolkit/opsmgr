@@ -47,11 +47,11 @@ if [ -d diffs ]; then
     popd >/dev/null 2>&1
 fi
 
-echo "Copying opsmgr user variables and secrets to ${TARGET_OSA_DEPLOY}/openstack_deploy"
-cp -R predeploy/elk/etc/openstack_deploy ${TARGET_OSA_DEPLOY}
+echo "Copying opsmgr user variables and secrets to /etc/openstack_deploy"
+cp -R predeploy/elk/etc/openstack_deploy /etc
 rc=$?
 if [ $rc != 0 ]; then
-    echo "Failed cp secrets and variables to ${TARGET_OSA_DEPLOY}"
+    echo "Failed cp secrets and variables to /etc/openstack_deploy"
     exit 2
 fi
 
