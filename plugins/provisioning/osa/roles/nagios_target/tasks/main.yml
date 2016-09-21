@@ -36,21 +36,6 @@
       service: name=sysstat state=restarted
       when: is_monitored == true
 
-    # install monitoring agent
-
-    - name: installs nrpe packages
-      apt: name={{item}} state=present update_cache=true force=yes
-      with_items: "{{ nrpe_packages }}"
-      when: has_agent == true
-
-    - name: create nrpe.cfg from template
-      template: >
-        src=nrpe.cfg.j2
-        dest={{ nrpe_dir }}/nrpe.cfg
-        owner=root group=root mode=0644
-      when: has_agent == true
-      notify: restart nrpe service
-
     # install monitoring configuration
 
     - name: ensures plugins directory exists
@@ -94,6 +79,8 @@
           mode: 0644
       when: has_agent == true
       notify: restart nrpe service
+
+    # configures sudoers since our checks use sudo
 
     - name: ensure sudoers.d directory exists
       file:
