@@ -8,7 +8,8 @@
 - hosts: nagios_servers
   become: true
   roles:
-    - nagios_server
+    - { role: nagios_server }
+    - { role: nagios_agent, install_server: false, install_plugin: true }
 
 - hosts: hosts
   become: true
