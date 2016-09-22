@@ -17,6 +17,8 @@
 
     - name: installs prereq packages with aptitude
       apt: name={{ item }} state=present update_cache=true
+      retries: 5
+      delay: 2
       with_items: "{{ apt_packages }}"
 
     # configure service
