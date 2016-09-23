@@ -8,6 +8,8 @@
 
     - name: installs prereq packages with apt
       apt: name={{ item }} state=present update_cache=true force=yes
+      retries: 5
+      delay: 2
       with_items: "{{ apt_packages }}"
       when: is_monitored == true
 
@@ -17,11 +19,15 @@
 
     - name: installs prereq packages with pip
       pip: name={{ item }} state=present extra_args='--allow-unverified'
+      retries: 5
+      delay: 2
       with_items: "{{ pip_packages }}"
       when: is_monitored == true
 
     - name: installs prereq packages with gem
       command: gem install --install-dir /var/lib/gems/1.9.1 --both --include-dependencies --rdoc --ri --force "{{ item }}"
+      retries: 5
+      delay: 2
       with_items: "{{ gem_packages }}"
       when: is_monitored == true
 

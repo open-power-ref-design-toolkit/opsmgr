@@ -17,6 +17,8 @@
 
     - name: installs prereq packages with aptitude
       apt: name={{ item }} state=present update_cache=true
+      retries: 5
+      delay: 2
       with_items: "{{ apt_packages }}"
       when: imported is undefined or imported != true
 
@@ -26,6 +28,8 @@
 
     - name: installs prereq packages with pip
       pip: name={{ item }} state=present executable={{ pipexec }} extra_args="{{ pipargs }}"
+      retries: 5
+      delay: 2
       with_items: "{{ pip_packages }}"
 
     # copy the code to server
@@ -153,5 +157,3 @@
         dest: "{{ ui_enabled }}"
       notify: restart apache
       when: install_ui is defined and install_ui == true
-
-

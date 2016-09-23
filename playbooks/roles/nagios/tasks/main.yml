@@ -17,14 +17,20 @@
     
     - name: installs prereq packages with aptitude
       apt: name={{ item }} state=present update_cache=true
+      retries: 5
+      delay: 2
       with_items: "{{ apt_packages }}"
     
     - name: installs prereq packages with pip
       pip: name={{ item }}
+      retries: 5
+      delay: 2
       with_items: "{{ pip_packages }}"
 
     - name: For nagios plugins that use python3 , install pip3 packages
       pip: name={{ item }} executable=pip3
+      retries: 5
+      delay: 2
       with_items: "{{ pip3_packages }}"
     
     # finds out where temporary directories are located
@@ -49,6 +55,8 @@
       get_url:
           url: "{{ nagios_download_site }}/{{ nagios_download_file }}"
           dest: "{{ temp_dir }}"
+      retries: 5
+      delay: 2
     
     - name: create nagios group
       group: name={{ nagios_group }} state=present
@@ -116,6 +124,8 @@
       get_url:
           url: "{{ plugin_download_site }}/{{ plugin_download_file }}"
           dest: "{{ temp_dir }}"
+      retries: 5
+      delay: 2
     
     - name: extract nagios plugins
       unarchive: src={{ temp_dir }}/{{ plugin_download_file }} dest={{ temp_dir }} creates={{ plugin_dir }} copy=no
@@ -226,5 +236,3 @@
     
     - name: cleanup nagios plugin directory
       command: rm -rf {{ plugin_dir }}
-
-
