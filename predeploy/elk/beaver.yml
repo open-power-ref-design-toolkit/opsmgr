@@ -94,7 +94,7 @@
         log_file: "/var/log/auth.log"
         tags: "auth,infrastructure"
       - name: "ceph-mon"
-        log_file: "/var/log/ceph/ceph-mon.{{ inventory_hostname }}.log"
+        log_file: "/var/log/ceph/ceph-mon.{{ ansible_hostname }}.log"
         multiline_regex_before: '^[a-z_]*\s'
         tags: "ceph-mon,ceph,infrastructure"
       - name: "ceph-osd"
