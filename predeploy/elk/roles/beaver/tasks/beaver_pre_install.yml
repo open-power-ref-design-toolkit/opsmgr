@@ -68,3 +68,17 @@
   tags:
     - beaver-pre-install
     - beaver-create-directories
+
+- name: Find the existing groups on the system
+  shell: 'getent group | cut -d: -f1'
+  register: etc_groups
+
+- name: Add the beaver userid to any groups required for monitoring
+  user:
+    name: "{{ beaver_daemon_user }}"
+    groups: "{{ item }}"
+    append: yes
+  when: '"{{ item }}" in etc_groups.stdout_lines'
+  with_items:
+      - ceph
+
