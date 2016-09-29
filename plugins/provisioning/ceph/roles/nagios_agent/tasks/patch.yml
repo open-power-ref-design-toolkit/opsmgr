@@ -1,0 +1,92 @@
+---
+
+    # install monitoring agent
+
+    - name: finds where nrpe will be extracted
+      set_fact: nrpe_tmp="{{ temp_dir }}/{{ nrpe_download_file|replace('.tar.gz','') }}"
+    
+    - name: cleanup nrpe directory
+      file: dest={{ nrpe_tmp }} state=absent
+
+    - name: download nrpe source
+      get_url:
+          url: "{{ nrpe_download_site }}/{{ nrpe_download_file }}"
+          dest: "{{ temp_dir }}"
+          timeout: 90
+      retries: 3
+      delay: 10
+    
+    - name: extract nrpe source
+      unarchive: src={{ temp_dir }}/{{ nrpe_download_file }} dest={{ temp_dir }} creates={{ nrpe_tmp }} copy=no
+    
+    - name: check if plugin extracted directory exists
+      stat: path={{ nrpe_tmp }}
+      register: nrpe_tmp_exists
+    
+    - name: fails if nrpe extracted directory does not exist
+      fail: msg="Extracted nrpe directory {{ nrpe_tmp }} does not exist"
+      when: nrpe_tmp_exists.stat.exists == false
+    
+    - name: cleanup nrpe download file
+      file: dest={{ temp_dir }}/{{ nrpe_download_file }} state=absent
+
+    - name: patch nrpe to use larger buffers
+      patch: >
+        src=nrpe.patch
+        basedir={{ nrpe_tmp }}
+        strip=1
+
+    - name: get a newer version of config.guess
+      get_url: >
+        url="http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
+        dest={{ nrpe_tmp }}/config.guess
+        force=yes
+      retries: 5
+      delay: 2
+
+    - name: get a newer version of config.sub
+      get_url: >
+        url="http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
+        dest={{ nrpe_tmp }}/config.sub
+        force=yes
+      retries: 5
+      delay: 2
+
+    - name: configure nagios plugins for x86_64 architecture
+      command: |
+          ./configure
+          --with-ssl=/usr/bin/openssl
+          --with-ssl-lib=/usr/lib/x86_64-linux-gnu
+          chdir={{ nrpe_tmp }}
+      when: ansible_architecture == 'x86_64'
+    
+    - name: configure nagios plugins for ppc64le architecture
+      command: |
+          ./configure
+          --with-ssl=/usr/bin/openssl
+          --with-ssl-lib=/usr/lib/powerpc64le-linux-gnu
+          chdir={{ nrpe_tmp }}
+      when: ansible_architecture == 'ppc64le'
+    
+    - name: make nrpe
+      command: make chdir={{ nrpe_tmp }}
+    
+    - name: ensures the nrpe service is stopped
+      service: name="{{ nrpe_service }}" state=stopped
+      when: install_server is defined and install_server == true
+
+    - name: replace nrpe executable
+      command: cp -f {{ nrpe_tmp }}/src/nrpe /usr/sbin/nrpe
+      when: install_server is defined and install_server == true
+
+    - name: replace check_nrpe executable
+      command: cp -f {{ nrpe_tmp }}/src/check_nrpe /usr/lib/nagios/plugins/check_nrpe
+      when: install_plugin is defined and install_plugin == true
+
+    - name: ensures the nrpe service is started
+      service: name="{{ nrpe_service }}" state=started
+      when: install_server is defined and install_server == true
+
+    - name: cleanup nrpe directory
+      file: dest={{ nrpe_tmp }} state=absent
+

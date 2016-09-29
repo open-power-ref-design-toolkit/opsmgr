@@ -72,6 +72,24 @@
           state: directory
       when: has_agent == true
     
+    - name: create ceph_osds.cmd file
+      template:
+        src: ceph_osds.cmd.j2
+        dest: "{{ nrpe_dir }}/commands/ceph_osds.cmd"
+        owner: root
+        group: root
+        mode: 0644
+      when: has_agent == true
+
+    - name: create ceph_monitors.cmd file
+      template:
+        src: ceph_monitors.cmd.j2
+        dest: "{{ nrpe_dir }}/commands/ceph_monitors.cmd"
+        owner: root
+        group: root
+        mode: 0644
+      when: has_agent == true
+
     - name: copy commands for roles
       copy:
           src: "commands/"

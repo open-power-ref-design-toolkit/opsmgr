@@ -1,0 +1,26 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - [ ../../../ext/overrides.yml, defaults/overrides.yml ]
+    - [ ../../../ext/shared.yml, defaults/shared.yml ]
+    - vars/main.yml
+  pre_tasks:
+    - include: tasks/import.yml
+
+- hosts: ceph_monitors:ceph_osds
+  become: true
+  roles:
+    - { role: nagios_target, is_monitored: true, has_agent: true }
+
+- hosts: ceph_monitors:ceph_osds
+  become: true
+  tasks:
+    - name: stop nrpe service
+      service: name="nagios-nrpe-server" state=stopped
+    - name: start nrpe service
+      service: name="nagios-nrpe-server" state=started
+

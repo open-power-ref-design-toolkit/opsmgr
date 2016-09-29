@@ -1,0 +1,6 @@
+#--- Monitoring commands for OpsMgr role: ceph_monitors
+
+command[check_ceph_health]       = sudo /usr/bin/python /etc/nagios/plugins/check_ceph_health.py
+command[check_ceph_mon]          = sudo /usr/bin/python /etc/nagios/plugins/check_ceph_mon.py -I {{ ansible_hostname }}
+command[check_ceph_df]           = sudo /usr/bin/python /etc/nagios/plugins/check_ceph_df.py -W 80 -C 95
+command[check_ceph_status]       = sudo /usr/bin/python /etc/nagios/plugins/check_ceph_status.py -m {{ ansible_default_ipv4.address }}
