@@ -28,15 +28,21 @@ kibana_apt_keys:
 
 elasticsearch_http_port: 9200
 elasticsearch_vip: "{{ internal_lb_vip_address }}"
-elasticsearch_public_url: '"https://"+window.location.hostname+":8443/elasticsearch/"'
+
+kibana_index_on_elasticsearch: "http://{{ hostvars[groups['elasticsearch'][0]]['container_address'] }}:{{ elasticsearch_http_port}}/.kibana"
 
 #This variable is only used during the install before haproxy is setup
 elasticsearch_ip: "{{ hostvars[groups['elasticsearch'][0]]['container_address'] }}"
+
+
+kibana_pip_packages:
+  - httplib2  # NOTE(sigmavirus24): Need this for the uri module
 
 kibana_apt_packages:
   - kibana
   - apache2
   - python-passlib
+  - python-pip
 
 kibana_apache_modules:
   - rewrite
