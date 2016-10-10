@@ -132,6 +132,35 @@
     - kibana-apache
     - kibana-post-install
 
+- name: Guessing current kibana version
+  shell: cat package.json | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["version"];'
+  args:
+    chdir: "/opt/kibana/"
+  register: kibana_version
+  tags:
+    - kibana-post-install
+
+- name: Import Kibana's LS index configuration in ES
+  uri:
+    method: "PUT"
+    url: "{{ kibana_index_on_elasticsearch }}{{ item.where }}"
+    # NOTE(sigmavirus24): There's a bug in Ansible < 2.1.x where without the
+    # leading ' ' this will be interpreted as a dictionary (EVEN WITH to_json)
+    # and so the only way to unbreak this is to use a leading ' '. ಠ_ಠ
+    body: " {{ item.what }}"
+    body_format: "json"
+    # NOTE(sigmavirus24): The first request we make may return a 409 status
+    # code. This is fine because it means we've already configured this once.
+    status_code: 200,201,409
+  with_items:
+    - where: "/index-pattern/logstash-*?op_type=create"
+      what: '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
+    - where: "/config/{{ kibana_version.stdout }}"
+      what: '{"defaultIndex" : "logstash-*"}'
+  tags:
+    - kibana-post-install
+
+
 - name: Create tmp directory for the dashboards
   file:
       path: "{{ kibana_temp_directory }}"
