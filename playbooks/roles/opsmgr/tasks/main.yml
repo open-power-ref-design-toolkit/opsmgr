@@ -125,6 +125,7 @@
       assemble:
         src: /etc/opsmgr/tmp/
         dest: /etc/opsmgr/opsmgr.conf
+        mode: 0644
 
     - name: remove /etc/opsmgr/tmp
       file:

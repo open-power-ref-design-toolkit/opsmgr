@@ -41,17 +41,22 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def get_application_url():
+        pluginApp = None
         if os.path.exists(GangliaPlugin.OPSMGR_CONF):
-            parser = configparser.ConfigParser()
-            parser.read(GangliaPlugin.OPSMGR_CONF, encoding='utf-8')
-            web_protcol = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_protocol").lstrip('"').rstrip('"')
-            web_proxy = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_proxy").lstrip('"').rstrip('"')
-            web_port = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_port").lstrip('"').rstrip('"')
-            web_path = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_path").lstrip('"').rstrip('"')
-            return plugins.PluginApplication("ganglia", "monitoring", web_protcol, web_proxy,
-                                             web_port, web_path)
-        else:
-            return None
+            try: 
+                parser = configparser.ConfigParser()
+                parser.read(GangliaPlugin.OPSMGR_CONF, encoding='utf-8')
+                web_protcol = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_protocol").strip('"')
+                web_proxy = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_proxy").strip('"')
+                web_port = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_port").strip('"')
+                web_path = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_path").strip('"')
+                pluginApp = plugins.PluginApplication("ganglia", "monitoring", web_protcol,
+                                                      web_proxy, web_port, web_path)
+            except configparser.Error:
+               # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
+               pass
+
+        return pluginApp
 
     @staticmethod
     def add_device_pre_save(device):
