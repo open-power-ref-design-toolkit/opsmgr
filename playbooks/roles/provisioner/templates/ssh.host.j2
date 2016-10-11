@@ -9,7 +9,7 @@ Host {{ item }}
   ForwardAgent yes
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-  IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
 
 {% if hostvars[item].ansible_ssh_host is defined and hostvars[item].ansible_ssh_host | ipv4 %}
 Host {{ hostvars[item].ansible_ssh_host }}
@@ -24,4 +24,6 @@ Host {{ hostvars[item].ansible_default_ipv4.address }}
   ForwardAgent yes
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-  IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
+
+

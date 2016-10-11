@@ -1,7 +1,0 @@
----
-
-opsmgr_dir: "{{ playbook_dir }}/../.."
-osa_conf: /etc/openstack_deploy
-osa_play: /etc/ansible/roles
-
-

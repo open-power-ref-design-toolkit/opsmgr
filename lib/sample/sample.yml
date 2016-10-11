@@ -1,0 +1,23 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  tasks:
+    - debug: var=groups['opsmgr_containers']
+    - debug: var=groups['target_hosts']
+    - debug: var=groups['target_containers']
+
+- hosts: opsmgr_containers
+  tasks:
+    - debug: msg="{{ inventory_hostname }}"
+
+- hosts: target_hosts
+  tasks:
+    - debug: msg="{{ inventory_hostname }}"
+
+- hosts: target_containers
+  tasks:
+    - debug: msg="{{ inventory_hostname }}"
+

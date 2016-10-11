@@ -15,7 +15,7 @@ Host {{ item.hostname }}
 {% if hostvars[item.hostname].ansible_ssh_private_key_file is defined %}
   IdentityFile {{ hostvars[item.hostame].ansible_ssh_private_key_file }}
 {% else %}
-  IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
 {% endif %}
 
 Host {{ item.address }}
@@ -30,7 +30,7 @@ Host {{ item.address }}
 {% if hostvars[item.hostname].ansible_ssh_private_key_file is defined %}
   IdentityFile {{ hostvars[item.hostame].ansible_ssh_private_key_file }}
 {% else %}
-  IdentityFile {{ opsmgr_dir }}/keys/current/opsmgr.key
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
 {% endif %}
 
 {% endif %}

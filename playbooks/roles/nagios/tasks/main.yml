@@ -27,7 +27,7 @@
       delay: 2
       with_items: "{{ pip_packages }}"
 
-    - name: For nagios plugins that use python3 , install pip3 packages
+    - name: for nagios plugins that use python3 , install pip3 packages
       pip: name={{ item }} executable=pip3
       retries: 5
       delay: 2
@@ -236,3 +236,5 @@
     
     - name: cleanup nagios plugin directory
       command: rm -rf {{ plugin_dir }}
+
+

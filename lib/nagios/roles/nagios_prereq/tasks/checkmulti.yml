@@ -1,0 +1,40 @@
+---
+
+    # clean temporary directories if they exist
+
+    - name: cleanup temp directory
+      command: rm -rf {{ temp_dir }}
+
+    # checkout from github repository
+
+    - name: get stable tagged release from github
+      git: repo={{ plugin_git_url }} dest={{ temp_dir }} version={{ plugin_git_tag }}
+      retries: 5
+      delay: 2
+
+    # configure and make plugin
+
+    - name: check if cloned directory exists
+      stat: path={{ temp_dir }}
+      register: dir_exists
+
+    - name: fails if cloned directory does not exist
+      fail: msg="Could not clone {{ plugin_git_url }}"
+      when: dir_exists.stat.exists == false
+
+    - name: configure
+      command: ./configure chdir={{ temp_dir }}
+
+    - name: make all
+      command: make all chdir={{ temp_dir }}
+
+    - name: copy plugin to right place for deployment
+      copy:
+          src:  "{{ temp_dir }}/plugins/check_multi"
+          dest: "{{ playbook_dir }}/files/plugins/check-multi.pl"
+          mode: 0755
+
+    - name: cleanup temp directory
+      command: rm -rf {{ temp_dir }}
+
+

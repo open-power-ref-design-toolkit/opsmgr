@@ -1,9 +1,0 @@
-[opsmgr_hosts]
-{% for host in osa_inventory['os-infra_hosts']['hosts'] %}
-{{ host }} ansible_ssh_host={{ osa_inventory['_meta']['hostvars']['' + host]['ansible_ssh_host'] }}
-{% endfor %}
-
-[opsmgr_targets]
-{{ inventory_hostname }} ansible_ssh_host={{ ansible_default_ipv4['address'] }} ansible_connection=local
-
-

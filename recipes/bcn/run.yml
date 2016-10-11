@@ -1,0 +1,55 @@
+---
+
+- include: "{{ opsmgr_lib }}/util/osa.yml"
+
+- hosts: localhost
+  gather_facts: yes
+  become: true
+
+  vars:
+
+    - recipe_name: "bcn"
+    - output_dir: "profile"
+    - temp_dir: "/tmp/.opsmgr-{{ recipe_name }}"
+    - genesis_dir: "/var/oprc"
+    - osa_conf: "/etc/openstack_deploy"
+    - osa_play: "/etc/ansible/roles"
+    - osa_home: "/opt/openstack-ansible"
+    - ansible_kernel: "4.2.0-42-generic"
+    - files_to_include:
+        - "{{ osa_conf }}/user_secrets.yml"
+        - "{{ osa_conf }}/openstack_user_config.yml"
+        - "{{ osa_play }}/openstack_hosts/defaults/main.yml"
+        - "{{ osa_play }}/os_horizon/defaults/main.yml"
+        - "{{ osa_play }}/galera_client/defaults/main.yml"
+        - "{{ osa_home }}/playbooks/inventory/group_vars/all.yml"
+
+  pre_tasks:
+
+    - local_action: command uname -r
+      register: uname
+
+    - set_fact: ansible_kernel="{{ uname.stdout | replace('\"', '') }}"
+
+  tasks:
+
+    - name: imports all necessary variables from OSA
+      include_vars: "{{ item }}"
+      with_items: "{{ files_to_include }}"
+
+    - name: imports genesis inventory
+      action: include_inventory {{ genesis_dir }}/inventory.yml
+
+    - debug: var=genesis
+
+    - name: ensures output directory exists
+      file: path={{ output_dir }} mode=0755 state=directory
+
+    - template:
+          src: "templates/inventory.j2"
+          dest: "{{ output_dir }}/inventory"
+
+    - template:
+          src: "templates/vars.yml.j2"
+          dest: "{{ output_dir }}/vars.yml"
+

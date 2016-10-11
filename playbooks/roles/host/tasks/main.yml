@@ -43,6 +43,7 @@
       when: ansible_ssh_user == 'root'
 
     - debug: var=lxc_user
+      when: opsmgr_debug is defined and opsmgr_debug == true
 
     - name: create containers
       lxc_container:
@@ -145,6 +146,7 @@
       register: lxc_info
 
     - debug: var=lxc_info
+      when: opsmgr_debug is defined and opsmgr_debug == true
     
     - name: wait for containers to be up
       wait_for:
@@ -156,17 +158,28 @@
           search_regex: OpenSSH
       with_items: "{{ containers }}"
 
-    # add containers to dynamic inventory
-    
+    # dump container information
+
     - name: ensure the temporary directory exists
-      become: false
-      local_action: command mkdir -p {{ playbook_dir }}/ext/lxcs
-      
-    - name: create shared file fragments
-      become: false
+      become: no
+      local_action: command
+          mkdir -p {{ opsmgr_dat }}/{{ item }}
+      with_items:
+          - "lxc-ops"
+          - "lxc-ext"
+
+    - name: create shared file fragments for opsmgr-created containers
+      become: no
       local_action: template
-          src=container.j2
-          dest={{ playbook_dir }}/ext/lxcs/lxc-{{ inventory_hostname }}-{{ item.name }}
+          src=lxc-ops.j2
+          dest={{ opsmgr_dat }}/lxc-ops/lxc-{{ inventory_hostname }}-{{ item.name }}
       with_items: "{{ containers }}"
-    
+
+    - name: create shared file fragments for externally-created containers
+      become: no
+      local_action: template
+          src=lxc-ext.j2
+          dest={{ opsmgr_dat }}/lxc-ext/lxc-{{ inventory_hostname }}-{{ item.name }}
+      with_items: "{{ import_containers }}"
+      when: item.host == inventory_hostname
 

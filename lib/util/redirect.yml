@@ -1,0 +1,59 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+
+  vars:
+
+    play: "{{ playbook_dir }}"
+    path: /tmp/.opsmgr
+    site: run.yml
+    libs: "{{ playbook_dir }}/.."
+    pull: []
+    test: false
+
+  pre_tasks:
+    - debug: var=play
+    - debug: var=libs
+    - debug: var=playbook_dir
+
+  tasks:
+
+    - name: ensure remote directory exists
+      file: path={{ path }} state=directory
+
+    - name: copy playbook to remote host for execution
+      synchronize: src={{ play }} dest={{ path }}/ mode=push rsync_path="sudo rsync"
+
+    - name: copy library to remote host
+      synchronize: src={{ libs }} dest={{ path }}/ mode=push rsync_path="sudo rsync"
+
+    - name: remove remote facts and logs if they exist
+      file: path={{ path }}/{{ play|basename }}/{{ item }} state=absent
+      with_items:
+        - ansible.log
+        - .facts/
+
+    - name: execute remote playbook (optionally passing data along)
+      become: true
+      ignore_errors: true
+      shell: >
+        ansible-playbook
+        -e "opsmgr_lib={{ path }}"
+        {{ site }}
+      args:
+          chdir: "{{ path }}/{{ play|basename }}"
+      when: test == false
+    
+    - name: retrieve remote execution log file
+      fetch: src={{ path }}/{{ play|basename }}/ansible.log dest={{ play }}/run.log flat=yes
+
+    - name: retrieve remote files if requested
+      synchronize: src={{ path }}/{{ play|basename }}/{{ item }} dest={{ play }}/{{ item }} mode=pull
+      with_items: "{{ pull }}"
+
+    #- name: remove temp files
+    #  file: path={{ path }} state=absent
+    #  when: test == false
+
+

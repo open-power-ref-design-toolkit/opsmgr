@@ -18,21 +18,16 @@
   connection: local
   become: false
   vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - defaults/main.yml
+    - defaults.yml
   pre_tasks:
-    - include_vars: "{{ item }}"
-      with_first_found:
-        - "../ext/shared.yml"
-        - "defaults/shared.yml"
-    - include: tasks/import.yml
+    - include: "{{ opsmgr_lib }}/util/import.yml"
 
 - hosts: opsmgr_nagios
   gather_facts: no
   become: true
   vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - defaults/main.yml
+    - defaults.yml
+  pre_tasks:
+    - include_vars: "{{ opsmgr_profile }}/vars.yml"
   roles:
     - nagios

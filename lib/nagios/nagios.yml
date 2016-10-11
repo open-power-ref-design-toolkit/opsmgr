@@ -1,0 +1,26 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  roles:
+    - { role: nagios_prereq }
+
+- hosts: opsmgr_nagios
+  become: true
+  roles:
+    - { role: nagios_server }
+    - { role: nagios_agent, install_server: false, install_plugin: true }
+
+- hosts: target_hosts
+  become: true
+  roles:
+    - { role: nagios_agent, install_server: true, install_plugin: false }
+    - { role: nagios_target, is_monitored: true, has_agent: true }
+
+- hosts: target_containers
+  become: true
+  roles:
+    - { role: nagios_target, is_monitored: true, has_agent: false }
+

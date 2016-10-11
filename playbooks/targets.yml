@@ -13,23 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: localhost
-  gather_facts: no
-  connection: local
-  become: false
-  vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - defaults/main.yml
-  pre_tasks:
-    - include: tasks/import.yml
-
 - hosts: opsmgr_targets
+  become: no
   gather_facts: no
-  become: true
   vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - defaults/main.yml
-  roles:
-    - target
+    - defaults.yml
+  pre_tasks:
+    - include_vars: "{{ opsmgr_profile }}/vars.yml"
+  tasks:
+    # call target plugin provisioning playbook
+
+    - name: call provisioning plugins at the target (go grab a coffee!)
+      become: true
+      shell: >
+        ansible-playbook -i "{{ inventory_hostname }}",
+        -e "opsmgr_dat={{ opsmgr_dat }}"
+        site.yml
+      args:
+          chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item }}/"
+      with_items: "{{ hostvars[inventory_hostname].roles }}"
+      delegate_to: localhost
+      register: play_output
+
+    #- name: show output of role-specific integration playbooks
+    #  debug: var=item.stdout_lines
+    #  with_items: "{{ play_output.results }}"
+
+

@@ -1,0 +1,8 @@
+---
+
+- include: "{{ opsmgr_lib }}/util/ops.yml"
+- include: "{{ opsmgr_lib }}/util/osa.yml"
+- include: "{{ opsmgr_lib }}/beaver/beaver.yml"
+- include: "{{ opsmgr_lib }}/nagios/nagios.yml files={{ playbook_dir }}/nagios"
+- include: resources.yml
+

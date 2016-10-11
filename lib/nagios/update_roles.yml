@@ -1,0 +1,14 @@
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  vars_files:
+    - defaults.yml
+  pre_tasks:
+    - include: ../lib/import.yml
+
+- hosts: opsmgr_nagios
+  become: true
+  roles:
+    - { role: nagios_server }
+
