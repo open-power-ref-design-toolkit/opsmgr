@@ -1,0 +1,10 @@
+---
+
+    - name: check if prereq already exists
+      stat: path={{ playbook_dir }}/nagios/plugins/check-multi.pl
+      register: checkmulti
+
+    - name: acquire prereq if necessary
+      include: checkmulti.yml
+      when: checkmulti.stat.exists == false
+

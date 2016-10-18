@@ -4,7 +4,7 @@ define host{
 							; in (or inherited by) the linux-server host template definition.
         host_name               localhost
         alias                   localhost
-        address                 127.0.0.1
+        address                 {{ hostvars[host].ansible_ssh_host }}
         }
 
 define hostgroup{

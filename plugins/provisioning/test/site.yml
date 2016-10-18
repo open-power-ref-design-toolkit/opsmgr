@@ -1,0 +1,10 @@
+---
+
+- include: "{{ opsmgr_lib }}/util/ops.yml"
+
+- hosts: all:!opsmgr_containers:!localhost
+  gather_facts: yes
+
+- hosts: opsmgr_containers
+  gather_facts: yes
+

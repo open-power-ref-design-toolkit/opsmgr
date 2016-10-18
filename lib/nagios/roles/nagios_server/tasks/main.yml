@@ -2,23 +2,21 @@
 
     # install server-side monitoring configuration
 
+    - name: remove all roles if reset variable is set
+      file:
+          path: "{{ hostvars[inventory_hostname].share }}/roles"
+          state: absent
+      when: reset is defined and reset == true
+
     - name: ensures roles directory exists
       file:
           path: "{{ hostvars[inventory_hostname].share }}/roles"
           state: directory
     
-    - name: copy default roles
+    - name: copy server roles configuration
       copy:
           src: "{{ item }}"
-          dest: "{{ hostvars[inventory_hostname].share }}/roles/"
-          mode: 0644
-      with_first_found: "files/roles/"
-      notify: restart nagios service
-
-    - name: copy custom roles
-      copy:
-          src: "{{ item }}"
-          dest: "{{ hostvars[inventory_hostname].share }}/roles/"
+          dest: "{{ hostvars[inventory_hostname].share }}/"
           mode: 0644
       with_first_found: "{{ files }}/roles/"
       notify: restart nagios service
@@ -31,7 +29,7 @@
           backup: yes
       notify: restart nagios service
 
-    - name: disable default localhost monitoring (covered by role)
+    - name: disable default localhost monitoring
       lineinfile:
           dest: "/usr/local/nagios/etc/nagios.cfg"
           line: "cfg_file=/usr/local/nagios/etc/objects/localhost.cfg"

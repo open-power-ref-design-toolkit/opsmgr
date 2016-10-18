@@ -28,7 +28,7 @@
   vars_files:
     - defaults.yml
   pre_tasks:
-    - include_vars: "{{ opsmgr_profile }}/vars.yml"
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
   roles:
     - { role: "mysql", when: install_mysql is defined and install_mysql == True }
 

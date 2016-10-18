@@ -1,0 +1,14 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: no
+  roles:
+    - { role: nagios_prereq }
+
+- include: "{{ opsmgr_lib }}/util/ops.yml"
+- include: "{{ opsmgr_lib }}/beaver/site.yml target_hosts=targets target_containers=none profile={{ opsmgr_prl }} files={{ playbook_dir }}/beaver locking=true"
+- include: "{{ opsmgr_lib }}/nagios/site.yml target_hosts=targets target_containers=none profile={{ opsmgr_prl }} files={{ playbook_dir }}/nagios locking=true"
+- include: resources.yml
+

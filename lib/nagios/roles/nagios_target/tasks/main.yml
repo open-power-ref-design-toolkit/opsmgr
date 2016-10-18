@@ -44,29 +44,32 @@
 
     # install monitoring configuration
 
+    - name: remove all plugins if reset variable is set
+      file:
+          path: "{{ nrpe_dir }}/plugins"
+          state: absent
+      when: reset is defined and reset == true
+
     - name: ensures plugins directory exists
       file:
           path: "{{ nrpe_dir }}/plugins"
           state: directory
       when: has_agent == true
     
-    - name: copy default plugins for roles
+    - name: copy plugins for roles
       copy:
           src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/plugins/"
-          mode: 0755
-      with_first_found: "files/plugins/"
-      when: has_agent == true
-      notify: restart nrpe service
-
-    - name: copy custom plugins for roles
-      copy:
-          src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/plugins/"
+          dest: "{{ nrpe_dir }}/"
           mode: 0755
       with_first_found: "{{ files }}/plugins/"
       when: has_agent == true
       notify: restart nrpe service
+
+    - name: remove all nrpe.d if reset variable is set
+      file:
+          path: "{{ nrpe_dir }}/nrpe.d"
+          state: absent
+      when: reset is defined and reset == true
 
     - name: ensures nrpe.d directory exists
       file:
@@ -74,23 +77,20 @@
           state: directory
       when: has_agent == true
     
-    - name: copy default nrpe.d for roles
+    - name: copy nrpe.d for roles
       copy:
           src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/nrpe.d/"
-          mode: 0644
-      with_first_found: "files/nrpe.d/"
-      when: has_agent == true
-      notify: restart nrpe service
-    
-    - name: copy custom nrpe.d for roles
-      copy:
-          src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/nrpe.d/"
+          dest: "{{ nrpe_dir }}/"
           mode: 0644
       with_first_found: "{{ files }}/nrpe.d/"
       when: has_agent == true
       notify: restart nrpe service
+
+    - name: remove all commands if reset variable is set
+      file:
+          path: "{{ nrpe_dir }}/commands"
+          state: absent
+      when: reset is defined and reset == true
 
     - name: ensures commands directory exists
       file:
@@ -98,19 +98,10 @@
           state: directory
       when: has_agent == true
     
-    - name: copy default commands for roles
+    - name: copy commands for roles
       copy:
           src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/commands/"
-          mode: 0644
-      with_first_found: "files/commands/"
-      when: has_agent == true
-      notify: restart nrpe service
-
-    - name: copy custom commands for roles
-      copy:
-          src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/commands/"
+          dest: "{{ nrpe_dir }}/"
           mode: 0644
       with_first_found: "{{ files }}/commands/"
       when: has_agent == true

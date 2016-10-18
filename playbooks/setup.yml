@@ -16,34 +16,46 @@
 - hosts: localhost
   gather_facts: yes
   connection: local
-  become: false
   vars_files:
     - defaults.yml
   pre_tasks:
-    - include_vars: "{{ opsmgr_profile }}/vars.yml"
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+  tasks:
     - include: "{{ opsmgr_lib }}/util/import.yml"
 
 - hosts: all
   gather_facts: yes
-  become: true
-  vars_files:
-    - defaults.yml
-  pre_tasks:
-    - include_vars: "{{ opsmgr_profile }}/vars.yml"
-    - include: "{{ opsmgr_lib }}/util/import.yml"
-  roles:
-    - provisioned
 
 - hosts: localhost
-  gather_facts: no
   connection: local
-  become: false
   vars_files:
     - defaults.yml
-  pre_tasks:
-    - include_vars: "{{ opsmgr_profile }}/vars.yml"
-    - include: "{{ opsmgr_lib }}/util/import.yml"
   roles:
     - provisioner
 
+- hosts: all:!opsmgr_containers:!import_containers
+  gather_facts: no
+  become: yes
+  vars_files:
+    - defaults.yml
+  roles:
+    - { role: provisioned, is_container: false }
+
+- hosts: opsmgr_containers:import_containers
+  gather_facts: no
+  become: yes
+  vars_files:
+    - defaults.yml
+  roles:
+    - { role: provisioned, is_container: true }
+
+- hosts: localhost
+  connection: local
+  become: no
+  tasks:
+    - name: assemble ~/.ssh/config file
+      assemble:
+          src: ~/.ssh/config.d
+          dest: ~/.ssh/config
+          backup: yes
 

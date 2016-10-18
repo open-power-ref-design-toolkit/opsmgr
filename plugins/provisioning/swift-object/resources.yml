@@ -1,0 +1,38 @@
+---
+
+# target uniqueness control - load configuration
+- hosts: targets
+  become: no
+  tasks:
+    - set_fact: alias={{ lookup("file", opsmgr_lib + "/hosts/host-" + ansible_ssh_host) }}
+      when: ansible_ssh_host is defined
+
+# register unique resources in opsmgr
+- hosts: opsmgr_core
+  become: yes
+  tasks:
+
+    - name: update /etc/hosts with resource addresses
+      lineinfile: >
+          dest=/etc/hosts regexp='.*{{ item }}$'
+          line='{{ hostvars[item].ansible_ssh_host }} {{ hostvars[item].alias }}'
+          state=present
+      with_items: groups['targets']
+      when: >
+          hostvars[item].ansible_ssh_host is defined
+
+    - name: register swift object resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ hostvars[item].alias }}" -r "swift_object"
+      with_items: groups['targets']
+      when: >
+          hostvars[item].ansible_ssh_host is defined
+      ignore_errors: true
+
+# reloads nagios services after configuration is applied
+- hosts: opsmgr_nagios
+  become: yes
+  tasks:
+    - name: restart nagios service
+      service: name="nagios" state=restarted
+

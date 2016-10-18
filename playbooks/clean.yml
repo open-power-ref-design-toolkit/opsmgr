@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: opsmgr_hosts
+- hosts: opsmgr
   gather_facts: yes
   become: true
   vars_files:
     - defaults.yml
   pre_tasks:
-    - include_vars: "{{ opsmgr_profile }}/vars.yml"
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
   tasks:
     - name: destroy containers
       lxc_container:

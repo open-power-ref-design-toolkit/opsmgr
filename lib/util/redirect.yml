@@ -8,14 +8,8 @@
     play: "{{ playbook_dir }}"
     path: /tmp/.opsmgr
     site: run.yml
-    libs: "{{ playbook_dir }}/.."
     pull: []
     test: false
-
-  pre_tasks:
-    - debug: var=play
-    - debug: var=libs
-    - debug: var=playbook_dir
 
   tasks:
 
@@ -26,7 +20,11 @@
       synchronize: src={{ play }} dest={{ path }}/ mode=push rsync_path="sudo rsync"
 
     - name: copy library to remote host
-      synchronize: src={{ libs }} dest={{ path }}/ mode=push rsync_path="sudo rsync"
+      synchronize: src={{ opsmgr_lib }} dest={{ path }}/ mode=push rsync_path="sudo rsync"
+
+    - name: copy profile to remote host
+      synchronize: src={{ opsmgr_prl }} dest={{ path }}/ mode=push rsync_path="sudo rsync"
+      when: opsmgr_prl is defined
 
     - name: remove remote facts and logs if they exist
       file: path={{ path }}/{{ play|basename }}/{{ item }} state=absent
@@ -34,17 +32,21 @@
         - ansible.log
         - .facts/
 
-    - name: execute remote playbook (optionally passing data along)
+    - name: remote playbook command to run
+      debug: msg='ansible-playbook -e "opsmgr_lib={{ path }}/lib" -e "opsmgr_prl={{ path }}/profile" {{ site }}'
+
+    - name: execute remote playbook command
       become: true
       ignore_errors: true
       shell: >
         ansible-playbook
-        -e "opsmgr_lib={{ path }}"
+        -e "opsmgr_lib={{ path }}/lib"
+        -e "opsmgr_prl={{ path }}/profile"
         {{ site }}
       args:
           chdir: "{{ path }}/{{ play|basename }}"
       when: test == false
-    
+
     - name: retrieve remote execution log file
       fetch: src={{ path }}/{{ play|basename }}/ansible.log dest={{ play }}/run.log flat=yes
 

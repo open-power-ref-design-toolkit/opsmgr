@@ -15,11 +15,11 @@
 # limitations under the License.
 
 lxcnets:
-{% for hst in groups['opsmgr_hosts'] %}
+{% for hst in groups['opsmgr'] %}
 {% set hstloop = loop %}
 {% for lxc in containers %}
 {% set lxcloop = loop %}
-{% for net in container_networks %}
+{% for net in opsmgr_lxc_nets %}
 {% set netloop = loop %}
   - name: {{ hst }}-{{ lxc.name }}-{{ net.name }}
     host: {{ hst }}

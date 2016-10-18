@@ -1,7 +1,0 @@
----
-
-- include: local.yml
-- include: nagios.yml
-- include: opsmgr.yml
-- include: beaver.yml
-

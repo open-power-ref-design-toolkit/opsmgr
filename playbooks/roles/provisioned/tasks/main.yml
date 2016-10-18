@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-    # configure connection parameters for each host in inventory
+
+    # configure ssh connection parameters
 
     - name: ensure .ssh directory exists
       file:
@@ -58,5 +59,33 @@
         path: "/etc/sudoers.d/{{ sudoers_filename }}"
         state: absent
       when: sudoers_remove
+
+    # configure ssh proxy information
+
+    - name: ensures ~/.ssh/config.d directory exists
+      become: no
+      file:
+          path: ~/.ssh/config.d/
+          mode: 0700
+          state: directory
+      delegate_to: localhost
+
+    - name: create ssh config entry for host
+      become: no
+      template:
+          src: ssh.hst.j2
+          dest: "~/.ssh/config.d/ssh.hst-{{ inventory_hostname }}"
+          mode: 0644
+      when: is_container == false
+      delegate_to: localhost
+
+    - name: create ssh config entry for container
+      become: no
+      template:
+          src: ssh.lxc.j2
+          dest: "~/.ssh/config.d/ssh.lxc-{{ inventory_hostname }}"
+          mode: 0644
+      when: is_container == true
+      delegate_to: localhost
 
 

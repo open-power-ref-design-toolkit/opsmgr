@@ -1,7 +1,0 @@
----
-# restart the nagios server
-
-- name: restart nagios service
-  service: name="nagios" state=restarted
-
-

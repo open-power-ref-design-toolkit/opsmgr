@@ -18,3 +18,6 @@
     name: apache2
     state: restarted
     pattern: apache2
+  register: result
+  failed_when: "result|failed and 'no service' not in result.msg"
+

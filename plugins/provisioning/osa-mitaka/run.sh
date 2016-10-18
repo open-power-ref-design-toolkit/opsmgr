@@ -1,4 +1,3 @@
-#!/bin/sh
 
 # Copyright 2016, IBM US, Inc.
 #
@@ -14,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# OSA playbooks need to run as root
-# so that ssh is configured to reach all nodes
-sudo rm -rf .facts/ *.log
-sudo ansible-playbook -e "opsmgr_lib=../../../lib" $@
+rm -rf *.log .facts/
+export OPSMGR_PRL=../../../playbooks/profile
+export OPSMGR_LIB=../../../lib
+ansible-playbook -i $PROFILE/inventory -e "opsmgr_lib=$OPSMGR_LIB" -e "opsmgr_prl=$OPSMGR_PRL" site.yml
 
