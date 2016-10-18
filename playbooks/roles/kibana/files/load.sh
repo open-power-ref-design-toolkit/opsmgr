@@ -85,17 +85,17 @@ echo "Loading dashboards to ${ELASTICSEARCH} in ${KIBANA_INDEX}"
 ${CURL} -XPUT "${ELASTICSEARCH}/${KIBANA_INDEX}"
 ${CURL} -XPUT "${ELASTICSEARCH}/${KIBANA_INDEX}/_mapping/search" -d'{"search": {"properties": {"hits": {"type": "integer"}, "version": {"type": "integer"}}}}'
 
-TMP_SED_FILE="${DIR}/search/tmp_search.json"
+#TMP_SED_FILE="${DIR}/search/tmp_search.json"
 for file in ${DIR}/search/*.json
 do
     NAME=`basename ${file} .json`
     echo "Loading search ${NAME}:"
-    sed ${SED_STRING} ${file} > ${TMP_SED_FILE}
+    #sed ${SED_STRING} ${file} > ${TMP_SED_FILE}
     ${CURL} -XPUT ${ELASTICSEARCH}/${KIBANA_INDEX}/search/${NAME} \
-        -d @${TMP_SED_FILE} || exit 1
+        -d @${file} || exit 1
     echo
 done
-rm ${TMP_SED_FILE}
+#rm ${TMP_SED_FILE}
 
 for file in ${DIR}/visualization/*.json
 do
