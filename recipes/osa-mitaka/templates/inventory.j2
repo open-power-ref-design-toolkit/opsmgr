@@ -1,0 +1,10 @@
+[opsmgr_hosts]
+
+{% for host in groups['os-infra_hosts'] %}
+{{ hostvars['' + host]['inventory_hostname'] }} ansible_ssh_host={{ hostvars['' + host]['ansible_ssh_host'] }}
+{% endfor %}
+
+[opsmgr_targets]
+
+{{ ansible_hostname }} roles='["osa-mitaka"]'
+

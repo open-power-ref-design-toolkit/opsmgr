@@ -10,19 +10,23 @@
 
     # install nrpe server and/or plugin
 
-    - name: uninstalls nrpe server (if desired)
-      apt: name=nagios-nrpe-server=2.15* state=absent update_cache=true force=yes
+    - name: uninstalls nrpe server
+      apt: name=nagios-nrpe-server=2.15* state=absent purge=yes update_cache=true force=yes
       when: install_server is defined and install_server == true
       retries: 5
       delay: 2
 
-    - name: installs nrpe server (if desired)
+    #- name: remove nrpe configuration
+    #  file: path={{ nrpe_dir }} state=absent
+    #  when: install_server is defined and install_server == true
+
+    - name: installs nrpe server
       apt: name=nagios-nrpe-server=2.15* state=present update_cache=true force=yes
       when: install_server is defined and install_server == true
       retries: 5
       delay: 2
 
-    - name: installs nrpe plugin (if desired)
+    - name: installs nrpe plugin
       apt: name=nagios-nrpe-plugin=2.15* state=present update_cache=true force=yes install_recommends=no
       when: install_plugin is defined and install_plugin == true
       retries: 5

@@ -1,0 +1,8 @@
+define service {
+   use                  generic-service
+   host_name            #@#HOSTNAME#@#
+   service_description  Swift Object Server
+   check_command        check_nrpe!#@#ROLE#@# #@#DATA#@#
+   check_interval       10
+}
+

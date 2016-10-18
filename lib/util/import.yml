@@ -16,7 +16,7 @@
     - name: import dynamic variables from previous run
       include_vars: "{{ item }}"
       with_first_found:
-        - "{{ opsmgr_lib }}/vars/lxc-ops.yml"
+        - "../vars/lxc-ops.yml"
         - "defaults.yml"
 
     - name: register opsmgr-created containers into dynamic inventory
@@ -55,7 +55,7 @@
     - name: import dynamic variables from previous run
       include_vars: "{{ item }}"
       with_first_found:
-        - "{{ opsmgr_lib }}/vars/lxc-ext.yml"
+        - "../vars/lxc-ext.yml"
         - "defaults.yml"
 
     - name: register externally-created containers into dynamic inventory

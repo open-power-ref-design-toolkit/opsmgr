@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+#
+Host {{ inventory_hostname }}
+{% if ansible_ssh_host is defined and ansible_ssh_host | ipv4 %}
+  Hostname {{ ansible_ssh_host }}
+{% else %}
+  Hostname {{ ansible_default_ipv4.address }}
+{% endif %}
+  ForwardAgent yes
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
+
+{% if ansible_ssh_host is defined and ansible_ssh_host | ipv4 %}
+Host {{ ansible_ssh_host }}
+  Hostname {{ ansible_ssh_host }}
+{% else %}
+Host {{ ansible_default_ipv4.address }}
+  Hostname {{ ansible_default_ipv4.address }}
+{% endif %}
+  ForwardAgent yes
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
+

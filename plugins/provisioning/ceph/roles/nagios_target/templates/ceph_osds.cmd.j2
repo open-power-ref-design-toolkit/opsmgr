@@ -1,3 +1,0 @@
-#--- Monitoring commands for OpsMgr role: ceph_osds
-
-command[check_ceph_osd]          = sudo /usr/bin/python /etc/nagios/plugins/check_ceph_osd.py -H {{ ansible_default_ipv4.address }}

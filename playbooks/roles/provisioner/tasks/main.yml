@@ -29,14 +29,10 @@
         - id_rsa.pub
       register: user_keys
     
-    - debug: var=user_keys
-
     - name: decide if we use user's keys or not
       set_fact:
         use_user_keys: "{{ user_keys.results[0].stat.exists and user_keys.results[1].stat.exists }}"
         
-    - debug: var=use_user_keys
-
     - name: ensure keys/current directory exists
       file:
         path: "{{ opsmgr_lib }}/keys/current"
@@ -74,59 +70,26 @@
         - [ 'id_rsa',     'id_rsa.pub' ]
       when: use_user_keys | bool == false
     
-    # assemble ~/.ssh/config file for proxying through hosts
-    
+    # configure ssh proxy information
+
     - name: remove ~/.ssh/config.d directory if it exists
       file:
-          path: ~/.ssh/config.d
+          path: ~/.ssh/config.d/
           state: absent
-    
+
     - name: create ~/.ssh/config.d directory
       file:
-          path: ~/.ssh/config.d
+          path: ~/.ssh/config.d/
           mode: 0700
           state: directory
 
-    - debug: var=ssh_hosts
-    - debug: var=ssh_containers
-    - debug: var=groups.opsmgr_hosts
-    - debug: var=groups.opsmgr_containers
-
-    - name: create ssh config entries for hosts from inventory
-      template:
-          src: ssh.host.j2
-          dest: "~/.ssh/config.d/ssh.host-{{ item }}"
-          mode: 0644
-      with_items: groups.opsmgr_hosts
-      when: groups.opsmgr_hosts is defined
-
-    - name: create ssh config entries for targets from inventory
-      template:
-          src: ssh.host.j2
-          dest: "~/.ssh/config.d/ssh.host-{{ item }}"
-          mode: 0644
-      with_items: groups.opsmgr_targets
-      when: groups.opsmgr_targets is defined
-
     - name: create ssh config entries for hosts from extravars
       template:
-          src: ssh.host.j2
+          src: ssh.hst.j2
           dest: "~/.ssh/config.d/ssh.host-{{ item }}"
           mode: 0644
       with_items: ssh_hosts
       when: ssh_hosts is defined
-
-    #- debug: var=hostvars[item]
-    #  with_items: groups.opsmgr_containers
-    #  when: groups.opsmgr_containers is defined
-
-    - name: create ssh config entries for containers from inventory
-      template:
-          src: ssh.lxc.j2
-          dest: "~/.ssh/config.d/ssh.lxc-{{ item.hostname }}"
-          mode: 0644
-      with_items: opsmgr_containers
-      when: opsmgr_containers is defined
 
     - name: create ssh config entries for containers from extravars
       template:
@@ -135,13 +98,5 @@
           mode: 0644
       with_items: ssh_containers
       when: ssh_containers is defined
-
-    - name: assemble ~/.ssh/config file
-      become: false
-      assemble:
-          src: ~/.ssh/config.d
-          dest: ~/.ssh/config
-          backup: yes
-
 
 

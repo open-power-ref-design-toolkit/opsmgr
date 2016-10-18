@@ -1,0 +1,41 @@
+---
+
+# target uniqueness control - clean previous configuration
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: no
+  tasks:
+    - file: dest={{ opsmgr_lib }}/hosts/host-* state=absent
+    - file: dest={{ opsmgr_lib }}/hosts state=directory
+
+# target uniqueness control - persist configuration
+- hosts: targets
+  become: no
+  serial: 1
+  tasks:
+    - local_action: copy dest={{ opsmgr_lib }}/hosts/host-{{ ansible_ssh_host }} content={{ inventory_hostname }} force=no
+      when: ansible_ssh_host is defined
+
+# target uniqueness control - load configuration
+- hosts: targets
+  become: no
+  tasks:
+    - set_fact: alias={{ lookup("file", opsmgr_lib + "/hosts/host-" + ansible_ssh_host) }}
+      when: ansible_ssh_host is defined
+
+- hosts: localhost
+  become: no
+  tasks:
+    - debug: msg='{{ hostvars[item].inventory_hostname }} --> {{ hostvars[item].alias }}'
+      with_items: groups['targets']
+      when: hostvars[item].ansible_ssh_host is defined
+    - debug: msg='{{ item == hostvars[item].alias }}'
+      with_items: groups['targets']
+      when: hostvars[item].ansible_ssh_host is defined
+    - debug: msg='{{ hostvars[item].ansible_ssh_host }} {{ item }}'
+      with_items: groups['targets']
+      when: >
+          (hostvars[item].ansible_ssh_host is defined) and
+          (item == hostvars[item].alias)
+

@@ -1,0 +1,17 @@
+---
+
+- hosts: "{{ target_hosts }}:{{ target_containers }}"
+  gather_facts: no
+  become: yes
+  serial: 1
+  vars:
+    - lockfile: "/etc/opsmgr/.lock"
+  tasks:
+    - file: dest="/etc/opsmgr" state=directory
+      when: locking is defined and locking == 'true'
+    - copy: dest={{ lockfile }} content={{ inventory_hostname }} force=no
+      when: locking is defined and locking == 'true'
+    - command: cat {{ lockfile }}
+      register: lock
+      when: locking is defined and locking == 'true'
+

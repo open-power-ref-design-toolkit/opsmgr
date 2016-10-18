@@ -29,17 +29,41 @@
           - "lxc-ops"
           - "lxc-ext"
 
+    - name: count number of ops containers
+      local_action: shell find {{ opsmgr_lib }}/vars/lxc-ops/ -type f | wc -l
+      register: ops_count
+
     - name: update lxc-ops shared file with a header
       local_action: lineinfile
           dest={{ opsmgr_lib }}/vars/lxc-ops.yml
-          line="opsmgr_containers:"
+          line='opsmgr_containers{{ ":" }}'
           insertbefore=BOF
+      when: ops_count.stdout|int > 0
+
+    - name: update lxc-ops shared file with a header
+      local_action: lineinfile
+          dest={{ opsmgr_lib }}/vars/lxc-ops.yml
+          line='opsmgr_containers{{ ":" }} []'
+          insertbefore=BOF
+      when: ops_count.stdout|int == 0
+
+    - name: count number of imported containers
+      local_action: shell find {{ opsmgr_lib }}/vars/lxc-ext/ -type f | wc -l
+      register: ext_count
 
     - name: update lxc-ext shared file with a header
       local_action: lineinfile
           dest={{ opsmgr_lib }}/vars/lxc-ext.yml
-          line="import_containers:"
+          line='import_containers{{ ":" }}'
           insertbefore=BOF
+      when: ext_count.stdout|int > 0
+
+    - name: update lxc-ext shared file with a header
+      local_action: lineinfile
+          dest={{ opsmgr_lib }}/vars/lxc-ext.yml
+          line='import_containers{{ ":" }} []'
+          insertbefore=BOF
+      when: ext_count.stdout|int == 0
 
     - name: remove temporary directory
       local_action: file

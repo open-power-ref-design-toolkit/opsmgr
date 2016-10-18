@@ -1,0 +1,12 @@
+---
+
+- hosts: "{{ target_hosts }}:{{ target_containers }}"
+  gather_facts: no
+  become: yes
+  serial: 1
+  vars:
+    - lockfile: "/etc/opsmgr/.lock"
+  tasks:
+    - file: path={{ lockfile }} state=absent
+      when: locking is defined and locking == 'true' and lock.stdout == inventory_hostname
+

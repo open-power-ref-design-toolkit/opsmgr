@@ -1,0 +1,74 @@
+---
+
+# target uniqueness control - clean previous configuration
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: no
+  tasks:
+    - file: dest={{ opsmgr_lib }}/hosts/host-* state=absent
+    - file: dest={{ opsmgr_lib }}/hosts state=directory
+
+# target uniqueness control - persist configuration
+- hosts: targets
+  become: no
+  serial: 1
+  tasks:
+    - local_action: copy dest={{ opsmgr_lib }}/hosts/host-{{ ansible_ssh_host }} content={{ inventory_hostname }} force=no
+      when: ansible_ssh_host is defined
+
+# target uniqueness control - load configuration
+- hosts: targets
+  become: no
+  tasks:
+    - set_fact: alias={{ lookup("file", opsmgr_lib + "/hosts/host-" + ansible_ssh_host) }}
+      when: ansible_ssh_host is defined
+
+# register unique resources in opsmgr
+- hosts: opsmgr_core
+  become: yes
+  tasks:
+
+    - name: update /etc/hosts with resource addresses
+      lineinfile: >
+          dest=/etc/hosts regexp='.*{{ item }}$'
+          line='{{ hostvars[item].ansible_ssh_host }} {{ item }}'
+          state=present
+      with_items: groups['targets']
+      when: >
+          hostvars[item].ansible_ssh_host is defined and
+          item == hostvars[item].alias
+
+    - name: clear resources so that configuration is removed
+      shell: >
+          opsmgr remove_resource -l "{{ item }}"
+      with_items: groups['targets']
+      when: >
+          hostvars[item].ansible_ssh_host is defined and
+          item == hostvars[item].alias
+      ignore_errors: true
+
+    - name: register resources in opsmgr
+      shell: >
+          opsmgr add_resource -l "{{ item }}" -a "{{ hostvars[item].ansible_ssh_host }}" 
+          -u "{{ ansible_ssh_user }}" --key "/etc/opsmgr/opsmgr.key"
+      with_items: groups['targets']
+      when: >
+          hostvars[item].ansible_ssh_host is defined and
+          item == hostvars[item].alias
+
+    - name: register common host resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ item }}" -r "server"
+      with_items: groups['targets']
+      when: >
+          hostvars[item].ansible_ssh_host is defined and
+          item == hostvars[item].alias
+
+# reloads nagios services after configuration is applied
+- hosts: opsmgr_nagios
+  become: yes
+  tasks:
+    - name: restart nagios service
+      service: name="nagios" state=restarted
+

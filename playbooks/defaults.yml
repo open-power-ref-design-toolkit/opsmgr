@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# profile to use
+profile: "{{ lookup('env', 'OPSMGR_PROFILE') | default('profile', true) }}"
+
 # important directories
 opsmgr_dir: "{{ playbook_dir }}/.."
+opsmgr_prl: "{{ playbook_dir }}/{{ profile }}"
 opsmgr_lib: "{{ opsmgr_dir }}/lib"
 opsmgr_dat: "{{ opsmgr_lib }}/vars"
-
-# installation profile to use
-opsmgr_profile: "{{ playbook_dir }}/profile"
+opsmgr_inv: "{{ opsmgr_dat }}"
 
 # opsmgr version
 opsmgr_version: 1.0.0.1

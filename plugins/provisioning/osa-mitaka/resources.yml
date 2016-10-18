@@ -1,9 +1,11 @@
 ---
 
-# updates OpsMgr with target resources and their roles
+# updates OpsMgr with target resources roles
 - hosts: opsmgr_core
   become: true
+
   vars:
+
     osa_services:
         - aodh_api
         - ceilometer_agent_central
@@ -30,54 +32,28 @@
         - rsyslog
         - swift_acc
         - swift_proxy
+        - trove
         - utility
 
   tasks:
-
-    # ensure opsmgr server can resolve hosts
-
-    - name: update hosts file for nodes that have ansible_ssh_host interface address
-      lineinfile: |
-          dest=/etc/hosts regexp='.*{{ item }}$'
-          line="{{ hostvars[item].ansible_ssh_host }} {{ item }}" state=present
-      when: hostvars[item].ansible_ssh_host is defined and item != 'localhost'
-      with_items: groups['all']
-
-    # register this target in opsmgr
-
-    - name: clear resources so that configuration is removed
-      shell: >
-          opsmgr remove_resource -l "{{ item }}"
-      with_items: "{{ groups['hosts'] }}"
-      ignore_errors: true
-
-    - name: register resources in opsmgr
-      shell: >
-          opsmgr add_resource -l "{{ item }}" -a "{{ hostvars[item].ansible_ssh_host }}"
-          -u "{{ ansible_ssh_user }}" --key "/etc/opsmgr/opsmgr.key"
-      with_items: "{{ groups['hosts'] }}"
-
-    # register roles for this resource
-
-    - name: register common host resource role in opsmgr
-      shell: >
-          opsmgr add_role -l "{{ item }}" -r "osa_host"
-      with_items: "{{ groups['hosts'] }}"
 
     - name: register controller resource role in opsmgr
       shell: >
           opsmgr add_role -l "{{ item }}" -r "osa_controller"
       with_items: "{{ groups['os-infra_hosts'] }}"
+      ignore_errors: true
 
     - name: register compute resource role in opsmgr
       shell: >
           opsmgr add_role -l "{{ item }}" -r "osa_compute"
       with_items: "{{ groups['compute_hosts'] }}"
+      ignore_errors: true
 
     - name: register storage resource role in opsmgr
       shell: >
           opsmgr add_role -l "{{ item }}" -r "osa_storage"
       with_items: "{{ groups['storage-infra_hosts'] }}"
+      ignore_errors: true
 
     - name: register container resource roles in opsmgr
       shell: >
@@ -85,8 +61,9 @@
       when: |
           hostvars[item].component in osa_services
       with_items: "{{ groups['all_containers'] }}"
+      ignore_errors: true
 
-# needed to reload new configuration on nagios servers
+# reload new configuration on nagios servers
 - hosts: opsmgr_nagios
   become: true
   tasks:

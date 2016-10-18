@@ -128,15 +128,12 @@
         mode: 0755
       with_items: "{{ containers }}"
     
-    - name: start containers, fix permissions, install python
+    - name: start containers, fix permissions, wait until eth0 is up
       lxc_container:
         name: "{{ inventory_hostname }}-{{ item.name }}"
         state: started
         container_command: |
-            chown -R {{ ansible_ssh_user }}:{{ ansible_ssh_user }} /{{ lxc_home }}
-            apt-get update
-            apt-get install -y --force-yes python
-            /tmp/waitip.sh eth0
+            chown -R {{ ansible_ssh_user }}:{{ ansible_ssh_user }} /{{ lxc_home }} && /tmp/waitip.sh eth0
         container_config:
             - "lxc.start.auto = 1"
             - "lxc.start.delay = 0"
@@ -156,6 +153,13 @@
           timeout: 300
           host: "{{ lxc_info | lxcaddress(item.name) }}"
           search_regex: OpenSSH
+      with_items: "{{ containers }}"
+
+    - name: install python on containers
+      lxc_container:
+        name: "{{ inventory_hostname }}-{{ item.name }}"
+        container_command: |
+            apt-get update && apt-get install -y --force-yes python && apt-get install -f
       with_items: "{{ containers }}"
 
     # dump container information
