@@ -90,4 +90,4 @@ Related projects
 
     > cluster-genesis
     > os-services
-    > ceph
+    > ceph-services
