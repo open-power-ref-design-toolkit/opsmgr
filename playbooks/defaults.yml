@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # profile to use
-profile: "{{ lookup('env', 'OPSMGR_PROFILE') | default('profile', true) }}"
+profile: "{{ lookup('env', 'OPSMGR_PRL') | default('profile', true) }}"
 
 # important directories
 opsmgr_dir: "{{ playbook_dir }}/.."

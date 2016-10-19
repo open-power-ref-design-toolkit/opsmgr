@@ -14,6 +14,6 @@
 # limitations under the License.
 
 rm -rf *.log .facts/
-export OPSMGR_PROFILE=../recipes/standard/profile
-ansible-playbook -i $OPSMGR_PROFILE/inventory $@
+export OPSMGR_PRL=../recipes/osa-mitaka/profile
+ansible-playbook -i $OPSMGR_PRL/inventory $@
 

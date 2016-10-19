@@ -153,7 +153,6 @@
         login_host: "{{ db_login_host }}"
         name: "{{ db_name }}_{{ inventory_hostname }}"
         state: "present"
-      ignore_errors: yes # db might already exist
 
     - name: create service user and grant access to db
       mysql_user:
@@ -171,12 +170,9 @@
         - 127.0.0.1
         - ::1
         - localhost
-      ignore_errors: yes # user might already exist
-      #delegate_to: "{{ db_login_host }}"
 
     - name: create the database tables
       command: opsmgr-admin db_sync
-      ignore_errors: yes # tables might already exist
 
     # create the default rack
     

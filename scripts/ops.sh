@@ -8,12 +8,12 @@ pushd ${OPSMGR_DIR}
 # please run from opsmgr root directory
 
 # creates profile for integrated OSA installation
-echo "from recipes/integrated-osa-mitaka running site.yml"
-pushd recipes/integrated-osa-mitaka
+echo "from recipes/privatecloud-mitaka running site.yml"
+pushd recipes/privatecloud-mitaka
 ansible-playbook -e "opsmgr_lib=../../lib" -i inventory site.yml
 rc=$?
 if [ $rc != 0 ]; then
-    echo "Failed running opsmgr recipes/integrated-osa-mitaka/site.yml, rc=$rc"
+    echo "Failed running opsmgr recipes/privatecloud-mitaka/site.yml, rc=$rc"
     exit 2
 fi
 popd
@@ -22,7 +22,7 @@ popd
 # note: requires .ssh/id_rsa|id_rsa.pub
 echo "from playbooks running setup.yml"
 pushd playbooks
-export PROFILE=../recipes/integrated-osa-mitaka/profile
+export PROFILE=../recipes/privatecloud-mitaka/profile
 ansible-playbook -i $PROFILE/inventory -e "opsmgr_profile=$PROFILE" setup.yml
 rc=$?
 if [ $rc != 0 ]; then
@@ -34,7 +34,7 @@ popd
 # creates the containers
 echo "from playbooks running hosts.yml"
 pushd playbooks
-export PROFILE=../recipes/integrated-osa-mitaka/profile
+export PROFILE=../recipes/privatecloud-mitaka/profile
 ansible-playbook -i $PROFILE/inventory -e "opsmgr_profile=$PROFILE" hosts.yml
 rc=$?
 if [ $rc != 0 ]; then
@@ -46,7 +46,7 @@ popd
 # deploys opsmgr and integration plugins
 echo "from playbooks running site.yml"
 pushd playbooks
-export PROFILE=../recipes/integrated-osa-mitaka/profile
+export PROFILE=../recipes/privatecloud-mitaka/profile
 ansible-playbook -i $PROFILE/inventory -e "opsmgr_profile=$PROFILE" site.yml
 rc=$?
 if [ $rc != 0 ]; then

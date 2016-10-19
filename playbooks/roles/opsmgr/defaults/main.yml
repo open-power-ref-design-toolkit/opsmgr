@@ -44,7 +44,7 @@ opsmgr_modules:
   - opsmgr/plugins/devices/lenovo
   - opsmgr/plugins/devices/rhel
   - opsmgr/plugins/operations/elk
-  - opsmgr/plugins/operations/ganglia
+#  - opsmgr/plugins/operations/ganglia
   - opsmgr/plugins/operations/nagios
   - opsmgr/plugins/discovery/cobbler
   - opsmgr/plugins/hooks/ulysses
