@@ -35,7 +35,7 @@ apt_packages:
   - rsync
 
 # the apt repository url to use for installing logstash from
-logstash_apt_repo_url: "https://packages.elasticsearch.org/logstash/2.3/debian"
+logstash_apt_repo_url: "https://packages.elasticsearch.org/logstash/2.4/debian"
 
 # the apt repository to use for installing logstash from
 logstash_apt_repos:

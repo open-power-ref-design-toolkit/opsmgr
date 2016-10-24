@@ -20,7 +20,7 @@ beaver_apt_packages:
 
 # the pip packages to install
 beaver_pip_packages:
-  - "beaver==36.2.0"
+  - "beaver==36.2.1"
 
 pip_install_options: "--isolated"
 
