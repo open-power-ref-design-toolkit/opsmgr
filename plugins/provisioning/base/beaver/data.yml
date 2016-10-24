@@ -23,4 +23,10 @@ beaver_log_monitors:
   - name: "syslog"
     log_file: "/var/log/syslog.log"
     tags: "syslog,infrastructure"
+  - name: "kern"
+    log_file: "/var/log/kern.log"
+    tags: "kern,infrastructure"
+  - name: "dpkg"
+    log_file: "/var/log/dpkg.log"
+    tags: "dpkg,infrastructure"
 
