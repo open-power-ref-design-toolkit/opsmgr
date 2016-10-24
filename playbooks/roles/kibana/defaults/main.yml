@@ -24,7 +24,7 @@ apt_packages:
 kibana_root: /opt/kibana
 
 # the apt repository url to use for installing kibana from
-kibana_apt_repo_url: "http://packages.elasticsearch.org/kibana/4.5/debian"
+kibana_apt_repo_url: "http://packages.elasticsearch.org/kibana/4.6/debian"
 
 # the apt repository to use for installing logstash from
 kibana_apt_repos:
