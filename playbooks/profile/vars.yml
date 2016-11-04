@@ -1,0 +1,100 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# defines containers used to integrate management applications
+# name: container name (unique)
+# roles: corresponds to ansible role used to deploy application
+# release: ubuntu release to be used, e.g. trusty
+# ports: list of dictionaries that contains port mappings
+#   name: the name of the port mapping
+#   host: the port on the host side
+#   container: the port on the container side
+# mount: mount point for host shared directory
+# address: ipv4 address (optional, used if static address)
+# netmark: ipv4 netmask (optional, used if static address)
+# broadcast: ipv4 broadcast (optional, used if static address)
+# gateway: ipv4 gareway (optional, used if static address)
+# nameserver: ipv4 nameserver (optional, used if static address)
+#
+containers:
+  - name: core
+    role: core
+    release: trusty
+    ports:
+      - { name: "http", host: 8000, container:   80 }
+    mount: etc/opsmgr/shared
+  - name: mysql
+    role: mysql
+    release: trusty
+    ports:
+      - { name: "mysql", host: 3306, container: 3306 }
+    mount: etc/opsmgr/shared
+  - name: nagios
+    role: nagios
+    release: trusty
+    ports:
+      - { name: "http", host: 8001, container:   80 }
+      - { name: "nrpe", host: 5601, container: 5666 }
+    mount: usr/local/nagios/opsmgr/nagios_config
+  - name: logstash
+    role: logstash
+    release: trusty
+    ports:
+      - { name: "json", host: 5140, container: 5140 }
+      - { name: "sysl", host: 5544, container: 5544 }
+    mount: etc/opsmgr/shared/logstash
+  - name: elasticsearch
+    role: elasticsearch
+    release: trusty
+    ports:
+      - { name: "http", host: 9200, container: 9200 }
+    mount: var/lib/elasticsearch
+  - name: kibana
+    role: kibana
+    release: trusty
+    ports:
+      - { name: "https", host: 8443, container: 8443 }
+    mount: etc/opsmgr/shared/kibana
+
+# container network installation
+create_lxc_network: true
+main_lxc_interface: eth1
+lxc_container_default_mtu: 1500
+address_pool: [ 172.29.236.1, 172.29.236.2, 172.29.236.3, 172.29.236.4, 172.29.236.5, 172.29.236.6 ]
+opsmgr_lxc_nets:
+  - name: mgmt
+    bridge: "br-mgmt"
+    interface: "eth1"
+    netmask: "255.255.252.0"
+    type: "veth"
+
+# database installation
+install_mysql: true
+db_login_user: "{{ ansible_ssh_user }}"
+db_login_password: passw0rd
+db_login_host: 172.29.236.100
+db_user: opsmgr
+db_password: passw0rd
+db_host: 172.29.236.100
+
+# user interface installation
+install_ui: true
+ui_enabled: /etc/opsmgr/shared/ui
+floating_ip: "{{ ansible_default_ipv4.address }}"
+
+# wether to install haproxy (true) or use existing one (false)
+install_haproxy: true
+internal_ip: 172.29.236.100
+

@@ -1,0 +1,10 @@
+[opsmgr_hosts]
+
+{% for host in genesis.ansible_facts.nodes['controllers'] %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+
+[opsmgr_targets]
+
+{{ ansible_hostname }} roles='["osa-mitaka"]'
+

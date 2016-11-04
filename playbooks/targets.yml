@@ -13,23 +13,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: localhost
+- hosts: all:!opsmgr_containers
+  become: no
   gather_facts: no
-  connection: local
-  become: false
   vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - defaults/main.yml
-  pre_tasks:
-    - include: tasks/import.yml
+    - defaults.yml
+  tasks:
+    - name: clean target inventory files
+      local_action: file dest={{ opsmgr_inv }}/inventory-{{ item }} state=absent
+      with_items: group_names
+    - name: create target inventory files
+      local_action: copy dest={{ opsmgr_inv }}/inventory-{{ item }} content='[targets]' force=no
+      with_items: group_names
+    - name: update target inventory files
+      local_action: lineinfile dest={{ opsmgr_inv }}/inventory-{{ item }} line='{{ inventory_hostname }}'
+      with_items: group_names
+      when: ansible_ssh_host is not defined
+    - name: update target inventory files
+      local_action: lineinfile dest={{ opsmgr_inv }}/inventory-{{ item }} line='{{ inventory_hostname }} ansible_ssh_host={{ ansible_ssh_host }}'
+      with_items: group_names
+      when: ansible_ssh_host is defined
 
-- hosts: opsmgr_targets
+- hosts: localhost
+  become: no
+  connection: local
   gather_facts: no
-  become: true
   vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - defaults/main.yml
-  roles:
-    - target
+    - defaults.yml
+  vars:
+    - runbase: true
+    - runtgts: true
+  tasks:
+    - name: create base inventory file
+      copy: dest={{ opsmgr_inv }}/inventory-all content='[targets]' force=yes
+    - name: update base inventory file
+      lineinfile: dest={{ opsmgr_inv }}/inventory-all line='{{ item }}'
+      with_items: groups['all']
+      when: hostvars[item].ansible_ssh_host is not defined
+    - name: update base inventory file
+      lineinfile: dest={{ opsmgr_inv }}/inventory-all line='{{ item }} ansible_ssh_host={{ hostvars[item].ansible_ssh_host }}'
+      with_items: groups['all']
+      when: hostvars[item].ansible_ssh_host is defined
+    - name: run base ansible playbook
+      shell: >
+        rm -rf .facts *.log;
+        ansible-playbook -i "{{ opsmgr_inv }}/inventory-all"
+        -e "opsmgr_lib={{ opsmgr_lib }}"
+        -e "opsmgr_prl={{ opsmgr_prl }}"
+        site.yml
+      args:
+        chdir: "{{ opsmgr_dir }}/plugins/provisioning/base/"
+      when: runbase == true
+    - name: run target ansible playbooks
+      shell: >
+        rm -rf .facts *.log;
+        ansible-playbook -i "{{ opsmgr_inv }}/inventory-{{ item }}"
+        -e "opsmgr_lib={{ opsmgr_lib }}"
+        -e "opsmgr_prl={{ opsmgr_prl }}"
+        site.yml
+      args:
+        chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item }}/"
+      with_items: groups.keys()
+      when: runtgts == true and item not in '[ "ungrouped", "all", "opsmgr", "standard" ]'
+      ignore_errors: true
+
+

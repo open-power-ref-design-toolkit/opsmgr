@@ -1,0 +1,72 @@
+---
+
+# updates OpsMgr with target resources roles
+- hosts: opsmgr_core
+  become: true
+
+  vars:
+
+    osa_services:
+        - aodh_api
+        - ceilometer_agent_central
+        - ceilometer_collector
+        - cinder_api
+        - cinder_scheduler
+        - galera
+        - glance_api
+        - heat_api_cloudwatch
+        - heat_engine
+        - horizon
+        - keystone
+        - memcached
+        - neutron_agent
+        - neutron_server
+        - nova_api_metadata
+        - nova_api_os_compute
+        - nova_cert
+        - nova_conductor
+        - nova_console
+        - nova_scheduler
+        - rabbitmq
+        - pkg_repo
+        - rsyslog
+        - swift_acc
+        - swift_proxy
+        - trove
+        - utility
+
+  tasks:
+
+    - name: register controller resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ item }}" -r "osa_controller"
+      with_items: "{{ groups['os-infra_hosts'] }}"
+      ignore_errors: true
+
+    - name: register compute resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ item }}" -r "osa_compute"
+      with_items: "{{ groups['compute_hosts'] }}"
+      ignore_errors: true
+
+    - name: register storage resource role in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ item }}" -r "osa_storage"
+      with_items: "{{ groups['storage-infra_hosts'] }}"
+      ignore_errors: true
+
+    - name: register container resource roles in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ hostvars[item].physical_host }}" -r "osa_{{ hostvars[item].component }}"
+      when: |
+          hostvars[item].component in osa_services
+      with_items: "{{ groups['all_containers'] }}"
+      ignore_errors: true
+
+# reload new configuration on nagios servers
+- hosts: opsmgr_nagios
+  become: true
+  tasks:
+    - name: restart nagios service
+      service: name="nagios" state=restarted
+

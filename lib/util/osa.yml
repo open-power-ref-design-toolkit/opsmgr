@@ -1,0 +1,10 @@
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: yes
+  tasks:
+    - add_host: name={{ item }} groups=target_hosts
+      with_items: "{{ groups['hosts'] }}"
+    - add_host: name={{ item }} groups=target_containers
+      with_items: "{{ groups['all_containers'] }}"
+

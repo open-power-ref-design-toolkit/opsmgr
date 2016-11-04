@@ -1,8 +1,0 @@
-define service {
-   use                  generic-service
-   host_name            #@#HOSTNAME#@#
-   service_description  Ulysses OpenStack Log Collector
-   check_command        check_nrpe!#@#ROLE#@# #@#DATA#@#
-   check_interval       10
-}
-

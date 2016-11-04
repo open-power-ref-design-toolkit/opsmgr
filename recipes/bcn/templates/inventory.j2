@@ -1,0 +1,25 @@
+[opsmgr]
+{% for host in genesis.ansible_facts.nodes['controllers'] %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+
+[osa-mitaka]
+{{ ansible_hostname }}
+
+{% for node, hosts in genesis.ansible_facts.nodes.iteritems() %}
+{% if node == 'controllers' %}
+[controller]
+{% for host in hosts %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+
+[ceph-monitor]
+{% else %}
+[{{ node }}]
+{% endif %}
+{% for host in hosts %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+
+{% endfor %}
+

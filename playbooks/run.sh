@@ -1,4 +1,3 @@
-#!/bin/sh
 
 # Copyright 2016, IBM US, Inc.
 #
@@ -14,4 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ansible-playbook -i inventory --sudo $@
+rm -rf *.log .facts/
+export OPSMGR_PRL=../recipes/osa-mitaka/profile
+ansible-playbook -i $OPSMGR_PRL/inventory $@
+

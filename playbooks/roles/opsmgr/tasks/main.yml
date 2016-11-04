@@ -17,10 +17,10 @@
 
     - name: installs prereq packages with aptitude
       apt: name={{ item }} state=present update_cache=true
-      retries: 5
-      delay: 2
       with_items: "{{ apt_packages }}"
       when: imported is undefined or imported != true
+      retries: 5
+      delay: 2
 
     - name: decide if to use pip in isolated mode
       set_fact: pipargs='--isolated'
@@ -28,9 +28,9 @@
 
     - name: installs prereq packages with pip
       pip: name={{ item }} state=present executable={{ pipexec }} extra_args="{{ pipargs }}"
+      with_items: "{{ pip_packages }}"
       retries: 5
       delay: 2
-      with_items: "{{ pip_packages }}"
 
     # copy the code to server
 
@@ -70,7 +70,7 @@
 
     - name: copy ssh keys for service access
       copy:
-        src: "{{ opsmgr_dir }}/keys/current/{{ item }}"
+        src: "{{ opsmgr_lib }}/keys/current/{{ item }}"
         dest: "/etc/opsmgr"
         owner: root
         group: root
@@ -83,10 +83,28 @@
       shell: python -c "import base64;import os;print(str(base64.b64encode(os.urandom(32))))"
       register: random_passphrase  
 
-    - name: create opsmgr.conf
+    - name: create /etc/opsmgr/tmp
+      file:
+        path: "/etc/opsmgr/tmp"
+        state: directory
+        mode: 0700
+
+    - name: create opsmgr_base.conf
       template:
-        src: opsmgr.conf.j2
-        dest: /etc/opsmgr/opsmgr.conf
+        src: opsmgr_base.conf.j2
+        dest: /etc/opsmgr/tmp/opsmgr_base.conf
+        force: yes
+
+    - name: create opsmgr_elk.conf
+      template:
+        src: opsmgr_elk.conf.j2
+        dest: /etc/opsmgr/tmp/opsmgr_elk.conf
+        force: yes
+
+    - name: create opsmgr_nagios.conf
+      template:
+        src: opsmgr_nagios.conf.j2
+        dest: /etc/opsmgr/tmp/opsmgr_nagios.conf
         force: yes
       when: >
         item.0.role == 'nagios' and
@@ -95,6 +113,30 @@
       with_subelements:
         - "{{ opsmgr_containers }}"
         - ports
+
+    - name: create opsmgr_ganglia.conf
+      template:
+        src: opsmgr_ganglia.conf.j2
+        dest: /etc/opsmgr/tmp/opsmgr_ganglia.conf
+        force: yes
+      when: >
+        item.0.role == 'ganglia' and
+        item.0.host == hostvars[inventory_hostname].host and
+        item.1.name == 'http'
+      with_subelements:
+        - "{{ opsmgr_containers }}"
+        - ports
+
+    - name: assemble containers info into opsmgr.conf
+      assemble:
+        src: /etc/opsmgr/tmp/
+        dest: /etc/opsmgr/opsmgr.conf
+        mode: 0644
+
+    - name: remove /etc/opsmgr/tmp
+      file:
+        path: "/etc/opsmgr/tmp/"
+        state: absent
 
     - name: create /var/log/opsmgr
       file:
@@ -111,7 +153,6 @@
         login_host: "{{ db_login_host }}"
         name: "{{ db_name }}_{{ inventory_hostname }}"
         state: "present"
-      ignore_errors: yes # db might already exist
 
     - name: create service user and grant access to db
       mysql_user:
@@ -129,12 +170,9 @@
         - 127.0.0.1
         - ::1
         - localhost
-      ignore_errors: yes # user might already exist
-      #delegate_to: "{{ db_login_host }}"
 
     - name: create the database tables
       command: opsmgr-admin db_sync
-      ignore_errors: yes # tables might already exist
 
     # create the default rack
     
@@ -157,3 +195,5 @@
         dest: "{{ ui_enabled }}"
       notify: restart apache
       when: install_ui is defined and install_ui == true
+
+

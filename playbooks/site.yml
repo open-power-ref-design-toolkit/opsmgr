@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: local.yml
+- include: setup.yml
 - include: haproxy.yml
 - include: mysql.yml
-- include: opsmgr.yml
 - include: nagios.yml
-- include: targets.yml
-
+- include: logstash.yml
+- include: elasticsearch.yml
+- include: kibana.yml
+- include: opsmgr.yml
 

@@ -1,0 +1,6 @@
+---
+
+# restart the gmond service
+
+- name: restart gmond service
+  service: name="{{gmond_service}}" state=restarted

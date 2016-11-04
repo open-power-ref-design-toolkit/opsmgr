@@ -1,0 +1,56 @@
+---
+
+    # install pre-reqs
+
+    - name: installs prereq packages with apt
+      apt: name={{ item }} state=present update_cache=true force=yes
+      with_items: "{{ apt_packages }}"
+      retries: 5
+      delay: 2
+
+    # install nrpe server and/or plugin
+
+    - name: uninstalls nrpe server
+      apt: name=nagios-nrpe-server=2.15* state=absent purge=yes update_cache=true force=yes
+      when: install_server is defined and install_server == true
+      retries: 5
+      delay: 2
+
+    #- name: remove nrpe configuration
+    #  file: path={{ nrpe_dir }} state=absent
+    #  when: install_server is defined and install_server == true
+
+    - name: installs nrpe server
+      apt: name=nagios-nrpe-server=2.15* state=present update_cache=true force=yes
+      when: install_server is defined and install_server == true
+      retries: 5
+      delay: 2
+
+    - name: installs nrpe plugin
+      apt: name=nagios-nrpe-plugin=2.15* state=present update_cache=true force=yes install_recommends=no
+      when: install_plugin is defined and install_plugin == true
+      retries: 5
+      delay: 2
+
+    # create user and group
+
+    - name: create nagios group (if needed)
+      group: name={{ nrpe_group }} state=present
+    
+    - name: create nagios user (if needed)
+      user: name={{ nrpe_user }} groups={{ nrpe_group }}
+
+    # patch nrpe if requested
+    - include: patch.yml
+      when: patch_nrpe is defined and patch_nrpe == true
+    
+    # configures nrpe
+
+    - name: create nrpe.cfg from template
+      template: >
+        src=nrpe.cfg.j2
+        dest={{ nrpe_dir }}/nrpe.cfg
+        owner=root group=root mode=0644
+      when: install_server is defined and install_server == true
+      notify: restart nrpe service
+

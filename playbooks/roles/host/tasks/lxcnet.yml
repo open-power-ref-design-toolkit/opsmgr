@@ -13,17 +13,20 @@
 # limitations under the License.
 ---
 
-    - name: ensure the etc/ext directory exists
-      become: false
-      local_action: command mkdir -p {{ playbook_dir }}/ext
+    - name: ensure the facts directory exists
+      become: no
+      command: mkdir -p {{ opsmgr_dat }}
+      delegate_to: localhost
 
-    - name: lxcnets configuration for all hosts
+    - name: lxcnet configuration for all hosts
+      become: no
       template:
-        src: "lxcnets.yml.j2"
-        dest: "{{ playbook_dir }}/ext/lxcnets.yml"
+        src: "lxc-net.j2"
+        dest: "{{ opsmgr_dat }}/lxc-net.yml"
       delegate_to: localhost
     
-    - include_vars: "{{ playbook_dir }}/ext/lxcnets.yml"
+    - include_vars: "{{ opsmgr_dat }}/lxc-net.yml"
+      delegate_to: localhost
 
     - name: drop veth cleanup script
       template:

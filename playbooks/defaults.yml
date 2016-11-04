@@ -1,0 +1,48 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# profile to use
+profile: "{{ lookup('env', 'OPSMGR_PRL') | default('profile', true) }}"
+
+# important directories
+opsmgr_dir: "{{ playbook_dir }}/.."
+opsmgr_prl: "{{ playbook_dir }}/{{ profile }}"
+opsmgr_lib: "{{ opsmgr_dir }}/lib"
+opsmgr_dat: "{{ opsmgr_lib }}/vars"
+opsmgr_inv: "{{ opsmgr_dat }}"
+
+# opsmgr version
+opsmgr_version: 1.0.0.1
+
+# opsmgr playbook debug flag
+opsmgr_debug: true
+
+# tweak use of pip
+pipexec: pip
+pipargs: ''
+
+# name of sudoers file
+sudoers_filename: opsmgr_sudoers
+
+# internal database
+db_name: opsmgr
+mysql_root_user: root
+mysql_root_password: passw0rd
+
+# initializer for lists
+opsmgr_containers: []
+import_containers: []
+lxcnets: []
+

@@ -17,9 +17,7 @@
 #    under the License.
 
 if [ "$1" == "--help" ]; then
-    echo "Usage: bootstrap-opsmgr.sh [-i <controllernode1,...>] [-s <storagenode1,...>] [-c <computenode1,...>]"
-    echo ""
-    echo "export KIBANA_PASSWORD=                            Not applicable unless set"
+    echo "Usage: bootstrap-opsmgr.sh"
     exit 1
 fi
 
@@ -30,10 +28,6 @@ fi
 
 SCRIPTS_DIR=$(dirname $0)
 source $SCRIPTS_DIR/process-args.sh
-
-echo "DEPLOY_AIO=$DEPLOY_AIO"
-echo "infraNodes=$infraNodes"
-echo "allNodes=$allNodes"
 
 echo "Applying patches"
 
@@ -47,12 +41,3 @@ if [ -d diffs ]; then
     popd >/dev/null 2>&1
 fi
 
-echo "Copying opsmgr user variables and secrets to /etc/openstack_deploy"
-cp -R predeploy/elk/etc/openstack_deploy /etc
-rc=$?
-if [ $rc != 0 ]; then
-    echo "Failed cp secrets and variables to /etc/openstack_deploy"
-    exit 2
-fi
-
-echo "These files may be viewed and edited before they are activated by create-cluster-opsmgr.sh"

@@ -55,7 +55,6 @@
       notify:
         - restart service
 
-
     - name: create remote login user
       mysql_user:
         host: "{{ item }}"
@@ -77,8 +76,11 @@
         state: "present"
         password: ""
       with_items:
-        - "10.0.3.1"
-
+        - "%"
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
 
     - name: Remove the test database
       mysql_db: name=test state=absent

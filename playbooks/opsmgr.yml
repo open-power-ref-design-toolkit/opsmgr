@@ -18,24 +18,21 @@
   connection: local
   become: false
   vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - defaults/main.yml
+    - defaults.yml
   pre_tasks:
-    - include_vars: "{{ item }}"
-      with_first_found:
-        - "../ext/shared.yml"
-        - "defaults/shared.yml"
-    - include: tasks/import.yml
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - include: "{{ opsmgr_lib }}/util/import.yml"
 
 - hosts: opsmgr_core
   gather_facts: yes
   become: true
   vars_files:
-    - [ ../ext/overrides.yml, defaults/overrides.yml ]
-    - [ ../ext/shared.yml, defaults/shared.yml ]
-    - defaults/main.yml
+    - defaults.yml
   pre_tasks:
-    - debug: var=install_ui
-    - debug: var=ui_enabled
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - include: "{{ opsmgr_lib }}/util/import.yml"
   roles:
     - opsmgr
+
+
+

@@ -1,0 +1,7 @@
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: false
+  tasks:
+    - include: "import.yml"
+

@@ -27,15 +27,19 @@ class ELKPlugin(IOperationsPlugin):
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def get_application_url():
+        pluginApp = None
         if os.path.exists(ELKPlugin.OPSMGR_CONF):
-            parser = configparser.ConfigParser()
-            parser.read(ELKPlugin.OPSMGR_CONF, encoding='utf-8')
-            web_protcol = parser.get(ELKPlugin.ELK_SECTION, "web_protocol")
-            web_proxy = parser.get(ELKPlugin.ELK_SECTION, "web_proxy")
-            web_port = parser.get(ELKPlugin.ELK_SECTION, "web_port")
-            application = "ELK"
-            capability = "logging"
-            return plugins.PluginApplication(application, capability, web_protcol, web_proxy,
-                                             web_port, None)
-        else:
-            return None
+            try:
+                parser = configparser.ConfigParser()
+                parser.read(ELKPlugin.OPSMGR_CONF, encoding='utf-8')
+                web_protcol = parser.get(ELKPlugin.ELK_SECTION, "web_protocol")
+                web_proxy = parser.get(ELKPlugin.ELK_SECTION, "web_proxy")
+                web_port = parser.get(ELKPlugin.ELK_SECTION, "web_port")
+                application = "ELK"
+                capability = "logging"
+                pluginApp = plugins.PluginApplication(application, capability, web_protcol,
+                                                      web_proxy, web_port, None)
+            except configparser.Error:
+               # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
+               pass
+        return pluginApp 

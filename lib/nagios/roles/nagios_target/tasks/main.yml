@@ -1,0 +1,136 @@
+---
+
+    # install monitoring pre-reqs
+
+    - name: hack to allow unauthenticated packages to install
+      copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
+      when: is_monitored == true
+
+    - name: installs prereq packages with apt
+      apt: name={{ item }} state=present update_cache=true force=yes
+      with_items: "{{ apt_packages }}"
+      when: is_monitored == true
+      retries: 5
+      delay: 2
+
+    - name: remove hack that allows unauthenticated packages to install
+      file: path=/etc/apt/apt.conf.d/99temp state=absent
+      when: is_monitored == true
+
+    - name: installs prereq packages with pip
+      pip: name={{ item }} state=present extra_args='--allow-unverified'
+      with_items: "{{ pip_packages }}"
+      when: is_monitored == true
+      retries: 5
+      delay: 2
+
+    - name: installs prereq packages with gem
+      command: gem install --install-dir /var/lib/gems/1.9.1 --both --include-dependencies --rdoc --ri --force "{{ item }}"
+      with_items: "{{ gem_packages }}"
+      when: is_monitored == true
+      retries: 5
+      delay: 2
+
+    - name: configure sar data collection
+      template:
+          src: sysstat.j2
+          dest: /etc/default/sysstat
+          mode: 0644
+      when: is_monitored == true
+
+    - name: restart sysstat service
+      service: name=sysstat state=restarted
+      when: is_monitored == true
+
+    # install monitoring configuration
+
+    - name: remove all plugins if reset variable is set
+      file:
+          path: "{{ nrpe_dir }}/plugins"
+          state: absent
+      when: reset is defined and reset == true
+
+    - name: ensures plugins directory exists
+      file:
+          path: "{{ nrpe_dir }}/plugins"
+          state: directory
+      when: has_agent == true
+    
+    - name: copy plugins for roles
+      copy:
+          src: "{{ item }}"
+          dest: "{{ nrpe_dir }}/"
+          mode: 0755
+      with_first_found: "{{ files }}/plugins/"
+      when: has_agent == true
+      notify: restart nrpe service
+
+    - name: remove all nrpe.d if reset variable is set
+      file:
+          path: "{{ nrpe_dir }}/nrpe.d"
+          state: absent
+      when: reset is defined and reset == true
+
+    - name: ensures nrpe.d directory exists
+      file:
+          path: "{{ nrpe_dir }}/nrpe.d"
+          state: directory
+      when: has_agent == true
+    
+    - name: copy nrpe.d for roles
+      copy:
+          src: "{{ item }}"
+          dest: "{{ nrpe_dir }}/"
+          mode: 0644
+      with_first_found: "{{ files }}/nrpe.d/"
+      when: has_agent == true
+      notify: restart nrpe service
+
+    - name: remove all commands if reset variable is set
+      file:
+          path: "{{ nrpe_dir }}/commands"
+          state: absent
+      when: reset is defined and reset == true
+
+    - name: ensures commands directory exists
+      file:
+          path: "{{ nrpe_dir }}/commands"
+          state: directory
+      when: has_agent == true
+    
+    - name: copy commands for roles
+      copy:
+          src: "{{ item }}"
+          dest: "{{ nrpe_dir }}/"
+          mode: 0644
+      with_first_found: "{{ files }}/commands/"
+      when: has_agent == true
+      notify: restart nrpe service
+
+    # configures sudoers since our checks use sudo
+
+    - name: ensure sudoers.d directory exists
+      file:
+        path: /etc/sudoers.d
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
+
+    - name: ensure sudoers has include
+      lineinfile:
+        dest: /etc/sudoers
+        line: "#includedir /etc/sudoers.d"
+        state: present
+        validate: "/usr/sbin/visudo -cf %s"
+
+    - name: create sudoers include file
+      template:
+        src: sudoers.d.j2
+        dest: "/etc/sudoers.d/nagios_sudoers"
+        owner: root
+        group: root
+        mode: 0440
+        validate: "/usr/sbin/visudo -cf %s"
+
+

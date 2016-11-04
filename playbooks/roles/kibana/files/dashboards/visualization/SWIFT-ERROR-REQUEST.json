@@ -1,0 +1,10 @@
+{
+      "title": "SWIFT ERROR REQUEST",
+      "visState": "{\"title\":\"SWIFT ERROR REQUEST\",\"type\":\"metric\",\"params\":{\"fontSize\":\"30\",\"handleNoResults\":true},\"aggs\":[{\"id\":\"1\",\"type\":\"count\",\"schema\":\"metric\",\"params\":{}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"tags:swift AND response:(4?? OR 5??)\",\"analyze_wildcard\":true}},\"filter\":[]}"
+      }
+    }
