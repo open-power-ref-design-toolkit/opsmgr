@@ -79,8 +79,16 @@ function run_ansible {
     openstack-ansible ${ANSIBLE_PARAMETERS} --forks ${FORKS} $@
 }
 
-# This inventory is tied to manufacturing
 GENESIS_INVENTORY="/var/oprc/inventory.yml"
+GENESIS_SIMULATED="/var/oprc/inventory-simulated"
+
+function real_genesis_inventory_present {
+
+    if [ -r $GENESIS_INVENTORY ] && [ ! -e $GENESIS_SIMULATED ]; then
+        return 0
+    fi
+    return 1
+}
 
 # Reduce list to unique items
 function mkListsUnique {
@@ -117,7 +125,7 @@ shift $((OPTIND-1))                    # Now reference remaining arguments with 
 mkListsUnique $infraNodes $storageNodes $computeNodes
 allNodes=$uniqueList
 
-if [ -r $GENESIS_INVENTORY ]; then
+if real_genesis_inventory_present; then
     # End user is not invoking commands.  Genesis process sets policy
     if [ -z "$DEPLOY_CEPH" ]; then
         DEPLOY_CEPH=yes
