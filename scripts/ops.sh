@@ -22,8 +22,8 @@ popd
 # note: requires .ssh/id_rsa|id_rsa.pub
 echo "from playbooks running setup.yml"
 pushd playbooks
-export PROFILE=../recipes/privatecloud-mitaka/profile
-ansible-playbook -i $PROFILE/inventory -e "opsmgr_profile=$PROFILE" setup.yml
+export OPSMGR_PRL=../recipes/privatecloud-mitaka/profile
+ansible-playbook -e "OPSMGR_LIB=../lib" -i $OPSMGR_PRL/inventory setup.yml
 rc=$?
 if [ $rc != 0 ]; then
     echo "Failed running opsmgr playbooks/setup.yml, rc=$rc"
@@ -34,8 +34,7 @@ popd
 # creates the containers
 echo "from playbooks running hosts.yml"
 pushd playbooks
-export PROFILE=../recipes/privatecloud-mitaka/profile
-ansible-playbook -i $PROFILE/inventory -e "opsmgr_profile=$PROFILE" hosts.yml
+ansible-playbook -e "OPSMGR_LIB=../lib" -i $OPSMGR_PRL/inventory hosts.yml
 rc=$?
 if [ $rc != 0 ]; then
     echo "Failed running opsmgr playbooks/hosts.yml, rc=$rc"
@@ -46,8 +45,7 @@ popd
 # deploys opsmgr and integration plugins
 echo "from playbooks running site.yml"
 pushd playbooks
-export PROFILE=../recipes/privatecloud-mitaka/profile
-ansible-playbook -i $PROFILE/inventory -e "opsmgr_profile=$PROFILE" site.yml
+ansible-playbook -e "OPSMGR_LIB=../lib" -i $OPSMGR_PRL/inventory site.yml
 rc=$?
 if [ $rc != 0 ]; then
     echo "Failed running opsmgr playbooks/site.yml, rc=$rc"
@@ -55,5 +53,15 @@ if [ $rc != 0 ]; then
 fi
 popd
 
+# deploys beaver and nrpe on the endpoints
+echo "from playbooks running targets.yml"
+pushd playbooks
+ansible-playbook -e "OPSMGR_LIB=../lib" -i $OPSMGR_PRL/inventory targets.yml
+rc=$?
+if [ $rc != 0 ]; then
+    echo "Failed running opsmgr playbooks/targets.yml, rc=$rc"
+    exit 6
+fi
 popd
 
+popd

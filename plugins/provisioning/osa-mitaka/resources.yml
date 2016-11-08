@@ -46,13 +46,13 @@
     - name: register compute resource role in opsmgr
       shell: >
           opsmgr add_role -l "{{ item }}" -r "osa_compute"
-      with_items: "{{ groups['compute_hosts'] }}"
+      with_items: "{{ groups['compute_hosts'] | default([]) }}"
       ignore_errors: true
 
     - name: register storage resource role in opsmgr
       shell: >
           opsmgr add_role -l "{{ item }}" -r "osa_storage"
-      with_items: "{{ groups['storage-infra_hosts'] }}"
+      with_items: "{{ groups['storage-infra_hosts'] | default([]) }}"
       ignore_errors: true
 
     - name: register container resource roles in opsmgr
