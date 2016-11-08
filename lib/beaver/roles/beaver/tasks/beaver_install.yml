@@ -22,7 +22,7 @@
   until: install_pip_packages|success
   retries: 5
   delay: 2
-  with_items: beaver_pip_packages
+  with_items: "{{ beaver_pip_packages }}"
   tags:
     - beaver-install
     - beaver-pip-packages

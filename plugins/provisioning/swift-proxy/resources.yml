@@ -17,14 +17,14 @@
           dest=/etc/hosts regexp='.*{{ item }}$'
           line='{{ hostvars[item].ansible_ssh_host }} {{ hostvars[item].alias }}'
           state=present
-      with_items: groups['targets']
+      with_items: "{{ groups['targets'] }}"
       when: >
           hostvars[item].ansible_ssh_host is defined
 
     - name: register swift proxy resource role in opsmgr
       shell: >
           opsmgr add_role -l "{{ hostvars[item].alias }}" -r "swift_proxy"
-      with_items: groups['targets']
+      with_items: "{{ groups['targets'] }}"
       when: >
           hostvars[item].ansible_ssh_host is defined
       ignore_errors: true

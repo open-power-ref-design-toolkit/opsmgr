@@ -23,7 +23,7 @@
   until: install_apt_packages|success
   retries: 5
   delay: 2
-  with_items: elasticsearch_apt_packages
+  with_items: "{{ elasticsearch_apt_packages }}"
   tags:
     - elasticsearch-apt-packages
     - elasticsearch-install
@@ -37,7 +37,7 @@
   until: install_pip_packages|success
   retries: 5
   delay: 2
-  with_items: elasticsearch_pip_packages
+  with_items: "{{ elasticsearch_pip_packages }}"
   tags:
     - elasticsearch-pip-packages
     - elasticsearch-install

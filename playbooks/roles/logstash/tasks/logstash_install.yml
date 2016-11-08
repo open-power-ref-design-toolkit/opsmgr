@@ -23,7 +23,7 @@
   until: install_apt_packages|success
   retries: 5
   delay: 2
-  with_items: logstash_apt_packages
+  with_items: "{{ logstash_apt_packages }}"
   tags:
     - logstash-apt-packages
     - logstash-install

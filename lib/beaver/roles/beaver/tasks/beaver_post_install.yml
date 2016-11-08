@@ -19,7 +19,7 @@
     dest: "/etc/beaver/conf.d/{{ item.name }}"
     owner: "{{ beaver_daemon_user }}"
     group: "{{ beaver_daemon_group }}"
-  with_items: beaver_log_monitors
+  with_items: "{{ beaver_log_monitors }}"
   when: beaver_log_monitors is defined
   notify: Restart beaver
   tags:

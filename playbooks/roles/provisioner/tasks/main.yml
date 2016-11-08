@@ -88,7 +88,7 @@
           src: ssh.hst.j2
           dest: "~/.ssh/config.d/ssh.host-{{ item }}"
           mode: 0644
-      with_items: ssh_hosts
+      with_items: "{{ ssh_hosts }}"
       when: ssh_hosts is defined
 
     - name: create ssh config entries for containers from extravars
@@ -96,7 +96,7 @@
           src: ssh.lxc.j2
           dest: "~/.ssh/config.d/ssh.lxc-{{ item.hostname }}"
           mode: 0644
-      with_items: ssh_containers
+      with_items: "{{ ssh_containers }}"
       when: ssh_containers is defined
 
 
