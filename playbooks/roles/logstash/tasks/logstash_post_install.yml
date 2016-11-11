@@ -61,6 +61,10 @@
     - 17-rabbitmq.conf
     - 18-ceph.conf
     - 19-nginx.conf
+    - 20-trove.conf
+    - 20-sys.conf
+    - 21-kern.conf
+    - 22-dpkg.conf
     - 99-output.conf
   notify: Restart Logstash
   tags:
