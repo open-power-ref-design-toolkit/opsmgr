@@ -98,3 +98,5 @@ floating_ip: "{{ ansible_default_ipv4.address }}"
 install_haproxy: true
 internal_ip: 172.29.236.100
 
+# configure standalone opsmgr GUI on install
+patch_ui: true

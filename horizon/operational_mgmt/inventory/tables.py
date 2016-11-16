@@ -288,9 +288,9 @@ class NameLinkColumn(tables.Column):
 
 
 class ResourcesTable(tables.DataTable):
-    name = NameLinkColumn('name',
-                          verbose_name=_('Label'),
-                          link=True)
+    name = tables.Column('name',
+                         verbose_name=_('Label'),
+                         link="horizon:op_mgmt:inventory:detail")
     type = tables.Column('type',
                          verbose_name=_("Type"))
     arch = tables.Column('arch',
@@ -303,11 +303,14 @@ class ResourcesTable(tables.DataTable):
         filters=(filters.unordered_list,))
     rack_loc = tables.Column('rack_loc',
                              verbose_name=_("EIA Location"))
+    manager = NameLinkColumn('web_url',
+                           verbose_name=_('Management Interface'),
+                           link=True)
     userid = tables.Column('userid',
                            verbose_name=_("Management User"))
     mtm = tables.Column('mtm',
                         verbose_name=_("Machine Type/Model"))
-    serial_num = tables.Column('sn',
+    serial_num = tables.Column('serial_num',
                                verbose_name=_("Serial Number"))
     host_name = tables.Column(
         lambda obj: getattr(obj, 'host_name', []),

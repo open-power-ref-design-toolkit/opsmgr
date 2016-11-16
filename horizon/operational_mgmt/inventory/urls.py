@@ -31,4 +31,6 @@ urlpatterns = patterns(
     url(r'^(?P<rack_id>[^/]+)/removeRack/$',
         views.RemoveRackView.as_view(), name='removeRack'),
     url(r'^(?P<rack_id>[^/]+)/removeResources/$',
-        views.RemoveResourcesView.as_view(), name='removeResources'))
+        views.RemoveResourcesView.as_view(), name='removeResources'),
+    url(r'^(?P<resource_id>[^/]+)/$',
+        views.DetailView.as_view(), name='detail'))

@@ -187,8 +187,76 @@
         path: "{{ tmp_dir }}"
         state: absent
 
+    # Update local_settings for opsmgr
+    - name: Indicate the OPSMGR_RECIPE
+      debug: "msg='the OPSMGR_RECIPE is {{ recipe }}'"
+
+    - name: Update local_settings -- patch_ui value
+      lineinfile:
+          dest: "/etc/horizon/local_settings.py"
+          insertafter: EOF
+          line: 'patch_ui = True'
+          state: present
+      when: patch_ui is defined and patch_ui == true
+
+    - name: Update local_settings -- user_home
+      lineinfile:
+          dest: "/etc/horizon/local_settings.py"
+          insertafter: EOF
+          line: 'HORIZON_CONFIG["user_home"] = "op_mgmt/"'
+          state: present
+      when: patch_ui is defined and patch_ui == true
+
+    - name: Update local_settings -- LOGIN_REDIRECT_URL
+      lineinfile:
+          dest: "/etc/horizon/local_settings.py"
+          insertafter: EOF
+          line: "LOGIN_REDIRECT_URL = WEBROOT + 'op_mgmt/'"
+          state: present
+      when: patch_ui is defined and patch_ui == true
+
+    - name: Update local_settings -- SITE_BRANDING
+      lineinfile:
+           dest: "/etc/horizon/local_settings.py"
+           insertafter: EOF
+           line: 'SITE_BRANDING = "Operational Management"'
+           state: present
+      when: patch_ui is defined and patch_ui == true
+
+    - name: Update local_settings -- SITE_BRANDING_LINK
+      lineinfile:
+          dest: "/etc/horizon/local_settings.py"
+          insertafter: EOF
+          line: 'SITE_BRANDING_LINK = "http://www.ibm.com"'
+          state: present
+      when: patch_ui is defined and patch_ui == true
+
+    - name: Update local_settings -- help_url
+      lineinfile:
+          dest: "/etc/horizon/local_settings.py"
+          insertafter: EOF
+          line: 'HORIZON_CONFIG["help_url"] = "http://www.ibm.com/support/knowledgecenter/PurePower/p8ef9/p8ef9_manage_system.htm"'
+          state: present
+      when: patch_ui is defined and patch_ui == true
+
+    # DEBUG is used (in mitaka) to show/hide the Developer dashboard -- want to make sure it is not displayed
+    - name: Update local_settings -- DEBUG
+      replace:
+        dest: /etc/horizon/local_settings.py
+        regexp: "^DEBUG = True"
+        replace: "DEBUG = False"
+      when: patch_ui is defined and patch_ui == true
+
+    # COMPRESS_OFFLINE needs to be reset once we've adjusted DEBUG (in mitaka)
+    - name: Update local_settings -- COMPRESS_OFFLINE
+      replace:
+        dest: /etc/horizon/local_settings.py
+        regexp: "^COMPRESS_OFFLINE = True"
+        replace: "COMPRESS_OFFLINE = False"
+      when: patch_ui is defined and patch_ui == true
+
     # drop enabled files for horizon
-    
+ 
     - name: Copy the ui files into the enabled directory
       copy:
         src: "{{ opsmgr_dir }}/horizon/enabled"

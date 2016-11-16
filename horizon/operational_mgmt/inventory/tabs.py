@@ -274,3 +274,16 @@ class InventoryRacksTabs(tabs.TabGroup):
         # Add the application URLs to the list of attributes of the tab group.
         # We need those attributes when launching various applications
         self.attrs.update(retrieve_application_links(self, request))
+class OverviewTab(tabs.Tab):
+    name = _("Overview")
+    slug = "overview"
+    template_name = ("op_mgmt/inventory/_detail_overview.html")
+
+    def get_context_data(self, request):
+        return {"resource": self.tab_group.kwargs['resource']}
+
+
+class ResourceDetailTabs(tabs.TabGroup):
+    slug = "resource_details"
+    tabs = (OverviewTab,)
+

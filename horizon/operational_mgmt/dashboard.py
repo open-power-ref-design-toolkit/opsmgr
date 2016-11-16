@@ -17,6 +17,15 @@ from django.utils.translation import ugettext_lazy as _
 import horizon
 
 
+def minimal_footprint():
+    settingsFile = file('/etc/horizon/local_settings.py')
+    found = False
+    for line in settingsFile:
+        if "patch_ui = True" in line:
+            found = True
+            break
+    return found
+
 class OpMgmtdashboard(horizon.Dashboard):
     name = _("Operational Management")
     slug = "op_mgmt"
@@ -24,3 +33,27 @@ class OpMgmtdashboard(horizon.Dashboard):
     default_panel = 'inventory'
 
 horizon.register(OpMgmtdashboard)
+# When in minimal-footprint (standard) environment, hide the other
+# dashboards.
+if (minimal_footprint()):
+    # Hide project dashboard
+    try:
+        project = horizon.get_dashboard('project')
+        project.permissions = ('openstack.roles.hideMe')
+    except:
+        # consider logging that we're not able to hide other dashboards
+        pass
+    # Hide admin dashboard
+    try:
+        project = horizon.get_dashboard('admin')
+        project.permissions = ('openstack.roles.hideMe')
+    except:
+        # consider logging that we're not able to hide other dashboards
+        pass
+    # Hide identity dashboard
+    try:
+        project = horizon.get_dashboard('identity')
+        project.permissions = ('openstack.roles.hideMe')
+    except:
+        # consider logging that we're not able to hide other dashboards
+        pass

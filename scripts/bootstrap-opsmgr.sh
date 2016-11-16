@@ -40,4 +40,9 @@ if [ -d diffs ]; then
     done
     popd >/dev/null 2>&1
 fi
-
+scripts/stdc.sh
+rc=$?
+if [ $rc != 0 ]; then
+    echo "Failed running scripts/stdc.sh rc=$rc"
+    exit 3
+fi

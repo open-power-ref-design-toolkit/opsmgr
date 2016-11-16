@@ -1,0 +1,69 @@
+{% load i18n sizeformat parse_date %}
+
+<div class="detail">
+  <dl class="dl-horizontal">
+    <dt>{% trans "Label" %}</dt>
+    <dd>{{ resource.name }}</dd>
+    <dt>{% trans "EIA Location" %}</dt>
+    {% if resource.rack_loc %}
+      <dd>{{ resource.rack_loc }}</dd>
+    {% else %}
+      <dd>{% trans "Not Set" %}</dd>
+    {% endif %}
+  </dl>
+
+  <h4>{% trans "Specs" %}</h4>
+  <hr class="header_rule">
+  <dl class="dl-horizontal">
+    <dt>{% trans "Type" %}</dt>
+    <dd>{{ resource.type }}</dd>
+    <dt>{% trans "Version" %}</dt>
+    <dd>{{ resource.version }}</dd>
+    <dt>{% trans "Architecture" %}</dt>
+    <dd>{{ resource.arch }}</dd>
+    <dt>{% trans "Machine Type/Model" %}</dt>
+    {% if resource.mtm %}
+      <dd>{{ resource.mtm }}</dd>
+    {% else %}
+      <dd>{% trans "-" %}</dd>
+    {% endif %}
+    <dt>{% trans "Serial Number" %}</dt>
+    {% if resource.serial_num %}
+      <dd>{{ resource.serial_num }}</dd>
+    {% else %}
+      <dd>{% trans "-" %}</dd>
+    {% endif %}
+  </dl>
+
+  <h4>{% trans "Access" %}</h4>
+  <hr class="header_rule">
+  <dl class="dl-horizontal">
+    <dt>{% trans "Management User" %}</dt>
+    <dd>{{ resource.userid }}</dd>
+    <dt>{% trans "Hostname" %}</dt>
+    <dd>{{ resource.hostname }}</dd>
+    <dt>{% trans "IP Address" %}</dt>
+    <dd>{{ resource.ip_address }}</dd>
+    <dt>{% trans "Management Interface" %}</dt>
+    {% if "http" in resource.web_url %}
+      <dd><a href='{{ resource.web_url }}' target='{{ resource.name }}'>{{ resource.web_url }}</a></dd>
+    {% else %} 
+      <dd>{% trans "-" %}</dd>
+    {% endif %}
+
+  </dl>
+
+  <h4>{% trans "Capabilities" %}</h4>
+  <hr class="header_rule">
+  <dl class="dl-horizontal">
+  {% if resource.capabilities %}
+      {% for capability in resource.capabilities %}
+          <dd>{{ capability }}</dd>
+      {% endfor %}
+  {% else %}
+      <dd>{% trans "None" %}</dd>
+  {% endif %}
+  </dl>
+
+
+</div>

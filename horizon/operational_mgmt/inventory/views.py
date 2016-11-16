@@ -43,6 +43,70 @@ class IndexView(tabs.TabbedTableView):
     template_name = 'op_mgmt/inventory/index.html'
     page_title = _("Inventory")
 
+class DetailView(tabs.TabView):
+    tab_group_class = inventoryRacks_tabs.ResourceDetailTabs
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ resource.name|default:resource.id }}"
+
+    def get_context_data(self, **kwargs):
+        context = super(DetailView, self).get_context_data(**kwargs)
+        resource = self.get_data()
+        table = project_tables.ResourcesTable(self.request)
+        context["resource"] = resource
+        context["url"] = self.get_redirect_url()
+
+        context["actions"] = table.render_row_actions(resource)
+        return context
+
+    @memoized.memoized_method
+    def get_data(self):
+        try:
+            if "resource_id" in self.kwargs:
+                try:
+                    (rc, result_dict) = resource_mgr.list_resources(
+                        None, False, None, [self.kwargs['resource_id']])
+                except Exception as e:
+                    logging.error("%s: Exception received trying to retrieve"
+                                  " resource information.  Exception is: %s",
+                                  __method__, e)
+                    exceptions.handle(self.request, failure_message)
+                    return
+            else:
+                # This is unexpected.  Resource details called with no context
+                # of what to display.  Need to display an error message because the
+                # view will not be primed with required data
+                logging.error("%s: DetailView called with no resource id"
+                              " context.", __method__)
+                messages.error(self.request, failure_message)
+                return
+
+            if rc != 0:
+                messages.error(self.request, failure_message)
+                return
+            else:
+                # We should have at least one resource in the results...just
+                # return the first value
+                if len(result_dict['resources']) > 0:
+                    return resource.Resource(result_dict['resources'][0])
+                else:
+                    logging.error("%s: list_resources returned no information for"
+                                  " resource with resource id %s",
+                                  __method__, self.kwargs["resource_id"])
+                    messages.error(self.request, failure_message)
+                    return
+        except Exception:
+            redirect = self.get_redirect_url()
+            exceptions.handle(self.request,
+                              _('Unable to retrieve resource details.'),
+                              redirect=redirect)
+
+    def get_redirect_url(self):
+        return reverse('horizon:op_mgmt:inventory:index')
+
+    def get_tabs(self, request, *args, **kwargs):
+        resource = self.get_data()
+        return self.tab_group_class(request, resource=resource, **kwargs)
+
 
 class AddResourceView(forms.ModalFormView):
     template_name = 'op_mgmt/inventory/addResource.html'
