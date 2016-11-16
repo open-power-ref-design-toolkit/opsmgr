@@ -77,14 +77,23 @@
     - name: fails if nagios extracted directory does not exist
       fail: msg="Extracted nagios directory {{ nagios_dir }} does not exist"
       when: nagios_dir_exists.stat.exists == false
-    
-    - name: configure nagios core
+
+    - name: configure nagios core x86
       command: |
-          ./configure
+          ./configure 
           --with-nagios-user={{ nagios_user }} --with-nagios-group={{ nagios_group }}
           --with-command-user={{ nagios_user }} --with-command-group={{ nagios_group }}
           chdir={{ nagios_dir }}
+      when: ansible_architecture == 'x86_64'
     
+    - name: configure nagios core ppc64le
+      command: |
+          ./configure --build=ppc64le-unknown-linux-gnu
+          --with-nagios-user={{ nagios_user }} --with-nagios-group={{ nagios_group }}
+          --with-command-user={{ nagios_user }} --with-command-group={{ nagios_group }}
+          chdir={{ nagios_dir }}
+      when: ansible_architecture == 'ppc64le'
+
     - name: make all
       command: make all chdir={{ nagios_dir }}
     
@@ -137,12 +146,20 @@
     - name: fails if plugin extracted directory does not exist
       fail: msg="Extracted plugin directory {{ plugin_dir }} does not exist"
       when: plugin_dir_exists.stat.exists == false
-    
-    - name: configure nagios plugins
+
+    - name: configure nagios plugins x86
       command: |
           ./configure
           --with-nagios-user=nagios --with-nagios-group=nagios
           chdir={{ plugin_dir }}
+      when: ansible_architecture == 'x86_64'
+    
+    - name: configure nagios plugins ppc64le
+      command: |
+          ./configure --build=ppc64le-unknown-linux-gnu
+          --with-nagios-user=nagios --with-nagios-group=nagios
+          chdir={{ plugin_dir }}
+      when: ansible_architecture == 'ppc64le'
     
     - name: make plugins
       command: make chdir={{ plugin_dir }}
@@ -220,6 +237,12 @@
     
     - name: validate nagios config
       command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+
+    # Add a nagios.service to /etc/systemd/system
+    - name: copy nagios.service
+      copy:
+          src: "nagios.service"
+          dest: "/etc/systemd/system/nagios.service"
     
     # start nagios and apache services
     
@@ -236,5 +259,3 @@
     
     - name: cleanup nagios plugin directory
       command: rm -rf {{ plugin_dir }}
-
-

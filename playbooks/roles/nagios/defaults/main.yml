@@ -14,7 +14,7 @@
 # limitations under the License.
 
 nagios_download_site: https://assets.nagios.com/downloads/nagioscore/releases
-nagios_download_file: nagios-4.2.1.tar.gz
+nagios_download_file: nagios-4.2.2.tar.gz
 plugin_download_site: http://nagios-plugins.org/download
 plugin_download_file: nagios-plugins-2.1.3.tar.gz
 temp_dir: /tmp
@@ -30,11 +30,10 @@ apt_packages:
   - apache2
   - apache2-utils
   - build-essential
-  - libapache2-mod-php5
-  - libffi-dev
-  - libgd2-xpm-dev
-  - libssl-dev
-  - php5-gd
+  - libapache2-mod-php7.0
+  - libgd-dev
+  - php
+  - php-gd
   - lxc-dev
   - python-dev
   - python-pip

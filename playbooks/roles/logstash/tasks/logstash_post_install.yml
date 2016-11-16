@@ -83,3 +83,22 @@
   tags:
     - logstash-post-install
 
+- name: Remove the preq deb package in /tmp (ppc64le)
+  file:
+    path: "/tmp/{{ item.file }}"
+    state: absent
+  with_items: "{{ jre_preq_deb_packages }}"
+  when: ansible_architecture == 'ppc64le'
+  tags:
+    - logstash-deb-package
+    - logstash-post-install
+
+- name: Remove the deb package in /tmp
+  file:
+    path: "/tmp/{{ item.file }}"
+    state: absent
+  with_items: "{{ logstash_deb_packages }}"
+  tags:
+    - logstash-deb-package
+    - logstash-post-install
+

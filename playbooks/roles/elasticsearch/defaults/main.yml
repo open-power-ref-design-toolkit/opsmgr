@@ -33,26 +33,30 @@ apt_packages:
   - wget
   - curl
   - rsync
+  - python-pip
 
-elasticsearch_apt_repo_url: "http://packages.elasticsearch.org/elasticsearch/2.x/debian"
+jre_apt_repo_url: "http://ftp.us.debian.org/debian"
 
-elasticsearch_apt_repos:
-  - { repo: "deb {{ elasticsearch_apt_repo_url }} stable main", state: "present" }
-
-elasticsearch_apt_keys:
-  - { url: "http://packages.elasticsearch.org/GPG-KEY-elasticsearch", state: "present" }
+jre_apt_repos:
+  - { repo: "deb {{ jre_apt_repo_url }} experimental main", state: "present" }
+  - { repo: "deb {{ jre_apt_repo_url }} sid main", state: "present" }
 
 elasticsearch_system_user: elasticsearch
 elasticsearch_system_group: elasticsearch
 
-elasticsearch_apt_packages:
-  - python-pip
-  - openjdk-7-jre-headless
-  - elasticsearch
+jre_apt_package: openjdk-7-jre-headless
 
 elasticsearch_pip_packages:
   - elasticsearch
   - elasticsearch-curator
+
+#preq for openjdk-7-jre-headless can't be found with apt-get
+elasticsearch_preq_deb_packages:
+  - { url: "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo", file: "libjpeg62-turbo_1.5.1-2_ppc64el.deb" }
+
+#for ppc64le and x86 use the deb package to install
+elasticsearch_deb_packages:
+  - { url: "https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.4.1", file: "elasticsearch-2.4.1.deb" }
 
 # This sets the cluster name
 elasticsearch_cluster: openstack

@@ -13,20 +13,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install apt packages
+- name: Install deb package 
   apt:
-    pkg: "{{ item }}"
-    state: latest
-    update_cache: yes
-    cache_valid_time: 600
-  register: install_apt_packages
-  until: install_apt_packages|success
-  retries: 5
-  delay: 2
-  with_items: "{{ elasticsearch_apt_packages }}"
+    deb="/tmp/{{ item.file }}"
+    state=installed
+  with_items: "{{ elasticsearch_deb_packages }}"
   tags:
-    - elasticsearch-apt-packages
+    - elasticsearch-deb-package
     - elasticsearch-install
+
+#Patch /usr/share/elasticsearch/bin/plugin to remove
+#the -client option is not available in ppc64le
+- name: Patch plugin
+  shell: awk '{gsub("-client ","");print}' plugin > plugin.new
+  args:
+    chdir: /usr/share/elasticsearch/bin
+    creates: /usr/share/elasticsearch/bin/plugin.new
+  when: ansible_architecture == 'ppc64le'
+  tags:
+    - elasticsearch-patch-plugin
+    - elesticsearch-install
+
+- name: Overwrite plugin with patch
+  command: mv plugin.new plugin
+  args:
+    chdir: /usr/share/elasticsearch/bin
+    removes: /usr/share/elasticsearch/bin/plugin.new
+  when: ansible_architecture == 'ppc64le'
+  tags:
+    - elasticsearch-patch-plugin
+    - elesticsearch-install
+
+- name: Make plugin executable again
+  file:
+    path: /usr/share/elasticsearch/bin/plugin
+    mode: 0755
+  when: ansible_architecture == 'ppc64le'
+  tags:
+    - elasticsearch-patch-plugin
+    - elesticsearch-install
 
 - name: Install pip packages
   pip:
@@ -145,7 +170,6 @@
   tags:
     - elasticsearch-plugins
     - elasticsearch-install
-
 
 - name: Enable ElasticSearch Service
   service:
