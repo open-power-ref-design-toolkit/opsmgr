@@ -72,7 +72,7 @@ function set_passwd {
 
 export ANSIBLE_PARAMETERS=${ANSIBLE_PARAMETERS:-""}
 export ANSIBLE_FORCE_COLOR=${ANSIBLE_FORCE_COLOR:-"true"}
-export FORKS=${FORKS:-$(grep -c ^processor /proc/cpuinfo)}
+export FORKS=${FORKS:-8}
 export BOOTSTRAP_OPTS=${BOOTSTRAP_OPTS:-""}
 
 function run_ansible {
