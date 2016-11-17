@@ -2,7 +2,7 @@
       "title": "Trove Dashboard",
       "hits": 0,
       "description": "",
-      "panelsJSON": "[{\"col\":1,\"id\":\"TROVE-RESPONSE-TIME\",\"panelIndex\":1,\"row\":1,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":1,\"id\":\"TROVE-LOG-LEVEL-SEVERITY\",\"panelIndex\":2,\"row\":3,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":4,\"id\":\"TROVE-REQUEST-RATE\",\"panelIndex\":3,\"row\":1,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":4,\"id\":\"TOP-TROVE-EVENT-SOURCES\",\"panelIndex\":4,\"row\":3,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"id\":\"All-trove-events\",\"type\":\"search\",\"panelIndex\":6,\"size_x\":12,\"size_y\":3,\"col\":1,\"row\":5,\"columns\":[\"beat.hostname\",\"module\",\"logmessage\"],\"sort\":[\"@timestamp\",\"desc\"]}]",
+      "panelsJSON": "[{\"col\":1,\"id\":\"TROVE-RESPONSE-TIME\",\"panelIndex\":1,\"row\":1,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":1,\"id\":\"TROVE-LOG-LEVEL-SEVERITY\",\"panelIndex\":2,\"row\":3,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":4,\"id\":\"TROVE-REQUEST-RATE\",\"panelIndex\":3,\"row\":1,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"col\":4,\"id\":\"TOP-TROVE-EVENT-SOURCES\",\"panelIndex\":4,\"row\":3,\"size_x\":3,\"size_y\":2,\"type\":\"visualization\"},{\"id\":\"All-trove-events\",\"type\":\"search\",\"panelIndex\":5,\"size_x\":12,\"size_y\":3,\"col\":1,\"row\":5,\"columns\":[\"host\",\"module\",\"loglevel\",\"logmessage\"],\"sort\":[\"@timestamp\",\"desc\"]}]",
       "optionsJSON": "{\"darkTheme\":false}",
       "uiStateJSON": "{}",
       "version": 1,
