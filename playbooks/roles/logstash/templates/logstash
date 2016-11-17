@@ -12,6 +12,9 @@
 {% if logstash_workers is not defined %}
 {%   set logstash_workers = hostvars[inventory_hostname]['ansible_processor_vcpus'] %}
 {% endif %}
+{% if logstash_workers == 0 %}
+{%   set logstash_workers = 8 %}
+{% endif %}
 LS_OPTS="-w {{ logstash_workers|int }} {{ logstash_verbose|default() }}"
 
 # Arguments to pass to java

@@ -45,15 +45,3 @@
   tags:
     - kibana-apt-repos
     - kibana-pre-install
-
-#- name: Create Kibana Directories
-#  file:
-#    state: directory
-#    path: "{{ item.name }}"
-#    mode: "{{ item.mode }}"
-#    owner: "{{ kibana_service_user }}"
-#    group: "{{ kibana_service_group }}"
-#  with_items: kibana_directories
-#  tags:
-#    - kibana-pre-install
-

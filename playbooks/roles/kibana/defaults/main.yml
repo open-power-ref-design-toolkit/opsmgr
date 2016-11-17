@@ -20,6 +20,8 @@ apt_packages:
   - wget
   - curl
   - rsync
+  - apache2
+  - python-passlib
 
 kibana_root: /opt/kibana
 
@@ -43,8 +45,6 @@ elasticsearch_ip: "{{ hostvars[groups['opsmgr_elasticsearch'][0]]['address'] }}"
 
 kibana_apt_packages:
   - kibana
-  - apache2
-  - python-passlib
 
 kibana_apache_modules:
   - rewrite

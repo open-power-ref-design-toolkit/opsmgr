@@ -14,5 +14,11 @@
 # limitations under the License.
 
 - include: kibana_pre_install.yml
+  when: ansible_architecture == 'x86_64'
 - include: kibana_install.yml
+  when: ansible_architecture == 'x86_64'
+
+- include: kibana_install_ppc64le.yml
+  when: ansible_architecture == 'ppc64le'
+
 - include: kibana_post_install.yml

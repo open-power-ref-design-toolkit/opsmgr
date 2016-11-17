@@ -1,5 +1,5 @@
 ---
-# Copyright 2015, Rackspace US, Inc.
+# Copyright 2014, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+kibana_download: "https://download.elastic.co/kibana/kibana/kibana-4.6.2-linux-x86_64.tar.gz"
+nodejs_download: "https://nodejs.org/dist/v4.6.2/node-v4.6.2-linux-ppc64le.tar.gz"
 
-- name: Install deb package
-  apt:
-    deb="/tmp/{{ item.file }}"
-    state=installed
-  with_items: "{{ logstash_deb_packages }}"
-  tags:
-    - logstash-deb-package
-    - logstash-install
+temp_install_directory: /tmp/kibana_install
 
-- name: Enable Logstash Service
-  service:
-    name: logstash
-    enabled: yes
+kibana_directory: kibana-4.6.2-linux-x86_64
+nodejs_directory: node-v4.6.2-linux-ppc64le
+
+
