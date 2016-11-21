@@ -71,14 +71,15 @@ containers:
 # container network installation
 create_lxc_network: true
 main_lxc_interface: eth1
-lxc_container_default_mtu: 1500
-address_pool: [ 172.29.236.1, 172.29.236.2, 172.29.236.3, 172.29.236.4, 172.29.236.5, 172.29.236.6 ]
 opsmgr_lxc_nets:
   - name: mgmt
     bridge: "br-mgmt"
     interface: "eth1"
     netmask: "255.255.252.0"
     type: "veth"
+lxc_container_default_mtu: 1500
+lxc_cidr: "172.29.236.0/22"
+lxc_blacklist: []
 
 # database installation
 install_mysql: true

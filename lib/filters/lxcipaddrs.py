@@ -1,4 +1,3 @@
----
 # Copyright 2016, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# apt packages needed for lxc support
-apt_packages:
-  - lxc
-  - lxc-dev
-  - python2.7-dev
-  - python-pip
+from netaddr import IPNetwork, IPAddress
 
-# pip packages needed for lxc support
-pip_packages:
-  - lxc-python2
+def lxcipaddrs(cidr, blacklist=[], num=1):
+    whitelist = []
+    count = 0
+    for ip in IPNetwork(cidr)[1:]:
+        ipstr = str(ip)
+        if ipstr in blacklist:
+            continue
+        whitelist.append(ipstr)
+        count += 1
+        if count == num:
+          break
+    return whitelist
 
-# host directory shared with all containers
-lxc_shared: /etc/opsmgr/shared
-
-# address pool to use for lxc network
-address_pool: "{{ lxc_cidr | lxcipaddrs(lxc_blacklist,24) }}"
+class FilterModule(object):
+    def filters(self):
+        return {
+            'lxcipaddrs': lxcipaddrs,
+        }
 
