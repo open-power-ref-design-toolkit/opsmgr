@@ -47,14 +47,37 @@ import_containers:
 # container network installation
 create_lxc_network: true
 main_lxc_interface: "eth1"
-lxc_container_default_mtu: 1500
-address_pool: [ 172.29.236.30, 172.29.236.31, 172.29.236.32, 172.29.236.33, 172.29.236.34, 172.29.236.36, 172.29.236.38, 172.29.236.39, 172.29.236.40, 172.29.236.41, 172.29.236.42, 172.29.236.44, 172.29.236.45, 172.29.236.46, 172.29.236.47, 172.29.236.48, 172.29.236.49, 172.29.236.50 ]
 opsmgr_lxc_nets:
   - name: "mgmt"
     bridge: "br-mgmt"
     interface: "eth1"
-    netmask: "255.255.252.0"
+    netmask: "{{ cidr_networks.container | ipaddr('netmask') }}"
     type: "veth"
+
+{% set globals = {'mtu_found':False} %}
+{% for net in global_overrides.provider_networks %}
+{% if net.network.container_bridge == "br-mgmt" %}
+{% if 'container_mtu' in net.network %}
+lxc_container_default_mtu: {{ net.network.container_mtu }}
+{% set _ = globals.update({'mtu_found':True}) %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% if globals.mtu_found == False %}
+lxc_container_default_mtu: 1500
+{% endif %}
+
+lxc_cidr: "{{ cidr_networks.container }}"
+
+lxc_blacklist: [
+{% for node in groups['hosts'] %}
+{{ hostvars[node].container_address }},
+{% endfor %}
+{% for node in groups['all_containers'] %}
+{{ hostvars[node].container_address }},
+{% endfor %}
+0.0.0.0
+]
 
 # database installation
 install_mysql: false
