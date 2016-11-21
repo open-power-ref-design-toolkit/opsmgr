@@ -8,3 +8,11 @@
 
 {{ ansible_hostname }}
 
+{% for node, hosts in genesis.ansible_facts.nodes.iteritems() %}
+{% if node != 'controllers' %}
+[{{ node }}]
+{% for host in hosts %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+{% endif %}
+{% endfor %}
