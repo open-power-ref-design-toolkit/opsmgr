@@ -12,6 +12,7 @@
         - ceilometer_collector
         - cinder_api
         - cinder_scheduler
+        - cinder_volume
         - galera
         - glance_api
         - heat_api_cloudwatch
@@ -32,7 +33,7 @@
         - rsyslog
         - swift_acc
         - swift_proxy
-        - trove
+        - power_trove
         - utility
 
   tasks:
@@ -54,6 +55,11 @@
           opsmgr add_role -l "{{ item }}" -r "osa_storage"
       with_items: "{{ groups['storage-infra_hosts'] | default([]) }}"
       ignore_errors: true
+
+    - name: debug
+      debug:
+          msg: "The container {{ item }} is associated with the component: {{ hostvars[item].component }}"
+      with_items: "{{ groups['all_containers'] }}"
 
     - name: register container resource roles in opsmgr
       shell: >

@@ -61,6 +61,7 @@
     home: "/var/lib/{{ beaver_daemon_user }}"
     system: "yes"
     createhome: "yes"
+    uid: "2468"
   when: beaver_daemon_user is defined
         and beaver_daemon_user != 'root'
         and beaver_daemon_group is defined

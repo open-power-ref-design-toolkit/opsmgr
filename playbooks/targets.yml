@@ -16,6 +16,7 @@
 - hosts: all:!opsmgr_containers
   become: no
   gather_facts: no
+  serial: 1
   vars_files:
     - defaults.yml
   tasks:
@@ -74,7 +75,7 @@
       args:
         chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item }}/"
       with_items: groups.keys()
-      when: runtgts == true and item not in '[ "ungrouped", "all", "opsmgr", "standard" ]'
+      when: runtgts == true and item not in '[ "ungrouped", "all", "opsmgr", "standard", "compute" ]'
       ignore_errors: true
 
 
