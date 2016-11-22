@@ -25,7 +25,7 @@
       delay: 2
 
     - name: installs prereq packages with gem
-      command: gem install --install-dir /var/lib/gems/1.9.1 --both --include-dependencies --rdoc --ri --force "{{ item }}"
+      command: gem install --both --document rdoc,ri --force "{{ item }}"
       with_items: "{{ gem_packages }}"
       when: is_monitored == true
       retries: 5
@@ -59,7 +59,7 @@
     - name: copy plugins for roles
       copy:
           src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/"
+          dest: "{{ nrpe_dir }}/plugins/"
           mode: 0755
       with_first_found: "{{ files }}/plugins/"
       when: has_agent == true
@@ -80,7 +80,7 @@
     - name: copy nrpe.d for roles
       copy:
           src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/"
+          dest: "{{ nrpe_dir }}/nrpe.d/"
           mode: 0644
       with_first_found: "{{ files }}/nrpe.d/"
       when: has_agent == true
@@ -101,7 +101,7 @@
     - name: copy commands for roles
       copy:
           src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/"
+          dest: "{{ nrpe_dir }}/commands/"
           mode: 0644
       with_first_found: "{{ files }}/commands/"
       when: has_agent == true

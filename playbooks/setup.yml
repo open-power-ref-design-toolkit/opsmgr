@@ -18,13 +18,14 @@
   connection: local
   vars_files:
     - defaults.yml
-  pre_tasks:
-    - include_vars: "{{ opsmgr_prl }}/vars.yml"
   tasks:
+    - include: "{{ opsmgr_lib }}/util/env.yml"
     - include: "{{ opsmgr_lib }}/util/import.yml"
 
 - hosts: all
   gather_facts: yes
+  tasks:
+    - set_fact: provisioning_user_id={{ lookup('env','USER') }}
 
 - hosts: localhost
   connection: local
@@ -51,7 +52,6 @@
 
 - hosts: localhost
   connection: local
-  become: no
   tasks:
     - name: assemble ~/.ssh/config file
       assemble:

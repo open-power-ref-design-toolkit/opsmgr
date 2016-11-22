@@ -4,8 +4,8 @@ Host {{ inventory_hostname }}
   Hostname {{ hostvars[inventory_hostname].address }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-{% if ansible_ssh_user is defined %}
-  ProxyCommand ssh -q {{ ansible_ssh_user }}@{{ hostvars[inventory_hostname].host }} nc -q0 %h %p
+{% if ansible_user_id is defined %}
+  ProxyCommand ssh -q {{ ansible_user_id }}@{{ hostvars[inventory_hostname].host }} nc -q0 %h %p
 {% else %}
   ProxyCommand ssh -q %r@{{ hostvars[inventory_hostname].host }} nc -q0 %h %p
 {% endif %}
@@ -19,8 +19,8 @@ Host {{ hostvars[inventory_hostname].address }}
   Hostname {{ hostvars[inventory_hostname].address }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-{% if ansible_ssh_user is defined %}
-  ProxyCommand ssh -q {{ ansible_ssh_user }}@{{ hostvars[inventory_hostname].host }} nc -q0 %h %p
+{% if ansible_user_id is defined %}
+  ProxyCommand ssh -q {{ ansible_user_id }}@{{ hostvars[inventory_hostname].host }} nc -q0 %h %p
 {% else %}
   ProxyCommand ssh -q %r@{{ hostvars[inventory_hostname].host }} nc -q0 %h %p
 {% endif %}

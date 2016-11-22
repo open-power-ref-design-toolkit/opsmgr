@@ -41,7 +41,7 @@ fi
 WARN=${WARN:=0}
 CRIT=${CRIT:=0}
 
-FREE_MEMORY=`free -m | grep buffers/cache | awk '{ print $4 }'`
+FREE_MEMORY=`free -m | grep Mem | awk '{ print $4 }'`
 
 if [ "$FREE_MEMORY" = "" ]; then
   echo "MEM UNKNOWN -"

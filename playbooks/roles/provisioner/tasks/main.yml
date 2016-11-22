@@ -15,23 +15,18 @@
 
     # sets up ssh keys and configuration
     
-    - name: ensure .ssh directory exists
-      file:
-        path: ~/.ssh
-        state: directory
-        mode: 0700
-    
-    - name: check if ssh key file exists
+    - name: check if ssh keys should be imported
+      become: yes
       stat:
-          path: "~/.ssh/{{ item }}"
+          path: "{{ item }}"
       with_items:
-        - id_rsa
-        - id_rsa.pub
-      register: user_keys
+        - "{{ provisioning_key_prv }}"
+        - "{{ provisioning_key_pub }}"
+      register: provisioning_keys
     
-    - name: decide if we use user's keys or not
+    - name: test if provisioning keys exist
       set_fact:
-        use_user_keys: "{{ user_keys.results[0].stat.exists and user_keys.results[1].stat.exists }}"
+        use_existing_keys: "{{ provisioning_keys.results[0].stat.exists and provisioning_keys.results[1].stat.exists }}"
         
     - name: ensure keys/current directory exists
       file:
@@ -39,15 +34,19 @@
         state: directory
         mode: 0700
     
-    - name: copy keys from user
+    - name: copy existing keys
+      become: yes
       copy:
-        src: "~/.ssh/{{ item.0 }}"
+        src: "{{ item.0 }}"
         dest: "{{ opsmgr_lib }}/keys/current/{{ item.1 }}"
         mode: 0600
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+        remote_src: true
       with_together:
-        - [ 'id_rsa',     'id_rsa.pub' ]
+        - [ "{{ provisioning_key_prv }}", "{{ provisioning_key_pub }}" ]
         - [ 'opsmgr.key', 'opsmgr.pub' ]
-      when: use_user_keys | bool == true
+      when: use_existing_keys | bool == true
     
     - name: fallback to use opsmgr master key instead
       copy:
@@ -57,9 +56,12 @@
       with_items:
         - opsmgr.key
         - opsmgr.pub
-      when: use_user_keys | bool == false
+      when: use_existing_keys | bool == false
     
-    - name: copy master keys to ~/.ssh if needed
+    - name: ensure ~/.ssh exists
+      file: path=~/.ssh state=directory
+
+    - name: copy provisioning keys to ~/.ssh
       copy:
         src: "{{ opsmgr_lib }}/keys/current/{{ item.0 }}"
         dest: "~/.ssh/{{ item.1 }}"
@@ -68,7 +70,6 @@
       with_together:
         - [ 'opsmgr.key', 'opsmgr.pub' ]
         - [ 'id_rsa',     'id_rsa.pub' ]
-      when: use_user_keys | bool == false
     
     # configure ssh proxy information
 

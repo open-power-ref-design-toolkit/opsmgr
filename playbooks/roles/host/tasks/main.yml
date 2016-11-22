@@ -32,27 +32,12 @@
     - name: validate the shared directory on the host is created
       file: path={{ lxc_shared }} state=directory mode=0755
     
-    - set_fact: lxc_user={{ ansible_ssh_user }}
-
-    - set_fact: lxc_home='home/{{ ansible_ssh_user }}'
-
-    - set_fact: lxc_user='ubuntu' # lxc-create doesn't work for root user
-      when: ansible_ssh_user == 'root'
-
-    - set_fact: lxc_home='root' # if using root fix the home directory
-      when: ansible_ssh_user == 'root'
-
-    - debug: var=lxc_user
-      when: opsmgr_debug is defined and opsmgr_debug == true
-
     - name: create containers
       lxc_container:
           name: "{{ inventory_hostname }}-{{ item.name }}"
           template: ubuntu
           state: stopped
-          template_options: >
-              --release {{ item.release }}
-              --user {{ lxc_user }}
+          template_options: --release {{ item.release }}
           container_command: |
               [[ ! -d "/{{ item.mount }}" ]] && mkdir -p "/{{ item.mount }}"
           container_config:
@@ -68,61 +53,14 @@
       with_items: "{{ containers }}"
       when: item.address is defined
 
-    # create lxc private network if requested
+    # configure lxc networking
     - include: lxcnet.yml
       when: create_lxc_network is defined and create_lxc_network == true
-    
-    # configure connection parameters for each container
-    
-    - name: create .ssh directory
-      file:
-          path: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh"
-          owner: "{{ ansible_ssh_user }}"
-          group: "{{ ansible_ssh_user }}"
-          mode: 0700
-          state: directory
-      with_items: "{{ containers }}"
-    
-    - name: copy ssh key
-      copy:
-          src: "~/.ssh/id_rsa.pub"
-          dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/{{ lxc_home }}/.ssh/authorized_keys"
-          owner: "{{ ansible_ssh_user }}"
-          group: "{{ ansible_ssh_user }}"
-          mode: 0600
-      with_items: "{{ containers }}"
-    
-    - name: ensure sudoers.d directory exists
-      file:
-        path: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d"
-        owner: root
-        group: root
-        mode: 0755
-        state: directory
-      with_items: "{{ containers }}"
-    
-    - name: ensure sudoers has include
-      lineinfile:
-        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers"
-        line: "#includedir /etc/sudoers.d"
-        state: present
-        validate: "/usr/sbin/visudo -cf %s"
-      with_items: "{{ containers }}"
-    
-    - name: create sudoers include file
-      template:
-        src: sudoers.d.j2
-        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d/{{ sudoers_filename }}"
-        owner: root
-        group: root
-        mode: 0440
-        validate: "/usr/sbin/visudo -cf %s"
-      with_items: "{{ containers }}"
     
     - name: copy script to check on network
       copy:
         src: "{{ opsmgr_dir }}/scripts/waitip.sh"
-        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/tmp/waitip.sh"
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/waitip.sh"
         owner: root
         group: root
         mode: 0755
@@ -133,7 +71,7 @@
         name: "{{ inventory_hostname }}-{{ item.name }}"
         state: started
         container_command: |
-            chown -R {{ ansible_ssh_user }}:{{ ansible_ssh_user }} /{{ lxc_home }} && /tmp/waitip.sh eth0
+            /waitip.sh eth0
         container_config:
             - "lxc.start.auto = 1"
             - "lxc.start.delay = 0"

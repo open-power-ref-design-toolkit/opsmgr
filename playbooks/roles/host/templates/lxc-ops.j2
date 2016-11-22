@@ -2,7 +2,7 @@
     name:     {{ item.name }}
     role:     {{ item.role }}
     mount:    {{ item.mount }}
-    ports:    {{ item.ports }}
+    ports:    {{ item.ports | to_json }}
 {% if main_lxc_interface == 'eth0' %}
     address:  {{ lxc_info | lxcaddress(item.name) }}
 {% else %}

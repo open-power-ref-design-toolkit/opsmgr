@@ -28,7 +28,7 @@
   vars_files:
     - defaults.yml
   pre_tasks:
-    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - include: "{{ opsmgr_lib }}/util/env.yml"
   roles:
     - logstash
 

@@ -16,7 +16,7 @@
     - name: copy server roles configuration
       copy:
           src: "{{ item }}"
-          dest: "{{ hostvars[inventory_hostname].share }}/"
+          dest: "{{ hostvars[inventory_hostname].share }}/roles"
           mode: 0644
       with_first_found: "{{ files }}/roles/"
       notify: restart nagios service

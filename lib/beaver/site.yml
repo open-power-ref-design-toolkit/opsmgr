@@ -1,16 +1,17 @@
 ---
 
-- include: "{{ opsmgr_lib }}/util/lock.yml"
+- include: "{{ opsmgr_dir }}/lib/util/lock.yml"
 
 - hosts: "{{ target_hosts }}:{{ target_containers }}"
-  become: true
+  become: yes
   vars_files:
-    - "{{ profile }}/vars.yml"
-    - "{{ files }}/data.yml"
+    - defaults.yml
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - include_vars: "{{ files }}/data.yml"
   roles:
     - { role: beaver, when: proceed }
 
-- include: "{{ opsmgr_lib }}/util/unlock.yml"
+- include: "{{ opsmgr_dir }}/lib/util/unlock.yml"
 

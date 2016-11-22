@@ -3,15 +3,19 @@
   become: true
   gather_facts: no
 
-  vars:
+  vars_files:
+    - defaults.yml
 
-    play: "{{ playbook_dir }}"
-    path: /tmp/.opsmgr
-    site: run.yml
-    pull: []
-    test: false
+  vars:
+    - path: /tmp/.opsmgr
+    - site: run.yml
+    - pull: []
+    - test: false
 
   tasks:
+
+    - debug: var=playbook_dir
+    - debug: var=play
 
     - name: ensure remote directory exists
       file: path={{ path }} state=directory
@@ -26,6 +30,14 @@
       synchronize: src={{ opsmgr_prl }} dest={{ path }}/ mode=push rsync_path="sudo rsync"
       when: opsmgr_prl is defined
 
+    - name: copy playbooks/var.yml to remote host
+      file: path={{ path }}/playbooks state=directory
+
+    - name: copy playbooks/var.yml to remote host (step 2)
+      copy:
+        src: "{{ opsmgr_dir }}/playbooks/vars.yml"
+        dest: "{{ path }}/playbooks/vars.yml"
+
     - name: remove remote facts and logs if they exist
       file: path={{ path }}/{{ play|basename }}/{{ item }} state=absent
       with_items:
@@ -33,13 +45,14 @@
         - .facts/
 
     - name: remote playbook command to run
-      debug: msg='ansible-playbook -e "opsmgr_lib={{ path }}/lib" -e "opsmgr_prl={{ path }}/profile" {{ site }}'
+      debug: msg='ansible-playbook -e "opsmgr_dir={{ path }}" -e "opsmgr_lib={{ path }}/lib" -e "opsmgr_prl={{ path }}/profile" {{ site }}'
 
     - name: execute remote playbook command
       become: true
       ignore_errors: true
       shell: >
         ansible-playbook
+        -e "opsmgr_dir={{ path }}"
         -e "opsmgr_lib={{ path }}/lib"
         -e "opsmgr_prl={{ path }}/profile"
         {{ site }}

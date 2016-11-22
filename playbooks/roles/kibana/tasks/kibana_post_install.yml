@@ -121,7 +121,7 @@
   htpasswd:
     path: "/etc/apache2/users"
     name: "kibana"
-    password: "{{ kibana_password }}"
+    password: "{{ opsmgr_kibana_password | default(kibana_password) }}"
     owner: "root"
     group: "www-data"
     mode: "0640"

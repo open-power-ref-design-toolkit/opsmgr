@@ -16,7 +16,7 @@
     - name: import dynamic variables from previous run
       include_vars: "{{ item }}"
       with_first_found:
-        - "../vars/lxc-ops.yml"
+        - "{{ opsmgr_dat }}/lxc-ops.yml"
         - "defaults.yml"
 
     - name: register opsmgr-created containers into dynamic inventory
@@ -55,7 +55,7 @@
     - name: import dynamic variables from previous run
       include_vars: "{{ item }}"
       with_first_found:
-        - "../vars/lxc-ext.yml"
+        - "{{ opsmgr_dat }}/lxc-ext.yml"
         - "defaults.yml"
 
     - name: register externally-created containers into dynamic inventory
@@ -67,8 +67,8 @@
           hostaddr:                     "{{ item.hostaddr }}"
           lxc:                          "{{ item }}"
           imported:                     false
-          ansible_ssh_user:             root
-          ansible_ssh_private_key_file: "{{ opsmgr_lib }}/keys/current/opsmgr.key"
+#          ansible_ssh_user:             root
+          ansible_ssh_private_key_file: "{{ opsmgr_key }}/current/opsmgr.key"
       with_items: "{{ import_containers }}"
       when: import_containers is defined
 
@@ -81,8 +81,8 @@
           hostaddr:                     "{{ item.hostaddr }}"
           lxc:                          "{{ item }}"
           imported:                     true
-          ansible_ssh_user:             root
-          ansible_ssh_private_key_file: "{{ opsmgr_lib }}/keys/current/opsmgr.key"
+#          ansible_ssh_user:             root
+          ansible_ssh_private_key_file: "{{ opsmgr_key }}/current/opsmgr.key"
       with_items: "{{ import_containers }}"
       when: import_containers is defined
 

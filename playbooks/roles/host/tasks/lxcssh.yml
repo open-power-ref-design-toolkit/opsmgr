@@ -1,0 +1,85 @@
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+    - name: create .ssh directory for root
+      file:
+          path: "/var/lib/lxc/{{ item.hostname }}/{{ lxcfs }}/root/.ssh"
+          owner: root
+          group: root
+          mode: 0700
+          state: directory
+      with_items: "{{ targets }}"
+
+    - name: create .ssh directory for ubuntu
+      file:
+          path: "/var/lib/lxc/{{ item.hostname }}/{{ lxcfs }}/home/ubuntu/.ssh"
+          owner: 1000
+          group: 1000
+          mode: 0700
+          state: directory
+      with_items: "{{ targets }}"
+
+    - name: copy ssh key for root
+      copy:
+          src: "~/.ssh/id_rsa.pub"
+          dest: "/var/lib/lxc/{{ item.hostname }}/{{ lxcfs }}/root/.ssh/authorized_keys"
+          owner: root
+          group: root
+          mode: 0600
+      with_items: "{{ targets }}"
+
+    - name: copy ssh key for ubuntu
+      copy:
+          src: "~/.ssh/id_rsa.pub"
+          dest: "/var/lib/lxc/{{ item.hostname }}/{{ lxcfs }}/home/ubuntu/.ssh/authorized_keys"
+          owner: 1000
+          group: 1000
+          mode: 0600
+      with_items: "{{ targets }}"
+
+    - name: ensure sudoers file exists on overlay filesystem
+      lxc_container:
+        name: "{{ item.hostname }}"
+        container_command: |
+            touch /etc/sudoers
+      with_items: "{{ targets }}"
+
+    - name: ensure sudoers.d directory exists
+      file:
+        path: "/var/lib/lxc/{{ item.hostname }}/{{ lxcfs }}/etc/sudoers.d"
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
+      with_items: "{{ targets }}"
+
+    - name: ensure sudoers has include
+      lineinfile:
+        dest: "/var/lib/lxc/{{ item.hostname }}/{{ lxcfs }}/etc/sudoers"
+        line: "#includedir /etc/sudoers.d"
+        state: present
+        validate: "/usr/sbin/visudo -cf %s"
+      with_items: "{{ targets }}"
+
+    - name: create sudoers include file
+      template:
+        src: roles/host/templates/sudoers.d.j2
+        dest: "/var/lib/lxc/{{ item.hostname }}/{{ lxcfs }}/etc/sudoers.d/{{ sudoers_filename }}"
+        owner: root
+        group: root
+        mode: 0440
+        validate: "/usr/sbin/visudo -cf %s"
+      with_items: "{{ targets }}"
+

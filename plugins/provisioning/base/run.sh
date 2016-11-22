@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+export OPSMGR_RECIPE=osa-newton
+export OPSMGR_DIR=`pwd`/../../..
+export OPSMGR_PRL=$OPSMGR_DIR/recipes/$OPSMGR_RECIPE/profile
 rm -rf *.log .facts/
-PROFILE=../../../recipes/bcn/profile
-LIB=../../../lib
-ansible-playbook -i $PROFILE/inventory -e "opsmgr_lib=$LIB" $@
+ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_DIR/lib/vars/inventory-all $@
 
