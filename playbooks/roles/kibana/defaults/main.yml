@@ -37,7 +37,7 @@ kibana_apt_keys:
   - { url: "https://packages.elasticsearch.org/GPG-KEY-elasticsearch", state: "present" }
 
 elasticsearch_http_port: 9200
-elasticsearch_vip: "{{ hostvars[inventory_hostname].hostaddr }}"
+elasticsearch_vip: "{{ internal_ip }}"
 elasticsearch_public_url: '"https://"+window.location.hostname+":8443/elasticsearch/"'
 
 # this variable is only used during the install before haproxy is setup
