@@ -84,13 +84,17 @@ do_kill() {
     [ x"${PID}" != x ] && su - "${BEAVER_USER}" -c "kill -TERM ${PID}"
 }
 
+# beaver spawns 3 total processes that need all to be killed
+# ps -ef | gep beaver from the host will find processes running
+# across all containers and we shouldn't kill those processes
 do_kill_force() {
-    PID="$(beaver_pid)"
     echo -n 'force'
-    pid_list=$(ps -ef | awk "/^${BEAVER_USER}/ {printf \$2\" \"}")
-    for pid in ${pid_list}; do
-        kill -KILL ${pid}
-    done
+    PID="$(beaver_pid)"
+    PID2=$(pgrep -P $PID)
+    PID3=$(pgrep -P $PID2)
+    kill -KILL $PID3
+    kill -KILL $PID2
+    kill -KILL $PID
 }
 
 do_restart() {

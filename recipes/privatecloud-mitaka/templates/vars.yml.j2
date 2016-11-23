@@ -76,6 +76,12 @@ lxc_blacklist: [
 {% for node in groups['all_containers'] %}
 {{ hostvars[node].container_address }},
 {% endfor %}
+{% for node, hosts in genesis.ansible_facts.nodes.iteritems() %}
+{% for host in hosts %}
+{{ host['openstack-mgmt-addr'] }},
+{% endfor %}
+{% endfor %}
+{{ global_overrides.internal_lb_vip_address }},
 0.0.0.0
 ]
 

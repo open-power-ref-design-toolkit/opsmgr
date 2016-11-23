@@ -170,6 +170,9 @@
         - 127.0.0.1
         - ::1
         - localhost
+      retries: 5
+      delay: 2
+
 
     - name: create the database tables
       command: opsmgr-admin db_sync
