@@ -22,10 +22,20 @@
       with_items: "{{ apt_packages }}"
 
     # configure service
-    
+
     - name: change bind address to allow remote connections
       lineinfile:
         dest: "/etc/mysql/my.cnf"
+        regexp: "^bind-address"
+        line: "#bind-address = 127.0.0.1"
+      notify:
+        - restart service
+
+    #for mysql on ubuntu 16.04
+
+    - name: change bind-address to allow remote connections
+      lineinfile:
+        dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
         regexp: "^bind-address"
         line: "#bind-address = 127.0.0.1"
       notify:

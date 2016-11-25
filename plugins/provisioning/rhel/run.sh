@@ -1,5 +1,5 @@
----
-# Copyright 2015, Rackspace US, Inc.
+
+# Copyright 2016, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-beaver_log_monitors:
-  - name: "beaver"
-    log_file: "/var/log/beaver/beaver.log"
-    tags: "beaver,infrastructure"
+rm -rf *.log .facts/
+export OPSMGR_PRL=../../../recipes/bcn/profile
+export OPSMGR_LIB=../../../lib
+ansible-playbook -i $PROFILE/inventory -e "opsmgr_lib=$OPSMGR_LIB" -e "opsmgr_prl=$OPSMGR_PRL" site.yml
 

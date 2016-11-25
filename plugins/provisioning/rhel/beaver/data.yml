@@ -14,7 +14,13 @@
 # limitations under the License.
 
 beaver_log_monitors:
-  - name: "beaver"
-    log_file: "/var/log/beaver/beaver.log"
-    tags: "beaver,infrastructure"
+  - name: "secure"
+    log_file: "/var/log/secure"
+    tags: "secure,infrastructure"
+  - name: "messages"
+    log_file: "/var/log/messages"
+    tags: "messages,infrastructure"
+  - name: "yum"
+    log_file: "/var/log/yum.log"
+    tags: "yum,infrastructure"
 

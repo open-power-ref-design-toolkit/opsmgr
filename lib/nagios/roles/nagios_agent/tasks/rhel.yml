@@ -1,0 +1,28 @@
+---
+
+    # install patch on Redhat/Centos
+    - name: installs patch on Redhat/Centos
+      yum: name=patch state=present update_cache=true
+      retries: 5
+      delay: 2
+
+    # open firewal rules for remote hosts
+    - name: open firewal rules for remote hosts
+      firewalld: port=5666/tcp permanent=true state=enabled immediate=true
+      when: install_server is defined and install_server == true
+
+    - name: copy the nrpe service file
+      shell: cp /usr/lib/systemd/system/nrpe.service /etc/systemd/system/nrpe.service
+      when: install_server is defined and install_server == true
+
+    - name: change the nrpe service user/group to nagios
+      lineinfile:
+          dest: "/etc/systemd/system/nrpe.service"
+          line: "{{ item.line }}"
+          regexp: "{{ item.regexp }}"
+          state: present
+      with_items:
+          - { line: 'User=nagios', regexp: '^User=nrpe'}
+          - { line: 'Group=nagios', regexp: '^Group=nrpe'}
+      when: install_server is defined and install_server == true
+

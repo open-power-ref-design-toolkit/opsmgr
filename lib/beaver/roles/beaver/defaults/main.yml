@@ -15,7 +15,7 @@
 
 # this ensures pip exists in the system even if downgraded
 # please do NOT remove
-beaver_apt_packages:
+beaver_pre_packages:
   - python-pip
 
 # the pip packages to install

@@ -61,6 +61,10 @@
     - beaver-install
     - beaver-logrotate
 
+# run the daemon-reload before enabling the service(systemd is fully supported since Ubuntu 15.04).
+- name: systemctl daemon-reload
+  shell: systemctl daemon-reload
+
 - name: Enable Beaver Service
   service:
     name: beaver

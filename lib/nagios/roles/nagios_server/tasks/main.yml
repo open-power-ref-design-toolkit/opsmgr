@@ -12,7 +12,7 @@
       file:
           path: "{{ hostvars[inventory_hostname].share }}/roles"
           state: directory
-    
+
     - name: copy server roles configuration
       copy:
           src: "{{ item }}"

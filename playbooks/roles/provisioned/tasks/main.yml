@@ -15,6 +15,14 @@
 
     # configure ssh connection parameters
 
+    - name: remove Default requiretty settings
+      lineinfile:
+        dest: "/etc/sudoers"
+        regexp: '^Defaults.*requiretty'
+        state: absent
+      vars:
+        ansible_ssh_pipelining: no
+
     - name: ensure user exists
       user:
         name: "{{ provisioning_user_id }}"

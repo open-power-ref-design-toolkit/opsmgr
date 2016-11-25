@@ -13,19 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install beaver apt packages
-  apt:
-    pkg: "{{ item }}"
+- name: Install beaver prepare packages
+  package:
+    name: "{{ item }}"
     state: latest
-    update_cache: yes
-    cache_valid_time: 600
-  register: install_apt_packages
-  until: install_apt_packages|success
+  register: install_pre_packages
+  until: install_pre_packages|success
   retries: 5
   delay: 2
-  with_items: "{{ beaver_apt_packages }}"
+  with_items: "{{ beaver_pre_packages }}"
   tags:
-    - beaver-apt-packages
+    - beaver-pre-packages
     - beaver-pre-install
 
 - name: Upgrades pip if necessary
@@ -51,6 +49,14 @@
   tags:
     - beaver-pre-install
     - beaver-create-group
+
+- name: Set the beaver groups in RHEL
+  set_fact: beaver_daemon_group_extras='root'
+  when: ansible_os_family == "RedHat"
+
+- name: Set /var/log files mode
+  file: path=/var/log state=directory mode="g+r" recurse=true
+  when: ansible_os_family == "RedHat"
 
 - name: Create the beaver system user
   user:

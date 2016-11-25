@@ -31,42 +31,46 @@
 containers:
   - name: core
     role: core
-    release: trusty
+    release: xenial
     ports:
       - { name: "http", host: 8000, container:   80 }
     mount: etc/opsmgr/shared
   - name: mysql
     role: mysql
-    release: trusty
+    release: xenial
     ports:
       - { name: "mysql", host: 3306, container: 3306 }
     mount: etc/opsmgr/shared
   - name: nagios
     role: nagios
-    release: trusty
+    release: xenial
     ports:
       - { name: "http", host: 8001, container:   80 }
       - { name: "nrpe", host: 5601, container: 5666 }
     mount: usr/local/nagios/opsmgr/nagios_config
   - name: logstash
     role: logstash
-    release: trusty
+    release: xenial
     ports:
       - { name: "json", host: 5140, container: 5140 }
       - { name: "sysl", host: 5544, container: 5544 }
     mount: etc/opsmgr/shared/logstash
   - name: elasticsearch
     role: elasticsearch
-    release: trusty
+    release: xenial
     ports:
       - { name: "http", host: 9200, container: 9200 }
     mount: var/lib/elasticsearch
   - name: kibana
     role: kibana
-    release: trusty
+    release: xenial
     ports:
       - { name: "https", host: 8443, container: 8443 }
     mount: etc/opsmgr/shared/kibana
+
+# imported ssh key to use for deployment
+provisioning_key_prv: "/root/.ssh/id_rsa"
+provisioning_key_pub: "/root/.ssh/id_rsa.pub"
 
 # container network installation
 create_lxc_network: true
@@ -83,7 +87,7 @@ lxc_blacklist: []
 
 # database installation
 install_mysql: true
-db_login_user: "{{ ansible_ssh_user }}"
+db_login_user: "{{ ansible_user_id }}"
 db_login_password: passw0rd
 db_login_host: 172.29.236.100
 db_user: opsmgr

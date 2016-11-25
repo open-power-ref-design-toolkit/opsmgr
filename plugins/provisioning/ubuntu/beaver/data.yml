@@ -14,7 +14,16 @@
 # limitations under the License.
 
 beaver_log_monitors:
-  - name: "beaver"
-    log_file: "/var/log/beaver/beaver.log"
-    tags: "beaver,infrastructure"
+  - name: "auth"
+    log_file: "/var/log/auth.log"
+    tags: "auth,infrastructure"
+  - name: "syslog"
+    log_file: "/var/log/syslog.log"
+    tags: "syslog,infrastructure"
+  - name: "kern"
+    log_file: "/var/log/kern.log"
+    tags: "kern,infrastructure"
+  - name: "dpkg"
+    log_file: "/var/log/dpkg.log"
+    tags: "dpkg,infrastructure"
 

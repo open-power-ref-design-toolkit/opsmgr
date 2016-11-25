@@ -3,12 +3,12 @@
 # defaults for nagios nrpe agent configuration
 nrpe_dir: /etc/nagios
 nrpe_user: nagios
-nrpe_service: nagios-nrpe-server
+nrpe_service: nrpe
 
 # packages needed for monitoring
 pre_packages:
     - ruby
-    - ruby-dev
+    - ruby-devel
     - sysstat
     - ntp
     - pciutils
