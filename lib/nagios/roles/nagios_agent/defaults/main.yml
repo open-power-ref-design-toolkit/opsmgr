@@ -12,7 +12,7 @@ install_server: true
 install_plugin: true
 patch_nrpe: true
 
-nrpe_download_site: https://sourceforge.net/projects/nagios/files/nrpe-2.x/nrpe-2.15
+nrpe_download_site: http://sourceforge.net/projects/nagios/files/nrpe-2.x/nrpe-2.15
 nrpe_download_file: nrpe-2.15.tar.gz
 temp_dir: /tmp
 

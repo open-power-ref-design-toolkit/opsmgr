@@ -15,15 +15,22 @@
 
     # configure ssh connection parameters
 
+    - name: ensure user exists
+      user:
+        name: "{{ provisioning_user_id }}"
+        state: present
+
     - name: ensure .ssh directory exists
       file:
-        path: ~/.ssh
+        path: "/home/{{ provisioning_user_id }}/.ssh"
         state: directory
         mode: 0700
+        owner: "{{ provisioning_user_id }}"
+        group: "{{ provisioning_user_id }}"
 
     - name: set up authorized_keys for the user
       authorized_key:
-        user: "{{ ansible_ssh_user }}"
+        user: "{{ provisioning_user_id }}"
         key: "{{ item }}"
         state: present
       with_file:

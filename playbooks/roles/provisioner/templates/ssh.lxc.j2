@@ -7,8 +7,8 @@ Host {{ item.hostname }}
   Hostname {{ item.address }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-{% if hostvars[item.hostname].ansible_ssh_user is defined %}
-  ProxyCommand ssh -q {{ hostvars[item.hostname].ansible_ssh_user }}@{{ item.host }} nc -q0 %h %p
+{% if hostvars[item.hostname].ansible_user_id is defined %}
+  ProxyCommand ssh -q {{ hostvars[item.hostname].ansible_user_id }}@{{ item.host }} nc -q0 %h %p
 {% else %}
   ProxyCommand ssh -q %r@{{ item.host }} nc -q0 %h %p
 {% endif %}
@@ -22,8 +22,8 @@ Host {{ item.address }}
   Hostname {{ item.address }}
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
-{% if hostvars[item.hostname].ansible_ssh_user is defined %}
-  ProxyCommand ssh -q {{ hostvars[item.hostname].ansible_ssh_user }}@{{ item.host }} nc -q0 %h %p
+{% if hostvars[item.hostname].ansible_user_id is defined %}
+  ProxyCommand ssh -q {{ hostvars[item.hostname].ansible_user_id }}@{{ item.host }} nc -q0 %h %p
 {% else %}
   ProxyCommand ssh -q %r@{{ item.host }} nc -q0 %h %p
 {% endif %}

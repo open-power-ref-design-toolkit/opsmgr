@@ -29,4 +29,3 @@ lxc_shared: /etc/opsmgr/shared
 
 # address pool to use for lxc network
 address_pool: "{{ lxc_cidr | lxcipaddrs(lxc_blacklist,24) }}"
-

@@ -1,4 +1,17 @@
 ---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 - hosts: localhost
   gather_facts: no
@@ -7,8 +20,7 @@
   roles:
     - { role: nagios_prereq }
 
-- include: "{{ opsmgr_lib }}/util/ops.yml"
-- include: "{{ opsmgr_lib }}/beaver/site.yml target_hosts=targets target_containers=none profile={{ opsmgr_prl }} files={{ playbook_dir }}/beaver locking=true"
-- include: "{{ opsmgr_lib }}/nagios/site.yml target_hosts=targets target_containers=none profile={{ opsmgr_prl }} files={{ playbook_dir }}/nagios locking=true"
+- include: "{{ opsmgr_dir }}/lib/util/ops.yml"
+- include: "{{ opsmgr_dir }}/lib/beaver/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/base/beaver locking=true"
+- include: "{{ opsmgr_dir }}/lib/nagios/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/base/nagios locking=true"
 - include: resources.yml
-

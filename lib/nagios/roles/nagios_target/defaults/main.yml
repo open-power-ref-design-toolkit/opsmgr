@@ -5,9 +5,6 @@ nrpe_dir: /etc/nagios
 nrpe_user: nagios
 nrpe_service: nagios-nrpe-server
 
-# nagios nrpe agent install location
-nrpe_dir: /etc/nagios
-
 # packages needed for monitoring
 apt_packages:
     - ruby

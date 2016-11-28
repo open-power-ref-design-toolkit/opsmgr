@@ -2,6 +2,9 @@
   gather_facts: no
   connection: local
   become: false
+  vars_files:
+    - defaults.yml
   tasks:
+    - include: "env.yml"
     - include: "import.yml"
 

@@ -2,26 +2,34 @@
 
 - hosts: opsmgr_nagios
   become: true
+  vars_files:
+    - defaults.yml
   roles:
     - { role: nagios_server }
     - { role: nagios_agent,  install_server: false, install_plugin: true }
 
-- include: "{{ opsmgr_lib }}/util/lock.yml"
+- include: "{{ opsmgr_dir }}/lib/util/lock.yml"
 
 - hosts: "{{ target_hosts }}"
   become: true
+  vars_files:
+    - defaults.yml
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
   roles:
     - { role: nagios_agent,  when: proceed, install_server: true, install_plugin: false }
     - { role: nagios_target, when: proceed, is_monitored: true, has_agent: true }
 
 - hosts: "{{ target_containers }}"
   become: true
+  vars_files:
+    - defaults.yml
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
   roles:
     - { role: nagios_target, when: proceed, is_monitored: true, has_agent: false }
 
-- include: "{{ opsmgr_lib }}/util/unlock.yml"
+- include: "{{ opsmgr_dir }}/lib/util/unlock.yml"
 

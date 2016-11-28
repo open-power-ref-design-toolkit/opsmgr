@@ -4,6 +4,8 @@
   gather_facts: no
   become: yes
   serial: 1
+  vars_files:
+    - defaults.yml
   vars:
     - lockfile: "/etc/opsmgr/.lock"
   tasks:

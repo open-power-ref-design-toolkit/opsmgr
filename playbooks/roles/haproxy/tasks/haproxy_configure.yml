@@ -24,3 +24,10 @@
      - "{{ opsmgr_containers }}"
      - ports
   notify: Restart haproxy
+
+#Required for OSA-Newton
+- name: Regenerate haproxy configuration
+  assemble:
+    src: "/etc/haproxy/conf.d"
+    dest: "/etc/haproxy/haproxy.cfg"
+  notify: Restart haproxy

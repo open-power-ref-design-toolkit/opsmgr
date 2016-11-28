@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 kibana_download: "https://download.elastic.co/kibana/kibana/kibana-4.6.2-linux-x86_64.tar.gz"
-nodejs_download: "https://nodejs.org/dist/v4.6.2/node-v4.6.2-linux-ppc64le.tar.gz"
+nodejs_download: "http://nodejs.org/dist/v4.6.2/node-v4.6.2-linux-ppc64le.tar.gz"
 
 temp_install_directory: /tmp/kibana_install
 

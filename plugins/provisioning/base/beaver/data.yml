@@ -21,7 +21,7 @@ beaver_log_monitors:
     log_file: "/var/log/auth.log"
     tags: "auth,infrastructure"
   - name: "syslog"
-    log_file: "/var/log/syslog.log"
+    log_file: "/var/log/syslog"
     tags: "syslog,infrastructure"
   - name: "kern"
     log_file: "/var/log/kern.log"
@@ -29,4 +29,3 @@ beaver_log_monitors:
   - name: "dpkg"
     log_file: "/var/log/dpkg.log"
     tags: "dpkg,infrastructure"
-

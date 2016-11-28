@@ -19,7 +19,7 @@
   vars_files:
     - defaults.yml
   pre_tasks:
-    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - include: "{{ opsmgr_lib }}/util/env.yml"
   tasks:
     - name: destroy containers
       lxc_container:
@@ -29,4 +29,6 @@
     - name: shows container information on the screen
       debug: msg="removed lxc container {{ inventory_hostname }}-{{ item.name }}"
       with_items: "{{ containers }}"
+    - file: path={{ opsmgr_lib }}/vars/ state=absent
+
 

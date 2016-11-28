@@ -21,17 +21,17 @@
     - defaults.yml
   tasks:
     - name: clean target inventory files
-      local_action: file dest={{ opsmgr_inv }}/inventory-{{ item }} state=absent
+      local_action: file dest={{ opsmgr_dat }}/inventory-{{ item }} state=absent
       with_items: "{{ group_names }}"
     - name: create target inventory files
-      local_action: copy dest={{ opsmgr_inv }}/inventory-{{ item }} content='[targets]' force=no
+      local_action: copy dest={{ opsmgr_dat }}/inventory-{{ item }} content='[targets]' force=no
       with_items: "{{ group_names }}"
     - name: update target inventory files
-      local_action: lineinfile dest={{ opsmgr_inv }}/inventory-{{ item }} line='{{ inventory_hostname }}'
+      local_action: lineinfile dest={{ opsmgr_dat }}/inventory-{{ item }} line='{{ inventory_hostname }}'
       with_items: "{{ group_names }}"
       when: ansible_ssh_host is not defined
     - name: update target inventory files
-      local_action: lineinfile dest={{ opsmgr_inv }}/inventory-{{ item }} line='{{ inventory_hostname }} ansible_ssh_host={{ ansible_ssh_host }}'
+      local_action: lineinfile dest={{ opsmgr_dat }}/inventory-{{ item }} line='{{ inventory_hostname }} ansible_ssh_host={{ ansible_ssh_host }}'
       with_items: "{{ group_names }}"
       when: ansible_ssh_host is defined
 
@@ -46,21 +46,20 @@
     - runtgts: true
   tasks:
     - name: create base inventory file
-      copy: dest={{ opsmgr_inv }}/inventory-all content='[targets]' force=yes
+      copy: dest={{ opsmgr_dat }}/inventory-all content='[targets]' force=yes
     - name: update base inventory file
-      lineinfile: dest={{ opsmgr_inv }}/inventory-all line='{{ item }}'
+      lineinfile: dest={{ opsmgr_dat }}/inventory-all line='{{ item }}'
       with_items: "{{groups['all']}}"
       when: hostvars[item].ansible_ssh_host is not defined
     - name: update base inventory file
-      lineinfile: dest={{ opsmgr_inv }}/inventory-all line='{{ item }} ansible_ssh_host={{ hostvars[item].ansible_ssh_host }}'
+      lineinfile: dest={{ opsmgr_dat }}/inventory-all line='{{ item }} ansible_ssh_host={{ hostvars[item].ansible_ssh_host }}'
       with_items: "{{groups['all']}}"
       when: hostvars[item].ansible_ssh_host is defined
     - name: run base ansible playbook
       shell: >
         rm -rf .facts *.log;
-        ansible-playbook -i "{{ opsmgr_inv }}/inventory-all"
-        -e "opsmgr_lib={{ opsmgr_lib }}"
-        -e "opsmgr_prl={{ opsmgr_prl }}"
+        ansible-playbook -i "{{ opsmgr_dat }}/inventory-all"
+        -e "opsmgr_dir={{ opsmgr_dir }}"
         site.yml
       args:
         chdir: "{{ opsmgr_dir }}/plugins/provisioning/base/"
@@ -68,12 +67,12 @@
     - name: run target ansible playbooks
       shell: >
         rm -rf .facts *.log;
-        ansible-playbook -i "{{ opsmgr_inv }}/inventory-{{ item }}"
-        -e "opsmgr_lib={{ opsmgr_lib }}"
-        -e "opsmgr_prl={{ opsmgr_prl }}"
+        ansible-playbook -i "{{ opsmgr_dat }}/inventory-{{ item }}"
+        -e "opsmgr_dir={{ opsmgr_dir }}"
         site.yml
       args:
         chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item }}/"
       with_items: "{{ groups.keys() }}"
-      when: runtgts == true and item not in '[ "ungrouped", "all", "opsmgr", "standard", "compute" ]'
+      when: runtgts == true and item not in '[ "ungrouped", "all", "opsmgr", "standard" ]'
       ignore_errors: true
+
