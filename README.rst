@@ -23,31 +23,29 @@ The os-services orchestration of OpsMgr is achieved by setting the following var
      
 And then running the following scripts::
 
-   > ./scripts/bootstrap-opsmgr.sh    
+   > ./scripts/bootstrap-opsmgr.sh
    > ./scripts/create-cluster-opsmgr.sh 
 
-The bootstrap-opsmgr.sh script provides Openstack meta data that will be used by the caller, the
-os-services project, to create LXC containers for ELK. This is accomplished by copying environment
-configuration files to /etc/openstack_deploy/env.d/ and is performed during the bootstrap
-phase of os-services installation. The caller, os-services, uses this information to invoke
-openstack-ansible playbooks to create LXC containers. Then, on the os-services create-cluster phase
-the corresponding script for OpsMgr is called.
+Those scripts will perform the following sequence of steps:
 
-That script will perform the following sequence of steps:
+  * execution of recipes/privatelcoud-mitaka Ansible playbook that queries OpenStack-Ansible
+    for variables necessary for the install of opsmgr in an Openstack-Ansible controller
 
-  * execution of "predeploy" Ansible playbook that integrates OpsMgr with OpenStack-Ansible
-    and installs and configures ELK on top of the containers created in the bootstrap phase
+  * execution of playbooks/setup.yml Ansible playbook that provisions ssh keys
+    to each endpoint managed by opsmgr
+
+  * execution of playbooks/hosts.yml Ansible playbook that creates containers for Nagios and
+    the ELK stack
   
-  * execution of mainstream "opsmgr" Ansible playbook to deploy the opsmgr service and dashboards
-    (within OpenStack Horizon containers) and completely installs Nagios server (also on 
-    containers) and configures haproxy and database
+  * execution of playbooks/site.yml Ansible playbook to deploy the opsmgr service and dashboards
+    (within OpenStack Horizon containers) and completely installs Nagios server and the ELK
+    stack and configures haproxy and database
   
-  * execution of "provisioning" plugin playbook to deploy the endpoint services for Nagios (NRPE)
+  * execution of playbooks/target.yml Ansible playbook to deploy the endpoint services for Nagios (NRPE)
     and ELK (Beaver) and to push all necessary configuration at the endpoints that will be managed
     by the OpsMgr stack
 
-Extensibility for OpsMgr can be easily achieved by providing additional "predeploy" and
-"provisioning" plugin playbooks.
+Extensibility for OpsMgr can be easily achieved by providing additional Ansible playbooks. 
 
 The scripts above may be invoked manually to resolve errors, particularly network timeout
 related errors.
@@ -57,13 +55,9 @@ The default credentials for the integrated Ops applications are::
     Nagios user: nagios
     Nagios password: nagios
     Kibana user: kibana
+    Kibana password: kibana
 
-When the cluster is deployed by the genesis-cluster project, the default kibana password is 
-'passw0rd'. When running from os-services or the scripts in this project, the kibana password if
-not set by the KIBANA_PASSWORD environment variable is randomly generated and can be found by
-looking at /etc/openstack_deploy/user_secrets_opsmgr.yml
-
-It is recommended that the user changes these passwords after initial install, using these tools'
+It is recommended that the user changes these passwords after initial install, using these tool's
 documented practices.
 
 If a different default value is desired, please set or modify the following Ansible variables prior to installing OpsMgr:
@@ -78,8 +72,15 @@ For Nagios::
 For ELK::
 
     kibana_service_user: kibana
-    kibana_service_group: root (similarly to Nagios, this control which users can change Kibana configuration)
-    Location: predeploy/elk/roles/kibana/defaults/main.yml (or use standard Ansible override mechanisms: vars, group_vars, extra_vars, etc.)
+    kibana_password: kibana
+    Location: playbooks/roles/kibana/defaults/main.yml (or use standard Ansible override mechanisms: vars, group_vars, extra_vars, etc.)
+
+For the opsmgr galera database::
+
+    db_user: opsmgr
+    db_password: passw0rd
+    Location: recipes/<recipe name>/templates/vars.yml.j2 (The recipe name for a cloud deployed with cluster-genesis and os-services is
+    privatecloud-mitaka) 
 
 Additional OpsMgr deployment default parameters can be overridden as well. For options please check
 this file: playbooks/defaults/main.yml
