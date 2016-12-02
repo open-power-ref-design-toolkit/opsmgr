@@ -9,7 +9,14 @@ FILE=$1
 shift
 RARGS=$@
 
-cp /etc/nagios/plugins/$FILE /var/lib/lxc/$NAME/rootfs/tmp
+if [[ -d /var/lib/lxc/$NAME/delta0/tmp ]]; then
+        cp /etc/nagios/plugins/$FILE /var/lib/lxc/$NAME/delta0/tmp
+elif [[ -d /var/lib/lxc/$NAME/rootfs/tmp ]]; then
+        cp /etc/nagios/plugins/$FILE /var/lib/lxc/$NAME/rootfs/tmp
+else
+        echo "check-lxc.sh - Unable to locate the filesystem for the container $NAME on the host."
+        exit 3
+fi
 
 EXECFILE=/tmp/$FILE
 if [[ $NICK == "utility" ]]; then
