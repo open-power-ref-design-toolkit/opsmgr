@@ -19,7 +19,6 @@ The os-services orchestration of OpsMgr is achieved by setting the following var
 
    > export DEPLOY_OPSMGR=yes
    > export ANSIBLE_HOST_KEY_CHECKING=False
-   > export KIBANA_PASSWORD=passw0rd
      
 And then running the following scripts::
 
