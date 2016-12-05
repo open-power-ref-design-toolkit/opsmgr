@@ -67,7 +67,7 @@ beaver_log_monitors:
     multiline_regex_after: '(^#\sUser@Host:\s)'
     multiline_regex_before: '(.*)'
   - name: "rabbitmq"
-    log_file: "/var/log/rabbitmq/rabbit@{{ inventory_hostname }}.log"
+    log_file: "/var/log/rabbitmq/rabbit@{{ ansible_hostname }}.log"
     tags: "rabbitmq,infrastructure"
     multiline_regex_after: '(^=.*)'
     multiline_regex_before: '(^\s\*.*)|(^[a-zA-Z]+.*)'
@@ -84,4 +84,7 @@ beaver_log_monitors:
   - name: "repo-server-error"
     log_file: "/var/log/nginx/*error.log"
     tags: "repo,nginx,nginx-error,infrastructure"
+  - name: "trove"
+    log_file: "/var/log/trove/*.log"
+    tags: "trove,openstack,oslofmt"
 
