@@ -14,6 +14,7 @@
         - cinder_scheduler
         - galera
         - glance_api
+        - gnocchi_api
         - heat_api_cloudwatch
         - heat_engine
         - horizon
