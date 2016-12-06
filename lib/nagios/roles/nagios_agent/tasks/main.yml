@@ -56,8 +56,11 @@
     - include: patch.yml
       when: patch_nrpe is defined and patch_nrpe == true
 
+    # run the daemon-reload before enabling the service(systemd is fully supported since Ubuntu 15.04).
+    # older endpoints needing to be managed may not have sysmctl
     - name: daemon-reload
       shell: systemctl daemon-reload
+      ignore_errors: true
 
     # configures nrpe
     - name: create nrpe.cfg from template

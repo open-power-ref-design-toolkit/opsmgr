@@ -21,4 +21,4 @@ pip_packages:
 gem_packages:
     - sensu-plugin
 
-
+gem_install_options: --both --document rdoc,ri --force "{{ item }}"

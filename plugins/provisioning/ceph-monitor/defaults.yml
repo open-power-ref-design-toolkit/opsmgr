@@ -1,4 +1,4 @@
-
+---
 # Copyright 2016, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-export OPSMGR_RECIPE=osa-newton
-export OPSMGR_DIR=`pwd`/../../..
-export OPSMGR_PRL=$OPSMGR_DIR/recipes/$OPSMGR_RECIPE/profile
-rm -rf *.log .facts/
-ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory $@
+# profile to use
+recipe: "{{ lookup('env', 'OPSMGR_RECIPE') | default('standard', true) }}"
+
+# important directories
+opsmgr_dir: "{{ playbook_dir }}/../../.."
+opsmgr_prl: "{{ opsmgr_dir }}/recipes/{{ recipe }}/profile"
+opsmgr_lib: "{{ opsmgr_dir }}/lib"
+opsmgr_dat: "{{ opsmgr_lib }}/vars"
+opsmgr_key: "{{ opsmgr_lib }}/keys"
 

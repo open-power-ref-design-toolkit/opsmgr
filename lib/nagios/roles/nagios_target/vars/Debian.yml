@@ -1,8 +1,6 @@
 ---
 
 # defaults for nagios nrpe agent configuration
-nrpe_dir: /etc/nagios
-nrpe_user: nagios
 nrpe_service: nagios-nrpe-server
 
 # packages needed for monitoring
@@ -10,16 +8,5 @@ pre_packages:
     - ruby
     - ruby-dev
     - sysstat
-    - ntp
     - pciutils
     - python-pip
-
-# python packages needed for monitoring
-pip_packages:
-    - python-dateutil
-
-# ruby gems needed for monitoring
-gem_packages:
-    - sensu-plugin
-
-
