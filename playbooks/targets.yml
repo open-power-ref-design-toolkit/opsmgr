@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#Remove all inventory files
 - hosts: all:!opsmgr_containers
   become: no
   gather_facts: no
@@ -26,6 +27,15 @@
     - name: create target inventory files
       local_action: copy dest={{ opsmgr_inv }}/inventory-{{ item }} content='[targets]' force=no
       with_items: group_names
+
+#Add each host to the inventory file
+- hosts: all:!opsmgr_containers
+  become: no
+  gather_facts: no
+  serial: 1
+  vars_files:
+    - defaults.yml
+  tasks:
     - name: update target inventory files
       local_action: lineinfile dest={{ opsmgr_inv }}/inventory-{{ item }} line='{{ inventory_hostname }}'
       with_items: group_names
