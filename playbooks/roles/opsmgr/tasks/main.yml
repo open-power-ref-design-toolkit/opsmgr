@@ -163,16 +163,17 @@
         name: "{{ db_user }}"
         password: "{{ db_password }}"
         state: "present"
-        priv: "*.*:ALL,GRANT"
+        priv: "{{ db_name }}_{{ inventory_hostname }}.*:ALL,GRANT"
       with_items:
         - "%"
         - "{{ inventory_hostname }}"
         - 127.0.0.1
         - ::1
         - localhost
+      register: create_db_user
       retries: 5
       delay: 2
-
+      until: create_db_user|success
 
     - name: create the database tables
       command: opsmgr-admin db_sync
