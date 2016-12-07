@@ -1,12 +1,14 @@
 ---
 
 # defaults for nagios nrpe agent configuration
-nrpe_service: nrpe
+nrpe_service: nagios-nrpe-server
 
 # packages needed for monitoring
 pre_packages:
     - ruby
-    - ruby-devel
+    - ruby-dev
     - sysstat
     - pciutils
     - python-pip
+
+gem_install_options: --install-dir /var/lib/gems/1.9.1 --both --include-dependencies --rdoc --ri --force

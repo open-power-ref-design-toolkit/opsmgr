@@ -2,7 +2,8 @@
 
     - include_vars: "{{ item }}"
       with_first_found:
-        - "../vars/{{ ansible_os_family }}.yml"
+        - "{{ ansible_os_family }}_{{ ansible_lsb.codename }}.yml"
+        - "{{ ansible_os_family }}.yml"
 
     # install monitoring pre-reqs
 
@@ -16,8 +17,10 @@
         state: present
       with_items: "{{ pre_packages }}"
       when: is_monitored == true
+      register: prereq_installed
       retries: 5
       delay: 2
+      until: prereq_installed|success
 
     - name: remove hack that allows unauthenticated packages to install
       file: path=/etc/apt/apt.conf.d/99temp state=absent
@@ -31,7 +34,7 @@
       delay: 2
 
     - name: installs prereq packages with gem
-      command: gem install --both --document rdoc,ri --force "{{ item }}"
+      command: gem install {{ gem_install_options }} "{{ item }}"
       with_items: "{{ gem_packages }}"
       when: is_monitored == true
       retries: 5
@@ -64,10 +67,9 @@
 
     - name: copy plugins for roles
       copy:
-          src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/"
+          src: "{{ files }}/plugins/"
+          dest: "{{ nrpe_dir }}/plugins/"
           mode: 0755
-      with_first_found: "{{ files }}/plugins/"
       when: has_agent == true
       notify: restart nrpe service
 
@@ -85,10 +87,9 @@
 
     - name: copy nrpe.d for roles
       copy:
-          src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/"
+          src: "{{ files }}/nrpe.d/"
+          dest: "{{ nrpe_dir }}/nrpe.d/"
           mode: 0644
-      with_first_found: "{{ files }}/nrpe.d/"
       when: has_agent == true
       notify: restart nrpe service
 
@@ -106,10 +107,9 @@
 
     - name: copy commands for roles
       copy:
-          src: "{{ item }}"
-          dest: "{{ nrpe_dir }}/"
+          src: "{{ files }}/commands/"
+          dest: "{{ nrpe_dir }}/commands/"
           mode: 0644
-      with_first_found: "{{ files }}/commands/"
       when: has_agent == true
       notify: restart nrpe service
 

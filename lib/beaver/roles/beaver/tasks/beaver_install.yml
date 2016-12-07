@@ -62,8 +62,10 @@
     - beaver-logrotate
 
 # run the daemon-reload before enabling the service(systemd is fully supported since Ubuntu 15.04).
+# older endpoints needing to be managed may not have sysmctl
 - name: systemctl daemon-reload
   shell: systemctl daemon-reload
+  ignore_errors: true
 
 - name: Enable Beaver Service
   service:
