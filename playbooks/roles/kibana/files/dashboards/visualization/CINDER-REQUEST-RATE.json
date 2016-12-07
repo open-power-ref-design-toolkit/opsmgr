@@ -5,6 +5,6 @@
       "description": "",
       "version": 1,
       "kibanaSavedObjectMeta": {
-        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"verb:* and tags:cinder\",\"analyze_wildcard\":true}},\"filter\":[]}"
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"verb:* AND tags:cinder\",\"analyze_wildcard\":true}},\"filter\":[]}"
       }
     }
