@@ -1,21 +1,35 @@
 ---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # target uniqueness control - load configuration
 - hosts: targets
+  vars_files:
+    - defaults.yml
   become: no
-  tasks:
-    - set_fact: alias={{ lookup("file", opsmgr_lib + "/hosts/host-" + ansible_ssh_host) }}
-      when: ansible_ssh_host is defined
 
 # register unique resources in opsmgr
 - hosts: opsmgr_core
   become: yes
+  vars_files:
+    - defaults.yml
   tasks:
 
     - name: update /etc/hosts with resource addresses
       lineinfile: >
           dest=/etc/hosts regexp='.*{{ item }}$'
-          line='{{ hostvars[item].ansible_ssh_host }} {{ hostvars[item].alias }}'
+          line='{{ hostvars[item].ansible_ssh_host }} {{ item }}'
           state=present
       with_items: "{{ groups['targets'] }}"
       when: >
@@ -23,7 +37,7 @@
 
     - name: register swift proxy resource role in opsmgr
       shell: >
-          opsmgr add_role -l "{{ hostvars[item].alias }}" -r "swift_proxy"
+          opsmgr add_role -l "{{ item }}" -r "swift_proxy"
       with_items: "{{ groups['targets'] }}"
       when: >
           hostvars[item].ansible_ssh_host is defined
@@ -32,7 +46,8 @@
 # reloads nagios services after configuration is applied
 - hosts: opsmgr_nagios
   become: yes
+  vars_files:
+    - defaults.yml
   tasks:
     - name: restart nagios service
       service: name="nagios" state=restarted
-
