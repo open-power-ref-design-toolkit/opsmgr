@@ -1,4 +1,0 @@
----
-
-- include: "{{ opsmgr_lib }}/util/redirect.yml play={{ playbook_dir }} pull=profile/"
-
