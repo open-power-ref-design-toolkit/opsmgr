@@ -25,7 +25,7 @@
 
   # If the patch_ui var is set, then remove any openstack 
   # configuration files
-  - name: Remove files from /etc/openstack_deploy/env.d
+  - name: Remove files from /etc/openstack_deploy/conf.d
     file: path="/etc/openstack_deploy/env.d/{{ item }}" state=absent
     when: patch_ui is defined and patch_ui == true
     with_items: "{{ os_minimum_exclude_services }}"
