@@ -84,6 +84,11 @@ For the opsmgr galera database::
 Additional OpsMgr deployment default parameters can be overridden as well. For options please check
 this file: playbooks/defaults/main.yml
 
+Bug Reporting
+-------------
+The current list of bugs can be found on launchpad:
+https://bugs.launchpad.net/open-power-ref-design
+
 Related projects
 ----------------
 ::
