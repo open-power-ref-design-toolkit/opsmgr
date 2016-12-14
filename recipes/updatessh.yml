@@ -1,0 +1,50 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  become: yes
+  tasks:
+
+  # Fix the issue where PasswordAuthentication is set to no and
+  # causing SSH sign on to fail.  Also remove the timeout interval
+  # for SSH allowing keep alive
+  - name: Fix SSH settings in /etc/ssh/sshd_config
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^PasswordAuthentication'
+      line: 'PasswordAuthentication yes'
+
+  - name: remove ClientAliveInterval
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^ClientAliveInterval'
+      line: '#ClientAliveInterval 900'
+
+  - name: remove ClientAliveCountMax in /etc/ssh/sshd_config
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^ClientAliveCountMax'
+      line: '#ClientAliveCountMax 0'
+
+  - name: add ServerAliveInterval to /etc/ssh/ssh_config
+    lineinfile:
+      dest: /etc/ssh/ssh_config
+      line: 'ServerAliveInterval 60'
+
+  - name: restart ssh
+    shell: service ssh restart
+

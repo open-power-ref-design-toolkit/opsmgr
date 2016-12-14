@@ -28,6 +28,14 @@ else
     echo "Unable to run setup.yml -- proceeding"
 fi
 
+#updatessh playbook fixes an issue with SSH timing out
+ansible-playbook updatessh.yml
+rc=$?
+if [ $rc != 0 ]; then
+    echo "Failed to update /etc/ssh/sshd_config and/or /etc/ssh/ssh_config, rc=$rc"
+    exit 3
+fi
+
 popd
 
 popd

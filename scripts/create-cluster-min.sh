@@ -50,6 +50,18 @@ if [ $rc != 0 ]; then
 fi
 popd >/dev/null 2>&1
 
+#Fix issue where ssh fails to log in when PasswordAuthentication is set to no
+#Also set the ssh timeout value to not expire
+pushd $PCLD_DIR/recipes > /dev/null 2>&1
+echo "updating the /etc/ssh/sshd_config and ssh_config"
+ansible-playbook updatessh.yml
+rc=$?
+if [ $rc != 0 ]; then
+    echo "Failed to update /etc/ssh/sshd_config and/or /etc/ssh/ssh_config, rc=$rc"
+    exit 5
+fi
+popd >/dev/null 2>&1
+
 # Configure opsmgr - ELK, Nagios, and Horizon extensions
 #echo "Invoking scripts/create-cluster-opsmgr.sh"
 #scripts/create-cluster-opsmgr.sh $ARGS
@@ -65,7 +77,7 @@ echo "Invoking run.sh in osa-newton"
 rc=$?
 if [ $rc != 0 ]; then
     echo "Failed recipes/osa-newton/run.sh on site.yml, rc=$rc"
-    exit 4
+    exit 6
 fi
 popd >/dev/null 2>&1
 pushd $PCLD_DIR/playbooks >/dev/null 2>&1
@@ -80,7 +92,7 @@ ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR patch_ui=true" -i $OPSMGR_PRL/invent
 rc=$?
 if [ $rc != 0 ]; then
 	echo "Failed to execute playbooks/setup.yml, rc=$rc"
-        exit 5
+        exit 7
 fi
 
 echo "Invoking playbook hosts.yml from the opsmgr/playbooks directory"
@@ -88,7 +100,7 @@ ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory hosts.yml
 rc=$?
 if [ $rc != 0 ]; then
         echo "Failed to execute playbooks/hosts.yml, rc=$rc"
-        exit 6
+        exit 8
 fi
 
 echo "Invoking playbook site.yml from the opsmgr/playbooks directory"
@@ -96,7 +108,7 @@ ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory site.yml
 rc=$?
 if [ $rc != 0 ]; then
         echo "Failed to execute playbooks/site.yml, rc=$rc"
-        exit 7
+        exit 9
 fi
 
 echo "Invoking playbook targets.yml from the opsmgr/playbooks directory"
@@ -104,7 +116,7 @@ ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory targets.ym
 rc=$?
 if [ $rc != 0 ]; then
         echo "Failed to execute playbooks/targets.yml, rc=$rc"
-        exit 8
+        exit 10 
 fi
 popd >/dev/null 2>&1
 
