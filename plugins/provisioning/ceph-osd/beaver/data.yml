@@ -15,6 +15,6 @@
 
 beaver_log_monitors:
   - name: "ceph-osd"
-    log_file: "/var/log/ceph/ceph-osd.*.log"
+    log_file: "/var/log/ceph/ceph-osd.*.log.1"
     tags: "ceph-osd,ceph,infrastructure"
 
