@@ -1,4 +1,3 @@
 ---
-
+- include: "{{ opsmgr_dir }}/lib/util/db_password.yml"
 - include: "{{ opsmgr_lib }}/util/redirect.yml play={{ playbook_dir }} pull=profile/"
-

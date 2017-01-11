@@ -91,7 +91,6 @@ db_login_user: "{{ ansible_user_id }}"
 db_login_password: passw0rd
 db_login_host: 172.29.236.100
 db_user: opsmgr
-db_password: passw0rd
 db_host: 172.29.236.100
 
 # user interface installation

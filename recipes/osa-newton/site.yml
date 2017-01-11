@@ -1,4 +1,4 @@
 ---
-
+- include: "{{ opsmgr_dir }}/lib/util/db_password.yml"
 - include: "{{ opsmgr_dir }}/lib/util/redirect.yml play={{ inventory_dir }} pull=profile/"
 

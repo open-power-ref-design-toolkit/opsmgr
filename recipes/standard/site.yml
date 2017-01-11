@@ -1,0 +1,2 @@
+---
+- include: "{{ opsmgr_dir }}/lib/util/db_password.yml"

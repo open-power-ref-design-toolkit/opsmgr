@@ -2,5 +2,5 @@
 passphrase = {{ random_passphrase.stdout }}
 
 [DATABASE]
-connection = mysql+pymysql://{{ db_user }}:{{ db_password }}@{{ db_host }}/{{ db_name }}_{{ inventory_hostname }}
+connection = mysql+pymysql://{{ db_user }}:{{ opsmgr_db_password }}@{{ db_host }}/{{ db_name }}_{{ inventory_hostname }}
 
