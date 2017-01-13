@@ -1,6 +1,10 @@
 #!/bin/bash
 source $(dirname $0)/env.sh
 pushd ${OPSMGR_DIR}
+#The following sets OPSMGR_RECIPE to a
+#value if it is not set
+: ${OPSMGR_RECIPE:=osa-newton}
+
 echo OPSMGR_RECIPE=$OPSMGR_RECIPE
 echo OPSMGR_PRL=$OPSMGR_PRL
 
@@ -9,7 +13,7 @@ echo OPSMGR_PRL=$OPSMGR_PRL
 
 # performs any OpsMgr bootstrap setup 
 if [[ ! -z $OPSMGR_RECIPE ]]; then
-    export OPSMGR_PRL=../recipes/${OPSMGR_RECIPE}/profile
+    export OPSMGR_PRL=../recipes/${OPSMGR_RECIPE}
     echo OPSMGR_PRL=$OPSMGR_PRL
 fi
 

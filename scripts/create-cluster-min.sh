@@ -88,7 +88,7 @@ rm -rf *.log .facts/
 
 # Execute the final steps of installing Standalone Operations Manager minimum UI
 echo "Invoking playbook setup.yml from the opsmgr/playbooks directory"
-ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR patch_ui=true" -i $OPSMGR_PRL/inventory setup.yml
+ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory setup.yml
 rc=$?
 if [ $rc != 0 ]; then
 	echo "Failed to execute playbooks/setup.yml, rc=$rc"
@@ -104,7 +104,7 @@ if [ $rc != 0 ]; then
 fi
 
 echo "Invoking playbook site.yml from the opsmgr/playbooks directory"
-ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory site.yml
+ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR patch_ui=true" -i $OPSMGR_PRL/inventory site.yml
 rc=$?
 if [ $rc != 0 ]; then
         echo "Failed to execute playbooks/site.yml, rc=$rc"

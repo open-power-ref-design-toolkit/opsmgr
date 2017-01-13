@@ -31,3 +31,6 @@ os_minimum_exclude_services:
    - nova.yml
    - swift-remote.yml
    - swift.yml
+#configure standalone opsmgr GUI on install
+patch_ui: true
+
