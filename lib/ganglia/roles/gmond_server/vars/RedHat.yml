@@ -1,0 +1,6 @@
+---
+
+gmond_packages:
+  - ganglia-gmond
+
+gmond_service: gmond

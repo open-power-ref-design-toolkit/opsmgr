@@ -24,7 +24,7 @@
 
     - name: decide if to use pip in isolated mode
       set_fact: pipargs='--isolated'
-      when: imported is defined and imported == true 
+      when: imported is defined and imported == true
 
     - name: installs prereq packages with pip
       pip: name={{ item }} state=present executable={{ pipexec }} extra_args="{{ pipargs }}"
@@ -55,8 +55,16 @@
         chdir: "{{ tmp_dir }}/{{ item }}"
       with_items: "{{ opsmgr_modules }}"
 
+    # ganglia python package integration
+
+    - name: install ganglia modules
+      shell: "PBR_VERSION={{ opsmgr_version}} python setup.py install"
+      args:
+        chdir: "{{ tmp_dir }}/{{ opsmgr_ganglia_module }}"
+      when: install_ganglia==true
+
     # create /etc/opsmgr and /var/log/opsmgr
-    
+
     - name: create /etc/opsmgr
       file:
         path: "/etc/opsmgr"
@@ -81,7 +89,7 @@
 
     - name: generate random passphrase to encrypt passwords in the db
       shell: python -c "import base64;import os;print(str(base64.b64encode(os.urandom(32))))"
-      register: random_passphrase  
+      register: random_passphrase
 
     - name: create /etc/opsmgr/tmp
       file:
@@ -120,6 +128,7 @@
         dest: /etc/opsmgr/tmp/opsmgr_ganglia.conf
         force: yes
       when: >
+        install_ganglia == true and
         item.0.role == 'ganglia' and
         item.0.host == hostvars[inventory_hostname].host and
         item.1.name == 'http'
@@ -180,7 +189,7 @@
       command: opsmgr-admin db_sync
 
     # create the default rack
-    
+
     - name: create the default rack
       command: opsmgr add_rack -l default
       ignore_errors: yes # rack might already exist
@@ -261,7 +270,7 @@
       when: patch_ui is defined and patch_ui == "true"
 
     # drop enabled files for horizon
- 
+
     - name: Copy the ui files into the enabled directory
       copy:
         src: "{{ opsmgr_dir }}/horizon/enabled"

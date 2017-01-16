@@ -1,0 +1,6 @@
+---
+
+gmond_packages:
+  - ganglia-monitor
+
+gmond_service: ganglia-monitor

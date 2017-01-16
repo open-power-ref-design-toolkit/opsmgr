@@ -24,7 +24,7 @@
         src: "lxc-net.j2"
         dest: "{{ opsmgr_dat }}/lxc-net.yml"
       delegate_to: localhost
-    
+
     - include_vars: "{{ opsmgr_dat }}/lxc-net.yml"
       delegate_to: localhost
 
@@ -36,6 +36,7 @@
         group: "root"
         mode: "0755"
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
 
     - name: lxc host config for container networks
       template:
@@ -45,6 +46,7 @@
         group: "root"
         mode: "0644"
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
 
     - name: ensure interfaces file has include
       lineinfile:
@@ -52,7 +54,8 @@
         line: "source /etc/network/interfaces.d/*.cfg"
         state: present
       with_items: "{{ containers }}"
-    
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
     - name: lxc container config for container networks
       template:
         src: "interfaces.d.j2"

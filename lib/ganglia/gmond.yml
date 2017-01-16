@@ -1,0 +1,47 @@
+---
+
+- hosts: "{{ target_hosts }}"
+  become: true
+  vars_files:
+    - defaults.yml
+  pre_tasks:
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - set_fact: proceed={{ ( locking is not defined or locking != 'true' or
+                        lock.stdout == inventory_hostname ) and
+                        ( install_ganglia is defined and install_ganglia == true )}}
+  roles:
+    - { role: gmond_server, when: proceed }
+  post_tasks:
+    - name: open tcp firewall rules for Debian remote hosts
+      shell: ufw allow {{ item.1.container }}/tcp
+      when: item.0.role == 'ganglia' and item.1.name == 'gmond' and ansible_os_family == "Debian" and proceed
+      with_subelements:
+        - "{{ containers }}"
+        - ports
+      ignore_errors: true
+
+    - name: open udp firewall rules for Debian remote hosts
+      shell: ufw allow {{ item.1.container }}/udp
+      when: item.0.role == 'ganglia' and item.1.name == 'gmond' and ansible_os_family == "Debian" and proceed
+      with_subelements:
+        - "{{ containers }}"
+        - ports
+      ignore_errors: true
+
+    - name: open tcp firewall rules for Redhat remote hosts
+      firewalld: port={{ item.1.container }}/tcp permanent=true state=enabled immediate=true
+      when: item.0.role == 'ganglia' and item.1.name == 'gmond' and ansible_os_family == "RedHat" and proceed
+      with_subelements:
+        - "{{ containers }}"
+        - ports
+      ignore_errors: true
+
+    - name: open udp firewall rules for Redhat remote hosts
+      firewalld: port={{ item.1.container }}/udp permanent=true state=enabled immediate=true
+      when: item.0.role == 'ganglia' and item.1.name == 'gmond' and ansible_os_family == "RedHat" and proceed
+      with_subelements:
+        - "{{ containers }}"
+        - ports
+      ignore_errors: true
+
+

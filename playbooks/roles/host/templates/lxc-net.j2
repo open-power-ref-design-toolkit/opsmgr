@@ -18,6 +18,7 @@ lxcnets:
 {% for hst in groups['opsmgr'] %}
 {% set hstloop = loop %}
 {% for lxc in containers %}
+{% if lxc.name != 'ganglia' or install_ganglia == true %}
 {% set lxcloop = loop %}
 {% for net in opsmgr_lxc_nets %}
 {% set netloop = loop %}
@@ -30,6 +31,7 @@ lxcnets:
     netmask: {{ net.netmask }}
     address: {{ address_pool[netloop.index0 + lxcloop.index0 * netloop.length + hstloop.index0 * netloop.length * lxcloop.length] }}
 {%endfor %}
+{%endif %}
 {%endfor %}
 {%endfor %}
 

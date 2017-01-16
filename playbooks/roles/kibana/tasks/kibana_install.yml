@@ -37,7 +37,7 @@
   until: install_pip_packages |success
   retries: 5
   delay: 2
-  with_items: kibana_pip_packages
+  with_items: "{{ kibana_pip_packages }}"
   tags:
     - kibana-pip-packages
     - kibana-install

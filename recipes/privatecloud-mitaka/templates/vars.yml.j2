@@ -102,3 +102,5 @@ ui_enabled: "{{ horizon_lib_dir | dirname | replace('untagged', openstack_releas
 install_haproxy: false
 internal_ip: "{{ global_overrides.internal_lb_vip_address }}"
 
+# Ganglia configuration
+install_ganglia: false

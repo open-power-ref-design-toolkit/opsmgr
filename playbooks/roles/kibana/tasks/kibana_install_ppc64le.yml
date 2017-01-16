@@ -50,7 +50,7 @@
 
 - name: download and extract nodejs
   unarchive:
-    src: "{{ nodejs_download }}" 
+    src: "{{ nodejs_download }}"
     dest: "{{ temp_install_directory }}"
     creates: "{{ temp_install_directory }}/{{ nodejs_directory}}"
     copy: no
@@ -101,7 +101,7 @@
   until: install_pip_packages |success
   retries: 5
   delay: 2
-  with_items: kibana_pip_packages
+  with_items: "{{ kibana_pip_packages }}"
 
 - name: Enable Kibana Service
   service:

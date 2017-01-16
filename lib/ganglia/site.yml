@@ -1,0 +1,21 @@
+---
+
+# need to uninstall gmond on ganglia container before install gmond on localhost
+# otherwise the installation will be failed due to some conflict
+- hosts: opsmgr_ganglia
+  become: yes
+  vars_files:
+    - defaults.yml
+  tasks:
+    - name: uninstall gmond on ganglia container
+      package:
+        name: "{{ gmond_package }}"
+        state: absent
+      retries: 5
+      delay: 2
+
+- include: "{{ opsmgr_dir }}/lib/util/lock.yml"
+- include: gmond.yml
+- include: opsmgr.yml
+- include: "{{ opsmgr_dir }}/lib/util/unlock.yml"
+

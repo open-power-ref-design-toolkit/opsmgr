@@ -29,6 +29,7 @@
     - name: shows container information on the screen
       debug: msg="removed lxc container {{ inventory_hostname }}-{{ item.name }}"
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
     - file: path={{ opsmgr_lib }}/vars/ state=absent
 
 

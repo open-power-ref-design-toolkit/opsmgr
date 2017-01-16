@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ganglia_download_site: https://sourceforge.net/projects/ganglia/files/ganglia%20monitoring%20core/3.7.2/
-nagios_download_file: ganglia-3.7.2.tar.gz
+# ganglia_download_site: https://sourceforge.net/projects/ganglia/files/ganglia%20monitoring%20core/3.7.2/
+# ganglia_download_file: ganglia-3.7.2.tar.gz
 
 ganglia_group: ganglia
 ganglia_user:  ganglia
@@ -26,11 +26,11 @@ pre_apt_packages:
   - apache2
   - apache2-utils
   - build-essential
-  - libapache2-mod-php5
+  - libapache2-mod-php7.0
   - libffi-dev
   - libgd2-xpm-dev
   - libssl-dev
-  - php5-gd
+  - php7.0-gd
   - lxc-dev
   - python-dev
   - python-pip

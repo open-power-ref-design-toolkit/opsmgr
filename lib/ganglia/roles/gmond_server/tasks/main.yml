@@ -1,0 +1,29 @@
+---
+
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "../vars/{{ ansible_os_family }}.yml"
+
+    - name: uninstall ganglia related packages
+      package:
+        name: "{{ item }}"
+        state: absent
+      retries: 5
+      delay: 2
+      with_items: "{{ gmond_packages }}"
+
+    - name: install ganglia related packages
+      become: true
+      package:
+        name: "{{ item }}"
+        state: present
+      retries: 5
+      delay: 2
+      with_items: "{{ gmond_packages }}"
+
+    - name: modify cluster name in gmond configuration
+      become: true
+      replace: "dest=/etc/ganglia/gmond.conf regexp='name = \"unspecified\"' replace='name = \"{{cluster_name}}\"' backup=yes"
+
+    - name: restart gmond service
+      service: name="{{ gmond_service }}" state=restarted

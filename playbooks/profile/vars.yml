@@ -48,6 +48,13 @@ containers:
       - { name: "http", host: 8001, container:   80 }
       - { name: "nrpe", host: 5601, container: 5666 }
     mount: usr/local/nagios/opsmgr/nagios_config
+  - name: ganglia
+    role: ganglia
+    release: trusty
+    ports:
+      - { name: "http", host: 9001, container:   80 }
+      - { name: "gmond", host: 9002, container: 8649 }
+    mount: usr/local/ganglia/opsmgr/gmetad_config
   - name: logstash
     role: logstash
     release: trusty
@@ -100,3 +107,6 @@ internal_ip: 172.29.236.100
 
 # configure standalone opsmgr GUI on install
 patch_ui: true
+
+# Ganglia configuration
+install_ganglia: true

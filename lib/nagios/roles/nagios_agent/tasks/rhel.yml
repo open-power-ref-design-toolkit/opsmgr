@@ -10,6 +10,7 @@
     - name: open firewal rules for remote hosts
       firewalld: port=5666/tcp permanent=true state=enabled immediate=true
       when: install_server is defined and install_server == true
+      ignore_errors: true
 
     - name: copy the nrpe service file
       shell: cp /usr/lib/systemd/system/nrpe.service /etc/systemd/system/nrpe.service

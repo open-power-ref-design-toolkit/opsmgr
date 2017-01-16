@@ -4,4 +4,5 @@
      - name: open firewal rules for remote hosts
        shell: ufw allow 5666/tcp
        when: install_server is defined and install_server == true
+       ignore_errors: true
 

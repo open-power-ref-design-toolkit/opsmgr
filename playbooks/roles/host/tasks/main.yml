@@ -14,24 +14,24 @@
 # limitations under the License.
 
     # install pre-reqs on lxc host
-    
+
     - name: installs prereq packages with aptitude
       apt: name={{ item }} state=present update_cache=true
       retries: 5
       delay: 2
       with_items: "{{ apt_packages }}"
-    
+
     - name: installs prereq packages with pip
       pip: name={{ item }} state=present
       retries: 5
       delay: 2
       with_items: "{{ pip_packages }}"
-    
+
     # provision opsmgr lxc containers
-    
+
     - name: validate the shared directory on the host is created
       file: path={{ lxc_shared }} state=directory mode=0755
-    
+
     - name: create containers
       lxc_container:
           name: "{{ inventory_hostname }}-{{ item.name }}"
@@ -44,6 +44,7 @@
               - "lxc.mount.entry = {{ lxc_shared }} {{ item.mount }} none rw,bind 0 0"
               - "lxc.aa_profile = unconfined"
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
 
     - name: add static interface if static addressing
       template:
@@ -51,12 +52,13 @@
           dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/network/interfaces"
           mode: 0644
       with_items: "{{ containers }}"
-      when: item.address is defined
+      when: item.address is defined and
+            ( install_{{ item.name }} is not defined or install_{{ item.name }} == true )
 
     # configure lxc networking
     - include: lxcnet.yml
       when: create_lxc_network is defined and create_lxc_network == true
-    
+
     - name: copy script to check on network
       copy:
         src: "{{ opsmgr_dir }}/scripts/waitip.sh"
@@ -65,7 +67,8 @@
         group: root
         mode: 0755
       with_items: "{{ containers }}"
-    
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
     - name: start containers, fix permissions, wait until eth0 is up
       lxc_container:
         name: "{{ inventory_hostname }}-{{ item.name }}"
@@ -78,11 +81,12 @@
             - "lxc.group = onboot"
             - "lxc.group = opsmgr"
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
       register: lxc_info
 
     - debug: var=lxc_info
       when: opsmgr_debug is defined and opsmgr_debug == true
-    
+
     - name: wait for containers to be up
       wait_for:
           port: 22
@@ -92,6 +96,7 @@
           host: "{{ lxc_info | lxcaddress(item.name) }}"
           search_regex: OpenSSH
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
 
     - name: install python on containers
       lxc_container:
@@ -99,6 +104,7 @@
         container_command: |
             apt-get update && apt-get install -y --force-yes python && apt-get install -f
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
 
     # dump container information
 
@@ -116,6 +122,7 @@
           src=lxc-ops.j2
           dest={{ opsmgr_dat }}/lxc-ops/lxc-{{ inventory_hostname }}-{{ item.name }}
       with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
 
     - name: create shared file fragments for externally-created containers
       become: no

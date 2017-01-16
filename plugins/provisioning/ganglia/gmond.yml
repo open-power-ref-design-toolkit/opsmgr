@@ -1,8 +1,0 @@
----
-
-- hosts: opsmgr_targets
-  become: true
-  roles:
-    - gmond_server
-
-
