@@ -17,6 +17,10 @@
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
     - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "{{ files }}/vars.yml"
+        - "vars.yml"
   roles:
     - { role: nagios_agent,  when: proceed, install_server: true, install_plugin: false }
     - { role: nagios_target, when: proceed, is_monitored: true, has_agent: true }
@@ -28,8 +32,11 @@
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
     - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "{{ files }}/vars.yml"
+        - "vars.yml"
   roles:
     - { role: nagios_target, when: proceed, is_monitored: true, has_agent: false }
 
 - include: "{{ opsmgr_dir }}/lib/util/unlock.yml"
-

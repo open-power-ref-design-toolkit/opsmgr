@@ -113,6 +113,17 @@
       when: has_agent == true
       notify: restart nrpe service
 
+    - name: insert common checks into nagios cmd files
+      lineinfile:
+          dest: "{{ nrpe_dir }}/commands/{{ item[0].file_name }}"
+          line: "{{ item[1] | replace('container_name', item[0].container_name) }}"
+          insertafter: EOF
+      with_nested:
+          - "{{ nagios_command_files }}"
+          - "{{ nagios_common_checks }}"
+      when: has_agent == true
+      notify: restart nrpe service
+
     # configures sudoers since our checks use sudo
 
     - name: ensure sudoers.d directory exists
