@@ -1,0 +1,18 @@
+[opsmgr]
+
+{% for host in nodes['controllers'] %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+
+[osa-newton]
+
+{{ ansible_hostname }}
+
+{% for node, hosts in nodes.iteritems() %}
+{% if node != 'controllers' %}
+[{{ node }}]
+{% for host in hosts %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+{% endif %}
+{% endfor %}
