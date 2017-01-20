@@ -8,7 +8,7 @@
 
   vars:
 
-    - recipe_name: "bcn"
+    - recipe_name: "privatecloud-newton"
     - output_dir: "profile"
     - temp_dir: "/tmp/.opsmgr-{{ recipe_name }}"
     - genesis_dir: "/var/oprc"

@@ -1,4 +1,4 @@
-Recipe: PrivateCloud-Mitaka
+Recipe: PrivateCloud-Newton
 =================================
 
 This is a recipe to generate an OpsMgr profile to install it on a Private Cloud cluster.
@@ -11,7 +11,7 @@ Once this playbook runs you can call the OpsMgr main playbooks by modifying the 
 the OPSMGR_PRL environment variable to point to the generated "profile" directory.
 The OPSMGR_PRL variable uses a path relative to the playbooks directory. Example::
 
-   > export OPSMGR_PRL=../recipes/privatecloud-mitaka/profile
+   > export OPSMGR_PRL=../recipes/privatecloud-newton/profile
 
 And then run both the main OpsMgr playbooks. Rxample::
 

@@ -34,7 +34,7 @@ echo "Applying patches"
 # TODO(luke): Need to apply patches to all controller nodes for opsmgr resiliency
 
 if [ -d diffs ]; then
-    push / >/dev/null 2>&1
+    pushd / >/dev/null 2>&1
     for f in diffs/*.patch; do
         patch -N -p1 < $f
     done

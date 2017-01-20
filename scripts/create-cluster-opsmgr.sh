@@ -31,18 +31,6 @@ PCLD_DIR=`pwd`
 SCRIPTS_DIR=$(dirname $0)
 source $SCRIPTS_DIR/process-args.sh
 
-#Fix issue where ssh fails to log in when PasswordAuthentication is set to no
-#Also set the ssh timeout value to not expire
-pushd $PCLD_DIR/recipes > /dev/null 2>&1
-echo "updating the /etc/ssh/sshd_config and ssh_config"
-ansible-playbook updatessh.yml
-rc=$?
-if [ $rc != 0 ]; then
-    echo "Failed to update /etc/ssh/sshd_config and/or /etc/ssh/ssh_config, rc=$rc"
-    exit 5
-fi
-popd >/dev/null 2>&1
-
 pushd $PCLD_DIR/recipes/privatecloud-newton >/dev/null 2>&1
 echo "Invoking run.sh in privatecloud-newton"
 ./run.sh
@@ -53,15 +41,13 @@ if [ $rc != 0 ]; then
 fi
 popd >/dev/null 2>&1
 
-#remove this exit when ready to integrate
-
 pushd $PCLD_DIR/playbooks >/dev/null 2>&1
 export OPSMGR_RECIPE=privatecloud-newton
 export OPSMGR_DIR=`pwd`/..
 export OPSMGR_PRL=$OPSMGR_DIR/recipes/$OPSMGR_RECIPE/profile
 rm -rf *.log .facts/
 
-# Execute the final steps of installing Standalone Operations Manager minimum UI
+# Execute the final steps of installing Operations Manager 
 echo "Invoking playbook setup.yml from the opsmgr/playbooks directory"
 ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory setup.yml
 rc=$?
