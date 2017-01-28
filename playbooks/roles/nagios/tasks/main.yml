@@ -251,6 +251,10 @@
     
     - name: restart nagios
       service: name=nagios state=restarted enabled=yes
+      register: nagios_enabled
+      until: nagios_enabled|success
+      retries: 5
+      delay: 5
     
     # clean temporary directories after installation
     
