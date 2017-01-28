@@ -55,6 +55,85 @@
       when: item.address is defined and
             ( install_{{ item.name }} is not defined or install_{{ item.name }} == true )
 
+    # config ssh keys
+    - name: create .ssh directory for root
+      file:
+          path: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/root/.ssh"
+          owner: root
+          group: root
+          mode: 0700
+          state: directory
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
+    - name: create .ssh directory for ubuntu
+      file:
+          path: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/home/ubuntu/.ssh"
+          owner: 1000
+          group: 1000
+          mode: 0700
+          state: directory
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
+    - name: copy ssh key for root
+      copy:
+          src: "~/.ssh/id_rsa.pub"
+          dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/root/.ssh/authorized_keys"
+          owner: root
+          group: root
+          mode: 0600
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
+    - name: copy ssh key for ubuntu
+      copy:
+          src: "~/.ssh/id_rsa.pub"
+          dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/home/ubuntu/.ssh/authorized_keys"
+          owner: 1000
+          group: 1000
+          mode: 0600
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
+    - name: ensure sudoers file exists on overlay filesystem
+      lxc_container:
+        name: "{{ inventory_hostname }}-{{ item.name }}"
+        container_command: |
+            touch /etc/sudoers
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
+    - name: ensure sudoers.d directory exists
+      file:
+        path: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d"
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
+    - name: ensure sudoers has include
+      lineinfile:
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers"
+        line: "#includedir /etc/sudoers.d"
+        state: present
+        validate: "/usr/sbin/visudo -cf %s"
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
+    - name: create sudoers include file
+      template:
+        src: roles/host/templates/sudoers.d.j2
+        dest: "/var/lib/lxc/{{ inventory_hostname }}-{{ item.name }}/rootfs/etc/sudoers.d/{{ sudoers_filename }}"
+        owner: root
+        group: root
+        mode: 0440
+        validate: "/usr/sbin/visudo -cf %s"
+      with_items: "{{ containers }}"
+      when: install_{{ item.name }} is not defined or install_{{ item.name }} == true
+
     # configure lxc networking
     - include: lxcnet.yml
       when: create_lxc_network is defined and create_lxc_network == true
