@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2016 IBM Corp.
+# Copyright 2017 IBM Corp.
 #
 # All Rights Reserved.
 #
@@ -26,11 +26,10 @@ echo "allNodes=$allNodes"
 echo "GIT_MIRROR=$GIT_MIRROR"
 
 OSA_RELEASE="stable/newton"
+#not refencing the OSA_TAG until packaging error is fixed
 OSA_TAG=${OSA_TAG:-"14.0.3"}
 OSA_DIR="/opt/openstack-ansible"
 OSA_PLAYS="${OSA_DIR}/playbooks"
-
-EXPECTED_ANSIBLE_VERSION="v1.9.4-1"
 
 if [ "$1" == "--help" ]; then
     echo "Usage: bootstrap-cluster-min.sh"
@@ -63,7 +62,7 @@ if [ ! -d /opt/openstack-ansible ]; then
     if [ $? != 0 ]; then
         exit 1
     fi
-    git checkout ${OSA_TAG}
+    #git checkout ${OSA_TAG}
     if [ $? != 0 ]; then
         exit 1
     fi
@@ -83,7 +82,7 @@ if [ ! -d /etc/ansible ]; then
         echo "scripts/bootstrap-ansible.sh failed, rc=$rc"
         echo "Manual retry procedure:"
         echo "1) fix root cause of error if known"
-        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible_$EXPECTED_ANSIBLE_VERSION"
+        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"        
         echo "3) re-run command"
         exit 1
     fi
@@ -95,7 +94,7 @@ if [ ! -d /etc/ansible ]; then
         echo "scripts/bootstrap-aio.sh failed, rc=$rc"
         echo "Manual retry procedure:"
         echo "1) fix root cause of error if known"
-        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible_$EXPECTED_ANSIBLE_VERSION"
+        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"        
         echo "3) re-run command"
         exit 1
     fi
@@ -112,4 +111,13 @@ if [ $rc != 0 ]; then
     echo "Scripts/bootstrap-opsmgr.sh failed, rc=$rc"
     echo "You may want to continue manually.  cd opsmgr; ./scripts/bootstrap-opsmgr.sh"
     exit 5
+fi
+
+# Execute stdc.sh - this removes the configuration files not needed for
+# an OpenStack minimal install
+scripts/stdc.sh
+rc=$?
+if [ $rc != 0 ]; then
+    echo "Failed running scripts/stdc.sh rc=$rc"
+    exit 6
 fi
