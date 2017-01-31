@@ -1,0 +1,57 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+nagios_command_files:
+    - { file_name: "osa_lxc_aodh_api.cmd" , container_name: "aodh" }
+    - { file_name: "osa_lxc_ceilometer_agent_central.cmd" , container_name: "ceilometer_api" }
+    - { file_name: "osa_lxc_ceilometer_collector.cmd" , container_name: "ceilometer_collector" }
+    - { file_name: "osa_lxc_cinder_api.cmd" , container_name: "cinder_api" }
+    - { file_name: "osa_lxc_cinder_scheduler.cmd" , container_name: "cinder_scheduler" }
+    - { file_name: "osa_lxc_galera.cmd" , container_name: "galera" }
+    - { file_name: "osa_lxc_glance.cmd" , container_name: "glance" }
+    - { file_name: "osa_lxc_gnocchi.cmd" , container_name: "gnocchi" }
+    - { file_name: "osa_lxc_heat_apis.cmd" , container_name: "heat_apis" }
+    - { file_name: "osa_lxc_heat_engine.cmd" , container_name: "heat_engine" }
+    - { file_name: "osa_lxc_horizon.cmd" , container_name: "horizon" }
+    - { file_name: "osa_lxc_keystone.cmd" , container_name: "keystone" }
+    - { file_name: "osa_lxc_memcached.cmd" , container_name: "memcached" }
+    - { file_name: "osa_lxc_neutron_agents.cmd" , container_name: "neutron_agents" }
+    - { file_name: "osa_lxc_neutron_server.cmd" , container_name: "neutron_server" }
+    - { file_name: "osa_lxc_nova_api_metadata.cmd" , container_name: "nova_api_metadata" }
+    - { file_name: "osa_lxc_nova_api_os_compute.cmd" , container_name: "nova_api_os_compute" }
+    - { file_name: "osa_lxc_nova_cert.cmd" , container_name: "nova_cert" }
+    - { file_name: "osa_lxc_nova_conductor.cmd" , container_name: "nova_conductor" }
+    - { file_name: "osa_lxc_nova_console.cmd" , container_name: "nova_console" }
+    - { file_name: "osa_lxc_nova_scheduler.cmd" , container_name: "nova_scheduler" }
+    - { file_name: "osa_lxc_rabbit_mq.cmd" , container_name: "rabbit_mq" }
+    - { file_name: "osa_lxc_repo.cmd" , container_name: "repo" }
+    - { file_name: "osa_lxc_rsyslog.cmd" , container_name: "rsyslog" }
+    - { file_name: "osa_lxc_swift_acc.cmd" , container_name: "swift_acc" }
+    - { file_name: "osa_lxc_swift_proxy.cmd" , container_name: "swift_proxy" }
+    - { file_name: "osa_lxc_trove.cmd" , container_name: "trove" }
+    - { file_name: "osa_lxc_utility.cmd" , container_name: "utility" }
+
+nagios_common_checks:
+    - command[osa_lxc_cpu]         = sudo /etc/nagios/plugins/check-lxc.sh container_name check-cpu.rb '-w 80 -c 90'
+    - command[osa_lxc_mem]         = sudo /etc/nagios/plugins/check-lxc.sh container_name check-mem.sh '-w 250 -c 100'
+    - command[osa_lxc_disk]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-disk.rb ''
+    - command[osa_lxc_large_files] = sudo /etc/nagios/plugins/check-lxc.sh container_name check-for-large-files.sh '-d /var/log -s 1048576'
+    - command[osa_lxc_slsocket]    = sudo /etc/nagios/plugins/check-lxc.sh container_name check-syslog-socket.rb ''
+    - command[osa_lxc_eth0]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-netif.rb '-c 500 -w 350 --interfaces eth0'
+    - command[osa_lxc_eth1]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-netif.rb '-c 500 -w 350 --interfaces eth1'
+    - command[osa_lxc_rsyslogd]    = sudo /etc/nagios/plugins/check-lxc.sh container_name check-procs.rb '-p rsyslogd -w 15 -c 30 -W 1 -C 1'
+    - command[osa_lxc_sshd]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-procs.rb '-p sshd -w 15 -c 30 -W 1 -C 1'
+    - command[osa_lxc_cron]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-procs.rb '-p cron -w 15 -c 30 -W 1 -C 1'
+
