@@ -1,5 +1,5 @@
 ---
-# Copyright 2015, Rackspace US, Inc.
+# Copyright 2016, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,17 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-beaver_log_monitors:
-  - name: "auth"
-    log_file: "/var/log/auth.log"
-    tags: "auth,infrastructure"
-  - name: "syslog"
-    log_file: "/var/log/syslog.log"
-    tags: "syslog,infrastructure"
-  - name: "kern"
-    log_file: "/var/log/kern.log"
-    tags: "kern,infrastructure"
-  - name: "dpkg"
-    log_file: "/var/log/dpkg.log"
-    tags: "dpkg,infrastructure"
-
+- name: Restart Filebeat
+  service:
+    name: filebeat
+    state: restarted

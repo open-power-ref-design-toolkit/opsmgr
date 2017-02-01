@@ -11,7 +11,8 @@
     - include_vars: "{{ opsmgr_prl }}/vars.yml"
     - include_vars: "{{ files }}/data.yml"
   roles:
-    - { role: beaver, when: proceed }
+    - { role: filebeat_build, when: proceed and ansible_architecture == 'ppc64le' }
+    - { role: filebeat, when: proceed }
 
 - include: "{{ opsmgr_dir }}/lib/util/unlock.yml"
 

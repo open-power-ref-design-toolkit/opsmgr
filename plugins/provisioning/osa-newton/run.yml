@@ -14,7 +14,8 @@
 # limitations under the License.
 
 - include: "{{ opsmgr_dir }}/lib/util/ops.yml"
-- include: "{{ opsmgr_dir }}/lib/beaver/site.yml target_hosts=hosts target_containers=all_containers files={{ opsmgr_dir }}/osa-newton/beaver locking=true"
+#- include: "{{ opsmgr_dir }}/lib/beaver/site.yml target_hosts=hosts target_containers=all_containers files={{ opsmgr_dir }}/osa-newton/beaver locking=true"
+- include: "{{ opsmgr_dir }}/lib/filebeat/site.yml target_hosts=hosts target_containers=all_containers files={{ opsmgr_dir }}/osa-newton/filebeat locking=true"
 - include: "{{ opsmgr_dir }}/lib/nagios/site.yml target_hosts=hosts target_containers=all_containers files={{ opsmgr_dir }}/osa-newton/nagios locking=true"
 - include: resources.yml
 

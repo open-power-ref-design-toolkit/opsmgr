@@ -1,0 +1,4 @@
+---
+
+- include: build.yml
+  run_once: true

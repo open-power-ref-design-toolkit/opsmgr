@@ -13,8 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Restart beaver
-  service:
-    name: beaver
-    state: restarted
-    pattern: beaver
+
+playbook_name: "ubuntu.yml"
+
+filebeat_logging_paths:
+  - paths:
+    - '/var/log/auth.log'
+    document_type: openstack
+    tags:
+    - auth
+    - infrastructure
+  - paths:
+    - '/var/log/syslog'
+    document_type: openstack
+    tags:
+    - syslog
+    - infrastructure
+  - paths:
+    - '/var/log/kern.log'
+    document_type: openstack
+    tags:
+    - kern
+    - infrastructure
+  - paths:
+    - '/var/log/dpkg.log'
+    document_type: openstack
+    tags:
+    - dpkg
+    - infrastructure

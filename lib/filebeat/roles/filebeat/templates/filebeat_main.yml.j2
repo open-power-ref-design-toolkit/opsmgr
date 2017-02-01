@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+output:
+  logstash:
+    hosts:
+{% for host in filebeat_logstash_hosts.split(',') %}
+    - '{{ host }}'
+{% endfor %}
+shipper: null
+logging:
+  files:
+    rotateeverybytes: 10485760  # = 10MB
+    keepfiles: 7
+filebeat.config_dir: {{ filebeat_config_directory }}

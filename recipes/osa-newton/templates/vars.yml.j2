@@ -16,6 +16,7 @@ containers:
     ports:
       - { name: "json", host: 5140, container: 5140 }
       - { name: "sysl", host: 5544, container: 5544 }
+      - { name: "beats", host: 5044, container: 5044 }
     mount: etc/opsmgr/shared/logstash
   - name: elasticsearch
     role: elasticsearch
@@ -89,6 +90,7 @@ db_login_user: "{{ galera_root_user }}"
 db_login_password: "{{ galera_root_password }}"
 db_login_host: "{{ global_overrides.internal_lb_vip_address }}"
 db_user: "opsmgr"
+db_password: "passw0rd"
 db_host: "{{ global_overrides.internal_lb_vip_address }}"
 
 # user interface installation
@@ -99,6 +101,3 @@ ui_enabled: "{{ horizon_lib_dir | dirname | replace('untagged', openstack_releas
 # proxy mode installation - valid values: iptables or haproxy
 install_haproxy: false
 internal_ip: "{{ global_overrides.internal_lb_vip_address }}"
-
-# Ganglia configuration
-install_ganglia: false
