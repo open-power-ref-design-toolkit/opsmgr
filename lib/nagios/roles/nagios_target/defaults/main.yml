@@ -22,3 +22,7 @@ gem_packages:
     - sensu-plugin
 
 gem_install_options: --both --document rdoc,ri --force "{{ item }}"
+
+nagios_command_files: []
+
+nagios_common_checks: ''
