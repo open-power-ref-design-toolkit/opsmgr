@@ -1,0 +1,214 @@
+---
+# Copyright 2015, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+playbook_name: "osa-newton.yml"
+
+filebeat_logging_paths:
+  - paths:
+    - '/var/log/cinder/*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - oslofmt
+    - cinder
+    multiline:
+      pattern: "{{ multiline_openstack_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/nova/*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - oslofmt
+    - nova
+    multiline:
+      pattern: "{{ multiline_openstack_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/heat/*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - oslofmt
+    - heat
+    multiline:
+      pattern: "{{ multiline_openstack_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/keystone/keystone.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - oslofmt
+    - keystone
+    multiline:
+      pattern: "{{ multiline_openstack_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/keystone/ssl_access.log'
+    tags:
+    - openstack
+    - apache
+    - apache-access
+    - keystone
+  - paths:
+    - '/var/log/keystone/keystone-apache-error.log'
+    tags:
+    - openstack
+    - apache
+    - apache-error
+    - keystone
+    multiline:
+      pattern: "{{ multiline_keystone_error_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/glance/*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - oslofmt
+    - glance
+    multiline:
+      pattern: "{{ multiline_openstack_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/horizon/*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - horizon
+    multiline:
+      pattern: "{{ multiline_openstack_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/swift/proxy*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - swift
+    - swift-proxy
+  - paths:
+    - '/var/log/swift/account*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - swift
+    - swift-account
+    multiline:
+      pattern: "{{ multiline_swift_account_replicator_pattern }}"
+      negate: false
+      match: after
+  - paths:
+    - '/var/log/swift/container*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - swift
+    - swift-container
+    multiline:
+      pattern: "{{ multiline_swift_container_replicator_pattern }}"
+      negate: false
+      match: after
+  - paths:
+    - '/var/log/swift/object*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - swift
+    - swift-object
+    multiline:
+      pattern: "{{ multiline_swift_object_replicator_pattern }}"
+      negate: false
+      match: after
+  - paths:
+    - '/var/log/neutron/*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - oslofmt
+    - neutron
+    multiline:
+      pattern: "{{ multiline_openstack_pattern }}"
+      negate: 'true'
+      match: after
+  - paths:
+    - '/var/log/mysql_logs/*.log'
+    tags:
+    - galera
+    - mysql
+    - infrastructure
+    multiline:
+      # See https://play.golang.org/p/1r4iM0xwjQ
+      pattern: '^([^0-9W]|$)'
+      negate: 'false'
+      match: after
+#  - name: "mysql"
+#    log_file: "/var/log/mysql_logs/*.log"
+#    tags: "mysql,infrastructure"
+#    multiline_regex_after: '(^#\sUser@Host:\s)'
+#    multiline_regex_before: '(.*)'
+  - paths:
+    - '/var/log/rabbitmq/*'
+    multiline:
+      # See https://play.golang.org/p/2SwhbSZxue
+      pattern: '^='
+      negate: 'true'
+      match: after
+    tags:
+    - rabbitmq
+    - infrastructure
+  - paths:
+    - '/var/log/nginx/*access.log'
+    tags:
+    - repo
+    - nginx
+    - nginx-access
+    - infrastructure
+  - paths:
+    - '/var/log/nginx/*error.log'
+    tags:
+    - repo
+    - nginx
+    - nginx-error
+    - infrastructure
+  - paths:
+    - '/var/log/ceph/ceph-mon.*.log'
+    multiline:
+      pattern: '^[a-z_]* '
+      negate: 'false'
+      match: after
+    tags:
+    - ceph-mon
+    - ceph
+    - infrastructure
+  - paths:
+    - '/var/log/ceph/ceph-osd.*.log'
+    tags:
+    - ceph-osd
+    - ceph
+    - infrastructure
+  - paths:
+    - '/var/log/trove/*.log'
+    tags:
+    - trove
+    - openstack
+    - oslofmt

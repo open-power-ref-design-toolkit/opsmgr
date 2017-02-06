@@ -13,15 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Deploy beaver logfile conf files
-  template:
-    src: "logfile.conf.j2"
-    dest: "/etc/beaver/conf.d/{{ item.name }}"
-    owner: "{{ beaver_daemon_user }}"
-    group: "{{ beaver_daemon_group }}"
-  with_items: "{{ beaver_log_monitors }}"
-  when: beaver_log_monitors is defined
-  notify: Restart beaver
-  tags:
-    - beaver-post-install
-    - beaver-conf
+playbook_name: "base.yml"
+
+filebeat_logging_paths:
+  - paths:
+    - '/var/log/filebeat/filebeat'
+    document_type: openstack
+    tags:
+    - filebeat
+    - infrastructure

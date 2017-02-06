@@ -1,0 +1,126 @@
+---
+
+- name: installs prereq packages
+  apt: name={{ item }} state=present update_cache=true
+  with_items: "{{ prereq_packages }}"
+
+- name: Make temp directory for build
+  file:
+    path: "{{ build_dir }}"
+    state: directory
+
+- name: Download go and unpack it
+  unarchive:
+    src: "{{ go_download }}"
+    dest: "{{ build_dir }}"
+    creates: "{{ go_root }}"
+    copy: no
+
+- name: Make gopath
+  file:
+    path: "{{ go_path }}"
+    state: directory
+
+- name: Make beats_path
+  file:
+    path: "{{ beats_path }}"
+    state: directory
+
+- name: git clone beats
+  git:
+    repo: "{{ beats_url }}"
+    dest: "{{ beats_path }}"
+
+- name: Build filebeat
+  make:
+    chdir: "{{ filebeat_dir }}"
+  environment:
+    GOROOT: "{{ go_root }}"
+    GOPATH: "{{ go_path }}"
+    PATH: "{{ go_root }}/bin:{{ ansible_env.PATH }}"
+
+- name: Make go_daemon_dir
+  file:
+    path: "{{ go_daemon_dir }}"
+    state: directory
+
+- name: git clone go daemon
+  git:
+    repo: "{{ go_daemon_url }}"
+    dest: "{{ go_daemon_dir }}"
+
+- name: Build go daemon
+  command: "{{ go_daemon_build_cmd }}"
+  args:
+    chdir: "{{ go_daemon_dir }}"
+    creates: "{{ go_daemon_dir }}/god-linux-ppc64el"
+
+- name: Download filebeat amd64 deb file
+  get_url:
+    url: "{{ deb_download_path }}/{{ deb_package_amd64 }}"
+    dest: "{{ build_dir }}"
+
+- name: Make deb_working_dir
+  file:
+    path: "{{ deb_working_dir }}"
+    state: directory
+
+- name: Extract deb package
+  command: "dpkg-deb -R {{ deb_package_amd64 }} {{ deb_working_dir }}"
+  args:
+    chdir: "{{ build_dir }}"
+    creates: "{{ deb_working_dir }}/DEBIAN"
+
+- name: Copy filebeat into deb package
+  copy:
+    src: "{{ filebeat_dir}}/filebeat"
+    dest: "{{ deb_working_dir }}/usr/share/filebeat/bin/filebeat"
+    remote_src: True
+    mode: 0755
+
+- name: Copy fielbeat-god into deb package
+  copy:
+    src: "{{ go_daemon_dir }}/god-linux-ppc64el"
+    dest: "{{ deb_working_dir }}/usr/share/filebeat/bin/filebeat-god"
+    remote_src: True
+    mode: 0755
+
+- name: Edit control file to set architecture
+  lineinfile:
+    dest: "{{ deb_control_file }}"
+    regexp: '^Architecture'
+    line: 'Architecture: ppc64el'
+
+- name: Store file stat of filebeat
+  stat:
+    path: "{{ deb_working_dir }}/usr/share/filebeat/bin/filebeat"
+  register: filebeat_stat
+
+- name: Update md5sum for filebeat
+  lineinfile:
+   dest: "{{ deb_md5sums_file }}"
+   regexp: 'usr/share/filebeat/bin/filebeat$'
+   line: '{{ filebeat_stat.stat.md5 }}  usr/share/filebeat/bin/filebeat'
+
+- name: Store file stat of filebeat-god
+  stat:
+    path: "{{ deb_working_dir }}/usr/share/filebeat/bin/filebeat-god"
+  register: filebeat_god_stat
+
+- name: Update md5sum for filebeat-god
+  lineinfile:
+   dest: "{{ deb_md5sums_file }}"
+   regexp: 'usr/share/filebeat/bin/filebeat-god$'
+   line: '{{ filebeat_god_stat.stat.md5 }}  usr/share/filebeat/bin/filebeat-god'
+
+- name: Repackage filebeat for ppc64el deb file
+  command: "dpkg-deb -b {{ deb_working_dir }} {{ deb_package_ppc64el }}"
+  args:
+    chdir: "{{ build_dir }}"
+    creates: "{{ build_dir }}/{{ deb_package_ppc64el }}"
+
+- name: Fetch the ppc64el deb package to the system running ansible
+  fetch:
+    src:  "{{ build_dir }}//{{ deb_package_ppc64el }}"
+    dest:  "{{ deb_package_path_host }}/"
+    flat: yes
