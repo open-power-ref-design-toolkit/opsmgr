@@ -1,7 +1,7 @@
 OpsMgr
 =============
 
-This project installs Nagios, ElasticSearch, Logstash and Kibana (ELK stack), and the opsmgr
+This project installs Nagios, ElasticSearch, Logstash and Kibana (ELK stack), and the OpsMgr 
 command line and user interface (as an OpenStack Horizon extension) on the cluster controller
 nodes that have been deployed with os-services. Nagios is automatically configured to monitor the
 Openstack services running in the cluster. Kibana dashboards are provided to monitor the logs
@@ -29,15 +29,15 @@ Those scripts will perform the following sequence of steps:
 
   * execution of recipes/privatelcoud-newton Ansible playbook that queries OpenStack-Ansible
     and the /var/oprc/inventory.yml file of cluster-genesis for the variables necessary
-    for the install of opsmgr in an Openstack-Ansible controller
+    for the install of OpsMgr in an Openstack-Ansible controller
 
   * execution of playbooks/setup.yml Ansible playbook that provisions ssh keys
-    to each endpoint managed by opsmgr
+    to each endpoint managed by OpsMgr 
 
   * execution of playbooks/hosts.yml Ansible playbook that creates containers for Nagios and
     the ELK stack
   
-  * execution of playbooks/site.yml Ansible playbook to deploy the opsmgr service and dashboards
+  * execution of playbooks/site.yml Ansible playbook to deploy the OpsMgr service and dashboards
     (within OpenStack Horizon containers) and completely installs Nagios server and the ELK
     stack and configures haproxy and database
   
@@ -45,7 +45,7 @@ Those scripts will perform the following sequence of steps:
     and ELK (Beaver) and to push all necessary configuration at the endpoints that will be managed
     by the OpsMgr stack
 
-To install opsmgr with a minimal install of OpenStack to utilize the monitoring features of opsmgr in a non openstack environment, using an Ubuntu 16.04 VM clone this project and run::
+To install OpsMgr with a minimal install of OpenStack to utilize the monitoring features of OpsMgr in a non openstack environment, using an Ubuntu 16.04 VM clone this project and run::
 
    > ./scripts/bootstrap-opsmgr-min.sh
    > ./scripts/create-cluster-opsmgr-min.sh 
@@ -80,10 +80,25 @@ For ELK::
     kibana_password: kibana
     Location: playbooks/roles/kibana/defaults/main.yml (or use standard Ansible override mechanisms: vars, group_vars, extra_vars, etc.)
 
-For the opsmgr galera database the password is randomly generated and stored in /etc/opsmgr/user_secrets.yml on the deployer node.
+For the OpsMgr galera database the password is randomly generated and stored in /etc/opsmgr/user_secrets.yml on the deployer node.
 
 Additional OpsMgr deployment default parameters can be overridden as well. For options please check
 this file: playbooks/defaults.yml
+
+Uninstall
+---------
+To uninstall OpsMgr the following can be done:
+
+  * From the deployer node:
+      * Run the clean.yml playbook from the playbooks directory to remove the OpsMgr containers
+      * Edit the ~/.ssh/config file and remove each Host entry that uses the IdentityFile opsmgr.key
+  * From each controller node:
+      * Remove the directory /etc/opsmgr
+      * From /etc/haproxy/conf.d remove the configuration files for Elasticsearch, Kibana, Logstash and Nagios  
+        and restart the haproxy service
+  * From each controller node and endpoint being monitored:
+      * Use apt purge to remove beaver and nagios-nrpe-server
+      * Remove the directories /etc/nagios and /etc/beaver
 
 Bug Reporting
 -------------
@@ -92,10 +107,8 @@ https://bugs.launchpad.net/open-power-ref-design
 
 Related projects
 ----------------
-::
    - `openstack-recipes <https://github.com/open-power-ref-design/openstack-recipes>`_
    - `cluster-genesis <https://github.com/open-power-ref-design/cluster-genesis>`_
    - `os-services <https://github.com/open-power-ref-design/os-services>`_
    - `ceph-services <https://github.com/open-power-ref-design/ceph-services>`_
-
 
