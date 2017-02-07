@@ -7,6 +7,7 @@ pre_packages:
     - openssl
     - gcc
     - make
+    - patch
 
 nrpe: nagios-nrpe-server=2.15*
 nrpe_plugins: nagios-nrpe-server=2.15*
