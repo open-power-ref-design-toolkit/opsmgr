@@ -1,10 +1,10 @@
-{
+    {
       "title": "SSH AUTHENTICATIONS",
-      "visState": "{\"title\":\"SSH Authentications\",\"type\":\"pie\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"isDonut\":false},\"aggs\":[{\"id\":\"1\",\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"tags.raw\",\"include\":{\"pattern\":\"ssh_successful_login|ssh_failed_login|ssh_brute_force\"},\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"}}],\"listeners\":{}}",
+      "visState": "{\"title\":\"SSH AUTHENTICATIONS\",\"type\":\"pie\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"isDonut\":false},\"aggs\":[{\"id\":\"1\",\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"tags.raw\",\"include\":{\"pattern\":\"ssh_successful_login|ssh_failed_login|ssh_brute_force\"},\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"}}],\"listeners\":{}}",
       "uiStateJSON": "{}",
       "description": "",
       "version": 1,
       "kibanaSavedObjectMeta": {
-        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"(tags contain \\\"ssh_successful_login\\\") OR (tags contain \\\"ssh_failed_login\\\") OR (tags contain \\\"ssh_brute_force\\\")\"}},\"filter\":[]}"
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"tags:(ssh_successful_login OR ssh_failed_login OR ssh_brute_force)\",\"analyze_wildcard\":true}},\"filter\":[]}"
       }
     }
