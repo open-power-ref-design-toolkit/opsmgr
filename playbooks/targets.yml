@@ -85,5 +85,4 @@
         chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item }}/"
       with_items: "{{ groups.keys() }}"
       when: runtgts == true and item not in '[ "ungrouped", "all", "opsmgr", "standard" ]'
-      ignore_errors: true
-
+      failed_when: false
