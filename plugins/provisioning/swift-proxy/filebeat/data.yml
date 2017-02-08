@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-beaver_log_monitors:
-  - name: "swift-proxy"
-    log_file: "/var/log/swift/proxy*.log"
-    tags: "swift,openstack"
-
+filebeat_logging_paths:
+  - paths:
+    - '/var/log/swift/proxy*.log'
+    document_type: openstack
+    tags:
+    - openstack
+    - swift
+    - swift-proxy

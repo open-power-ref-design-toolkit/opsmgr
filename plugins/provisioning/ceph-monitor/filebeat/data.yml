@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-beaver_log_monitors:
-  - name: "swift-account"
-    log_file: "/openstack/log/{{ inventory_hostname }}-swift/account*.log"
-    tags: "swift,openstack"
-  - name: "swift-container"
-    log_file: "/openstack/log/{{ inventory_hostname }}-swift/container*.log"
-    tags: "swift,openstack"
-  - name: "swift-object"
-    log_file: "/openstack/log/{{ inventory_hostname }}-swift/object*.log"
-    tags: "swift,openstack"
-
+filebeat_logging_paths:
+  - paths:
+    - '/var/log/ceph/ceph-mon.*.log'
+    document_type: openstack
+    tags:
+    - ceph-mon
+    - ceph
+    - infrastructure
+    multiline:
+      pattern: '^[a-z_]* '
+      negate: 'false'
+      match: after

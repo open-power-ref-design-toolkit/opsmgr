@@ -12,9 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-beaver_log_monitors:
-  - name: "ceph-osd"
-    log_file: "/var/log/ceph/ceph-osd.*.log"
-    tags: "ceph-osd,ceph,infrastructure"
-
+filebeat_logging_paths:
+  - paths:
+    - '/var/log/ceph/ceph-osd.*.log'
+    tags:
+    - ceph-osd
+    - ceph
+    - infrastructure
