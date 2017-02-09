@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,14 +75,20 @@
       args:
         chdir: "{{ opsmgr_dir }}/plugins/provisioning/base/"
       when: runbase == true
+
+    - name: Determine the provisioning plugins that exist
+      stat:
+        path: "{{ opsmgr_dir }}/plugins/provisioning/{{ item }}"
+      with_items: "{{ groups.keys() }}"
+      register: directory_stat
+
     - name: run target ansible playbooks
       shell: >
         rm -rf .facts *.log;
-        ansible-playbook -i "{{ opsmgr_dat }}/inventory-{{ item }}"
+        ansible-playbook -i "{{ opsmgr_dat }}/inventory-{{ item.item }}"
         -e "opsmgr_dir={{ opsmgr_dir }}"
         site.yml
       args:
-        chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item }}/"
-      with_items: "{{ groups.keys() }}"
-      when: runtgts == true and item not in '[ "ungrouped", "all", "opsmgr", "standard" ]'
-      failed_when: false
+        chdir: "{{ opsmgr_dir }}/plugins/provisioning/{{ item.item }}/"
+      with_items: "{{ directory_stat.results }}"
+      when: runtgts == true and item.stat.exists
