@@ -10,4 +10,6 @@ command[server-sshd]     = sudo /etc/nagios/plugins/check-procs.rb -p sshd -w 30
 command[server-cron]     = sudo /etc/nagios/plugins/check-procs.rb -p cron -w 30 -c 40 -W 1 -C 1
 command[server-br-mgmt]  = sudo /etc/nagios/plugins/check-netif.rb -c 500 -w 350 --interfaces br-mgmt
 command[server-br-stor]  = sudo /etc/nagios/plugins/check-netif.rb -c 500 -w 350 --interfaces br-storage
+command[server-br-vlan]  = sudo /etc/nagios/plugins/check-netif.rb -c 500 -w 350 --interfaces br-vlan
+command[server-br-vxln]  = sudo /etc/nagios/plugins/check-netif.rb -c 500 -w 350 --interfaces br-vxlan
 
