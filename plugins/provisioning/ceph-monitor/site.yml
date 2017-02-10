@@ -14,7 +14,7 @@
 # limitations under the License.
 
 - include: "{{ opsmgr_dir }}/lib/util/ops.yml"
-- include: "{{ opsmgr_dir }}/lib/beaver/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/ceph-monitor/beaver"
+- include: "{{ opsmgr_dir }}/lib/filebeat/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/ceph-monitor/filebeat"
 - include: "{{ opsmgr_dir }}/lib/nagios/update.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/ceph-monitor/nagios"
 - include: resources.yml
 
