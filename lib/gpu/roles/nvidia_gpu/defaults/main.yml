@@ -1,0 +1,49 @@
+---
+# Copyright 2017, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+##### THESE PARAMETER MAY CHANGE DEPENDING ON THE GRAPHICS CARD ####
+
+nvidia_driver: /usr/lib/nvidia-361
+perl_bindings_path: http://search.cpan.org/CPAN/authors/id/N/NV/NVBINDING
+perl_bindings_file: nvidia-ml-pl-4.304.2.tar.gz
+
+#Run: 'nvidia-smi -a' to check
+pcie_generation: 3
+pcie_link_width_max: 16
+####################################################################
+
+apt_packages:
+  - git
+
+perl_bindings_download: "{{ perl_bindings_path }}/{{ perl_bindings_file }}"
+
+check_gpu_sensor_url: https://github.com/thomas-krenn/check_gpu_sensor_v1
+
+build_dir: /tmp/bindings_build
+
+perl_bindings_dir: "{{ build_dir }}/nvidia-ml"
+check_gpu_sensor_dir: "{{ build_dir }}/check_gpu_sensor_v1"
+check_gpu_sensor_plugin: check_gpu_sensor
+check_gpu_sensor_critical_checks: "d,d,d,d,d,d,d,d,d,{{ pcie_generation }},{{ pcie_link_width_max }}"
+
+LIBS_STATEMENT: "    LIBS              => ['-L{{ nvidia_driver}} -lnvidia-ml'], # e.g., '-lm'"
+
+nrpe_dir: /etc/nagios
+nagios_plugin_directory: "{{ nrpe_dir }}/plugins"
+
+command_find_bus_ids: "nvidia-smi -a |grep 'Bus Id' | cut -f 2- -d: | sed 's/^ *//g'"
+command_find_peristence_mode: "nvidia-smi -a | grep 'Persistence Mode' | head -1 | cut -f 2- -d: | sed 's/^ *//g'"
+nagios_command_file: /etc/nagios/commands/nvidia_gpu.cmd
+nagios_plugin_cmd: "{{ nagios_plugin_directory }}/{{ check_gpu_sensor_plugin }}"
