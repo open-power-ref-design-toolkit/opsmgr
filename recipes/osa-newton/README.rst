@@ -1,7 +1,7 @@
 Recipe: OSA-Newton
 ========================
 
-Use this recipe to generate an OpsMgr profile to install it on top of OpenStack-Ansible.
+Use this recipe to generate an OpsMgr profile to install on top of OpenStack-Ansible.
 Example::
 
    > ./run.sh
@@ -16,8 +16,7 @@ And then run the main OpsMgr playbooks. Example::
    > cd ../../playbooks
    > export OPSMGR_DIR=`pwd`/..
    > export OPSMGR_PRL=$OPSMGR_DIR/recipes/$OPSMGR_RECIPE/profile
-   > ansible-playbook -e "OPSMGR_DIR=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory <playbook_name>
+   > ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory <playbook_name>
 
-Please consult the README in the playbooks directory for more informatin on how to
+Please consult the README in the playbooks directory for more information on how to
 install OpsMgr.
-
