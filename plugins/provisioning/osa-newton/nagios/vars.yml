@@ -40,7 +40,9 @@ nagios_command_files:
     - { file_name: "osa_lxc_rsyslog.cmd" , container_name: "rsyslog" }
     - { file_name: "osa_lxc_swift_acc.cmd" , container_name: "swift_acc" }
     - { file_name: "osa_lxc_swift_proxy.cmd" , container_name: "swift_proxy" }
-    - { file_name: "osa_lxc_trove.cmd" , container_name: "trove" }
+    - { file_name: "osa_lxc_trove_api.cmd" , container_name: "trove_api" }
+    - { file_name: "osa_lxc_trove_conductor.cmd" , container_name: "trove_conductor" }
+    - { file_name: "osa_lxc_trove_taskmanager.cmd" , container_name: "trove_taskmanager" }
     - { file_name: "osa_lxc_utility.cmd" , container_name: "utility" }
 
 nagios_common_checks:

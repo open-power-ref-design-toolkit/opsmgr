@@ -33,7 +33,9 @@
         - rsyslog
         - swift_acc
         - swift_proxy
-        - power_trove
+        - trove_api
+        - trove_conductor
+        - trove_taskmanager
         - utility
 
   tasks:

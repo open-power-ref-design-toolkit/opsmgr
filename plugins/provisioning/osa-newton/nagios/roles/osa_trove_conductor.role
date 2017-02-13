@@ -1,7 +1,7 @@
 define service {
    use                  generic-service
    host_name            #@#HOSTNAME#@#
-   service_description  OpenStack Trove
+   service_description  OpenStack Trove Conductor
    check_command        check_nrpe!#@#ROLE#@# #@#DATA#@#
    check_interval       10
 }
