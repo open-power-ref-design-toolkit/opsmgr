@@ -235,6 +235,13 @@
           line: "cfg_dir={{ hostvars[inventory_hostname].share }}/hosts"
           dest: "/usr/local/nagios/etc/nagios.cfg"
     
+    - name: increase load check levels for local server config
+      lineinfile:
+          dest: "/usr/local/nagios/etc/objects/localhost.cfg"
+          state: present
+          line: "        check_command                   check_local_load!20.0,16.0,12.0!60.0,36.0,24.0"
+          regexp: "check_local_load"
+
     - name: validate nagios config
       command: /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
 
