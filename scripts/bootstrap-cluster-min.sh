@@ -26,8 +26,7 @@ echo "allNodes=$allNodes"
 echo "GIT_MIRROR=$GIT_MIRROR"
 
 OSA_RELEASE="stable/newton"
-#not refencing the OSA_TAG until packaging error is fixed
-OSA_TAG=${OSA_TAG:-"14.0.3"}
+OSA_TAG=${OSA_TAG:-"14.0.7"}
 OSA_DIR="/opt/openstack-ansible"
 OSA_PLAYS="${OSA_DIR}/playbooks"
 
@@ -62,7 +61,7 @@ if [ ! -d /opt/openstack-ansible ]; then
     if [ $? != 0 ]; then
         exit 1
     fi
-    #git checkout ${OSA_TAG}
+    git checkout ${OSA_TAG}
     if [ $? != 0 ]; then
         exit 1
     fi
