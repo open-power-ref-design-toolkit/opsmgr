@@ -47,6 +47,7 @@ containers:
     ports:
       - { name: "http", host: 8001, container:   80 }
       - { name: "nrpe", host: 5601, container: 5666 }
+      - { name: "beats", host: 5044, container: 5044 }
     mount: usr/local/nagios/opsmgr/nagios_config
   - name: ganglia
     role: ganglia

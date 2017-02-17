@@ -16,6 +16,7 @@ containers:
     ports:
       - { name: "json", host: 5140, container: 5140 }
       - { name: "sysl", host: 5544, container: 5544 }
+      - { name: "beats", host: 5044, container: 5044 }
     mount: etc/opsmgr/shared/logstash
   - name: elasticsearch
     role: elasticsearch
