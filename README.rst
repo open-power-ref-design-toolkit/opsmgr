@@ -116,8 +116,8 @@ https://bugs.launchpad.net/open-power-ref-design
 
 Related projects
 ----------------
-   - `openstack-recipes <https://github.com/open-power-ref-design/openstack-recipes>`_
-   - `cluster-genesis <https://github.com/open-power-ref-design/cluster-genesis>`_
-   - `os-services <https://github.com/open-power-ref-design/os-services>`_
-   - `ceph-services <https://github.com/open-power-ref-design/ceph-services>`_
+   - `OpenStack based recipes <https://github.com/open-power-ref-design>`_
+   - `cluster-genesis <https://github.com/open-power-ref-design-toolkit/cluster-genesis>`_
+   - `os-services <https://github.com/open-power-ref-design-toolkit/os-services>`_
+   - `ceph-services <https://github.com/open-power-ref-design-toolkit/ceph-services>`_
 
