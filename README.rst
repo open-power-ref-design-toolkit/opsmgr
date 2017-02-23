@@ -41,7 +41,7 @@ These scripts perform the following steps:
     the ELK stack
 
   * execution of playbooks/site.yml Ansible playbook to deploy OpsMgr services and dashboards
-    (within OpenStack Horizon containers), completely installs the Nagios server and the ELK
+    (within OpenStack Horizon containers), completely install the Nagios server and the ELK
     stack services, and configure haproxy and database services
 
   * execution of playbooks/target.yml Ansible playbook to deploy endpoint services for Nagios (NRPE)
@@ -54,12 +54,12 @@ The scripts above may be invoked manually to resolve errors, particularly networ
 related errors.
 
 Monitoring features of OpsMgr may be utilized with non-OpenStack environments by installing OpsMgr
-with a minimal OpenStack footprint. An Ubuntu 16.04 VM will be necessary to do this. Simply create
+with a minimal OpenStack footprint. An Ubuntu 16.04 VM is necessary to do this. Simply create
 an Ubuntu 16.04 VM, clone the OpsMgr project into it, and run the following scripts to install
 OpsMgr services using a minimal OpenStack installation::
 
-   > ./scripts/bootstrap-opsmgr-min.sh
-   > ./scripts/create-cluster-opsmgr-min.sh
+   > ./scripts/bootstrap-cluster-min.sh
+   > ./scripts/create-cluster-min.sh
 
 Default credentials for the integrated Ops applications are::
 
@@ -68,7 +68,7 @@ Default credentials for the integrated Ops applications are::
     Kibana user: kibana
     Kibana password: kibana
 
-For security purposes it is recommended for users to change these passwords immediately after
+For security purposes it is recommended users change these passwords immediately after
 initial install. Documented practices to change default passwords for other Ops applications
 should be observed as well.
 
