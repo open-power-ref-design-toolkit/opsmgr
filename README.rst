@@ -116,8 +116,21 @@ https://bugs.launchpad.net/open-power-ref-design
 
 Related projects
 ----------------
-   - `OpenStack based recipes <https://github.com/open-power-ref-design>`_
-   - `cluster-genesis <https://github.com/open-power-ref-design-toolkit/cluster-genesis>`_
-   - `os-services <https://github.com/open-power-ref-design-toolkit/os-services>`_
-   - `ceph-services <https://github.com/open-power-ref-design-toolkit/ceph-services>`_
+Recipes for OpenPOWER servers are located here:
+
+    - `Recipe directory <https://github.com/open-power-ref-design/>`_
+
+Here, you will find several OpenStack based recipes:
+
+    - `Private cloud w/ and w/o Swift Object Storage <https://github.com/open-power-ref-design/private-compute-cloud/blob/master/README.rst>`_
+    - `Database as a Service (OpenStack Trove) <https://github.com/open-power-ref-design/dbaas/blob/master/README.rst>`_
+    - `Standalone Swift Clusters (OpenStack Swift) <https://github.com/open-power-ref-design/standalone-swift/blob/master/README.rst>`_
+    - `Standalone Ceph Clusters <https://github.com/open-power-ref-design/standalone-ceph/blob/master/README.rst>`_
+
+The following projects provides services that are used as major building blocks in
+recipes:
+
+    - `cluster-genesis <https://github.com/open-power-ref-design-toolkit/cluster-genesis>`_
+    - `os-services <https://github.com/open-power-ref-design-toolkit/os-services>`_
+    - `ceph-services <https://github.com/open-power-ref-design-toolkit/ceph-services>`_
 
