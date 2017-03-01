@@ -26,7 +26,7 @@ echo "allNodes=$allNodes"
 echo "GIT_MIRROR=$GIT_MIRROR"
 
 OSA_RELEASE="stable/newton"
-OSA_TAG=${OSA_TAG:-"14.0.7"}
+OSA_TAG=${OSA_TAG:-"14.0.8"}
 OSA_DIR="/opt/openstack-ansible"
 OSA_PLAYS="${OSA_DIR}/playbooks"
 
