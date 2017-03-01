@@ -49,7 +49,6 @@
 
     - name: execute remote playbook command
       become: true
-      ignore_errors: true
       shell: >
         ansible-playbook
         -e "opsmgr_dir={{ path }}"

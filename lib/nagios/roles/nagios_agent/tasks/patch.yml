@@ -14,9 +14,9 @@
           dest: "{{ temp_dir }}"
           timeout: 90
       register: nrpe_download
+      until: nrpe_download | success
       retries: 3
       delay: 10
-      until: nrpe_download|success
 
     - name: extract nrpe source
       unarchive: src={{ temp_dir }}/{{ nrpe_download_file }} dest={{ temp_dir }} creates={{ nrpe_tmp }} copy=no
