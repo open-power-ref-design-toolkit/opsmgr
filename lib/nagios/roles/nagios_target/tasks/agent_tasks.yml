@@ -1,0 +1,48 @@
+---
+    # install monitoring configuration
+
+    - name: ensures plugins directory exists
+      file:
+          path: "{{ nrpe_dir }}/plugins"
+          state: directory
+
+    - name: copy plugins for roles
+      copy:
+          src: "{{ files }}/plugins/"
+          dest: "{{ nrpe_dir }}/plugins/"
+          mode: 0755
+      notify: restart nrpe service
+
+    - name: ensures nrpe.d directory exists
+      file:
+          path: "{{ nrpe_dir }}/nrpe.d"
+          state: directory
+
+    - name: copy nrpe.d for roles
+      copy:
+          src: "{{ files }}/nrpe.d/"
+          dest: "{{ nrpe_dir }}/nrpe.d/"
+          mode: 0644
+      notify: restart nrpe service
+
+    - name: ensures commands directory exists
+      file:
+          path: "{{ nrpe_dir }}/commands"
+          state: directory
+
+    - name: copy commands for roles
+      copy:
+          src: "{{ files }}/commands/"
+          dest: "{{ nrpe_dir }}/commands/"
+          mode: 0644
+      notify: restart nrpe service
+
+    - name: insert common checks into nagios cmd files
+      lineinfile:
+          dest: "{{ nrpe_dir }}/commands/{{ item[0].file_name }}"
+          line: "{{ item[1] | replace('container_name', item[0].container_name) }}"
+          insertafter: EOF
+      with_nested:
+          - "{{ nagios_command_files }}"
+          - "{{ nagios_common_checks }}"
+      notify: restart nrpe service
