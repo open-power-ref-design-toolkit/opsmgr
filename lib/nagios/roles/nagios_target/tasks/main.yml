@@ -59,39 +59,11 @@
           state: absent
       when: reset is defined and reset == true
 
-    - name: ensures plugins directory exists
-      file:
-          path: "{{ nrpe_dir }}/plugins"
-          state: directory
-      when: has_agent == true
-
-    - name: copy plugins for roles
-      copy:
-          src: "{{ files }}/plugins/"
-          dest: "{{ nrpe_dir }}/plugins/"
-          mode: 0755
-      when: has_agent == true
-      notify: restart nrpe service
-
     - name: remove all nrpe.d if reset variable is set
       file:
           path: "{{ nrpe_dir }}/nrpe.d"
           state: absent
       when: reset is defined and reset == true
-
-    - name: ensures nrpe.d directory exists
-      file:
-          path: "{{ nrpe_dir }}/nrpe.d"
-          state: directory
-      when: has_agent == true
-
-    - name: copy nrpe.d for roles
-      copy:
-          src: "{{ files }}/nrpe.d/"
-          dest: "{{ nrpe_dir }}/nrpe.d/"
-          mode: 0644
-      when: has_agent == true
-      notify: restart nrpe service
 
     - name: remove all commands if reset variable is set
       file:
@@ -99,30 +71,10 @@
           state: absent
       when: reset is defined and reset == true
 
-    - name: ensures commands directory exists
-      file:
-          path: "{{ nrpe_dir }}/commands"
-          state: directory
+    - name: Run the tasks to install the monitoring config
+      include: agent_tasks.yml
+      static: no
       when: has_agent == true
-
-    - name: copy commands for roles
-      copy:
-          src: "{{ files }}/commands/"
-          dest: "{{ nrpe_dir }}/commands/"
-          mode: 0644
-      when: has_agent == true
-      notify: restart nrpe service
-
-    - name: insert common checks into nagios cmd files
-      lineinfile:
-          dest: "{{ nrpe_dir }}/commands/{{ item[0].file_name }}"
-          line: "{{ item[1] | replace('container_name', item[0].container_name) }}"
-          insertafter: EOF
-      with_nested:
-          - "{{ nagios_command_files }}"
-          - "{{ nagios_common_checks }}"
-      when: has_agent == true
-      notify: restart nrpe service
 
     # configures sudoers since our checks use sudo
 
@@ -149,5 +101,3 @@
         group: root
         mode: 0440
         validate: "/usr/sbin/visudo -cf %s"
-
-
