@@ -18,6 +18,7 @@ nrpe_plugins: nagios-nrpe-server=2.15*
 
 nrpe_download_site: http://sourceforge.net/projects/nagios/files/nrpe-2.x/nrpe-2.15
 nrpe_download_file: nrpe-2.15.tar.gz
+nrpe_download_checksum: sha1:45f434758c547c0af516e8b3324717f8dcd100a3
 temp_dir: /tmp
 
 # defaults for nagios nrpe agent configuration
@@ -30,5 +31,3 @@ nrpe_pass: nagios
 nrpe_bind_address: 127.0.0.1
 nrpe_bind_port: 5666
 nrpe_pid: /var/run/nagios/nrpe.pid
-
-
