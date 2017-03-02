@@ -13,6 +13,7 @@
           url: "{{ nrpe_download_site }}/{{ nrpe_download_file }}"
           dest: "{{ temp_dir }}"
           timeout: 90
+          checksum: "{{ nrpe_download_checksum }}"
       register: nrpe_download
       until: nrpe_download | success
       retries: 3
