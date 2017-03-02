@@ -26,3 +26,13 @@ gem_install_options: --both --document rdoc,ri --force "{{ item }}"
 nagios_command_files: []
 
 nagios_common_checks: ''
+
+list_interfaces_command: "netstat -i | cut -f1 -d' '"
+
+possible_interfaces_to_monitor:
+    - br-mgmt
+    - br-storage
+    - br-vlan
+    - br-vxlan
+
+base_server_cmd_file: /etc/nagios/commands/server.cmd
