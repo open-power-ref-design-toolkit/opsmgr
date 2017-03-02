@@ -1,0 +1,10 @@
+---
+
+    - name: check if bonding_masters file exists
+      stat: path=/sys/class/net/bonding_masters
+      register: installbonding
+
+    - name: install plugin and check
+      include: bonding_plugin.yml
+      when: installbonding.stat.exists == true
+
