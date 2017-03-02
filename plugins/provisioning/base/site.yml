@@ -23,5 +23,6 @@
 - include: "{{ opsmgr_dir }}/lib/util/ops.yml"
 - include: "{{ opsmgr_dir }}/lib/filebeat/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/base/filebeat locking=true"
 - include: "{{ opsmgr_dir }}/lib/nagios/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/base/nagios locking=true"
+- include: "{{ opsmgr_dir }}/lib/networking/site.yml target_hosts=targets target_containers=none locking=true"
 - include: "{{ opsmgr_dir }}/lib/ganglia/site.yml target_hosts=targets target_containers=none locking=true"
 - include: resources.yml
