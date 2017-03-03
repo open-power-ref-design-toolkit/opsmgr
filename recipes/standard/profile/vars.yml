@@ -93,25 +93,26 @@ lxc_container_default_mtu: 1500
 lxc_cidr: "172.29.236.0/22"
 lxc_blacklist: []
 
+internal_ip: 172.29.236.100
+
 # database installation
 install_mysql: true
 db_login_user: "{{ ansible_user_id }}"
 db_login_password: passw0rd
-db_login_host: 172.29.236.100
+db_login_host: "{{ internal_ip }}"
 db_user: opsmgr
-db_host: 172.29.236.100
+db_host: "{{ internal_ip }}"
 
 # user interface installation
-install_ui: true
+install_ui: false
 ui_enabled: /etc/opsmgr/shared/ui
 floating_ip: "{{ ansible_default_ipv4.address }}"
 
 # wether to install haproxy (true) or use existing one (false)
 install_haproxy: true
-internal_ip: 172.29.236.100
 
 # configure standalone opsmgr GUI on install
-patch_ui: true
+patch_ui: false
 
 # Ganglia configuration
-install_ganglia: true
+install_ganglia: false

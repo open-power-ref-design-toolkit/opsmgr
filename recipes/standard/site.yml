@@ -1,2 +1,23 @@
 ---
 - include: "{{ opsmgr_dir }}/lib/util/db_password.yml"
+
+- hosts: localhost
+  tasks:
+    - name: Load the profile variables
+      include_vars: "profile/vars.yml"
+
+    - name: configure br-mgmt network
+      template:
+          src: "ospmgr_interface.cfg.j2"
+          dest: "/etc/network/interfaces.d/ospmgr_interface.cfg"
+      register: configure_br_mgmt
+
+    - name: Restart br-mgmt networking
+      shell: "ifdown br-mgmt; sleep 1;ifup br-mgmt"
+      when: configure_br_mgmt|changed
+
+    - name: Create the inventory file
+      template:
+          src: "inventory.j2"
+          dest: "profile/inventory"
+
