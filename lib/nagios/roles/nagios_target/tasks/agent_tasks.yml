@@ -46,3 +46,17 @@
           - "{{ nagios_command_files }}"
           - "{{ nagios_common_checks }}"
       notify: restart nrpe service
+
+    # Logic to monitor only the interfaces that exist on the system
+
+    - name: Find the interfaces on the system
+      shell: "{{ list_interfaces_command }} "
+      register: interface_list
+
+    - name: insert checks for each interface on the system
+      lineinfile:
+          dest: "{{ base_server_cmd_file }}"
+          line: "command[server-{{ item }}]  = sudo /etc/nagios/plugins/check-netif.rb -c 500 -w 350 --interfaces {{ item }}"
+          insertafter: EOF
+      with_items: "{{ interface_list.stdout_lines | intersect(possible_interfaces_to_monitor) }}"
+      notify: restart nrpe service
