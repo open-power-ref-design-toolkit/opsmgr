@@ -1,0 +1,11 @@
+    {
+      "description": "",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[]}"
+      },
+      "savedSearchId": "METRICBEAT-NETWORK-DATA",
+      "title": "METRICBEAT NETWORK PACKETLOSS",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "visState": "{\"title\":\"METRICBEAT NETWORK PACKETLOSS\",\"type\":\"metric\",\"params\":{\"handleNoResults\":true,\"fontSize\":\"30\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.network.in.dropped\",\"customLabel\":\"In\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.network.out.dropped\",\"customLabel\":\"Out\"}}],\"listeners\":{}}"
+    }

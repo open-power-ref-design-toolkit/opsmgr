@@ -1,0 +1,11 @@
+    {
+      "description": "",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[]}"
+      },
+      "savedSearchId": "METRICBEAT-NETWORK-DATA",
+      "title": "METRICBEAT NETWORK BYTES",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "visState": "{\"title\":\"METRICBEAT NETWORK BYTES\",\"type\":\"metric\",\"params\":{\"handleNoResults\":true,\"fontSize\":\"30\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.network.in.bytes\",\"customLabel\":\"In\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.network.out.bytes\",\"customLabel\":\"Out\"}}],\"listeners\":{}}"
+    }

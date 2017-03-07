@@ -1,0 +1,11 @@
+    {
+      "description": "",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[]}"
+      },
+      "savedSearchId": "METRICBEAT-MEMORY-STATS",
+      "title": "METRICBEAT TOP HOSTS BY MEMORY USAGE",
+      "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+      "version": 1,
+      "visState": "{\"title\":\"METRICBEAT TOP HOSTS BY MEMORY USAGE\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.total\",\"customLabel\":\"Total Memory\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.actual.used.bytes\",\"customLabel\":\"Memory usage\"}},{\"id\":\"7\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.actual.used.pct\",\"customLabel\":\"Memory usage (%)\"}},{\"id\":\"4\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.actual.free\",\"customLabel\":\"Available Memory\"}},{\"id\":\"5\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"beat.name\",\"size\":50,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"Host\"}},{\"id\":\"6\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.swap.used.bytes\",\"customLabel\":\"Swap usage\"}},{\"id\":\"3\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.swap.used.pct\",\"customLabel\":\"Swap usage (%)\"}}],\"listeners\":{}}"
+    }

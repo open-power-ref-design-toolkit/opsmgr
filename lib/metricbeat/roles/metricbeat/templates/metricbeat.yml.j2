@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+metricbeat.modules:
+- module: system
+  metricsets:
+    - cpu
+    - load
+    - filesystem
+    - fsstat
+    - memory
+    - network
+    - process
+  enabled: true
+  period: 10s
+  processes: ['.*']
+output.elasticsearch:
+    hosts:
+{% for host in metricbeat_elasticsearch_hosts.split(',') %}
+    - '{{ host }}'
+{% endfor %}
+
+#  hosts: ["localhost:9200"]

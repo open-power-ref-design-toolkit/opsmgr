@@ -1,0 +1,11 @@
+    {
+      "description": "",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[]}"
+      },
+      "savedSearchId": "METRICBEAT-MEMORY-STATS",
+      "title": "METRICBEAT SWAP USAGE",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "visState": "{\"title\":\"METRICBEAT SWAP USAGE\",\"type\":\"metric\",\"params\":{\"handleNoResults\":true,\"fontSize\":\"30\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.swap.used.bytes\",\"customLabel\":\"Swap usage\"}}],\"listeners\":{}}"
+    }

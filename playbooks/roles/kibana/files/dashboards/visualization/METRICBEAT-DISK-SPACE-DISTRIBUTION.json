@@ -1,0 +1,11 @@
+    {
+      "description": "",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[]}"
+      },
+      "savedSearchId": "METRICBEAT-FILESYSTEM-STATS",
+      "title": "METRICBEAT DISK SPACE DISTRIBUTION",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "visState": "{\"title\":\"METRICBEAT DISK SPACE DISTRIBUTION\",\"type\":\"pie\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"isDonut\":false},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"sum\",\"schema\":\"metric\",\"params\":{\"field\":\"system.filesystem.total\",\"customLabel\":\"Total size\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"system.filesystem.mount_point\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"Mount point\"}}],\"listeners\":{}}"
+    }

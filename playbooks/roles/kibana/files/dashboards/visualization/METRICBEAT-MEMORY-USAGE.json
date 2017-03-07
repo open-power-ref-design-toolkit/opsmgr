@@ -1,0 +1,11 @@
+    {
+      "description": "",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[]}"
+      },
+      "savedSearchId": "METRICBEAT-MEMORY-STATS",
+      "title": "METRICBEAT MEMORY USAGE",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "visState": "{\"title\":\"METRICBEAT MEMORY USAGE\",\"type\":\"metric\",\"params\":{\"handleNoResults\":true,\"fontSize\":\"30\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"system.memory.used.bytes\",\"customLabel\":\"Memory usage\"}}],\"listeners\":{}}"
+    }

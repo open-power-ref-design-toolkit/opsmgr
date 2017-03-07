@@ -18,7 +18,7 @@ filebeat_apt_gpg_keys:
   # https://www.elastic.co/guide/en/beats/libbeat/current/setup-repositories.html
   - { url: "https://packages.elasticsearch.org/GPG-KEY-elasticsearch", state: present }
 
-filebeat_apt_repo_url: "http://packages.elastic.co/beats/apt"
+filebeat_apt_repo_url: "https://artifacts.elastic.co/packages/5.x/apt"
 
 filebeat_apt_repos:
   - { repo: "deb {{ filebeat_apt_repo_url }} stable main", state: present }

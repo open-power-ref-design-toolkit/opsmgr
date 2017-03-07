@@ -1,0 +1,17 @@
+---
+
+- include: "{{ opsmgr_dir }}/lib/util/lock.yml"
+
+- hosts: "{{ target_hosts }}"
+  become: yes
+  vars_files:
+    - defaults.yml
+  pre_tasks:
+    - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
+    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+  roles:
+    - { role: metricbeat_build, when: proceed and ansible_architecture == 'ppc64le' }
+    - { role: metricbeat, when: proceed }
+
+- include: "{{ opsmgr_dir }}/lib/util/unlock.yml"
+

@@ -1,0 +1,13 @@
+    {
+      "description": "",
+      "hits": 0,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}}}]}"
+      },
+      "optionsJSON": "{\"darkTheme\":false}",
+      "panelsJSON": "[{\"id\":\"METRICBEAT-SERVERS-OVERVIEW\",\"type\":\"visualization\",\"panelIndex\":1,\"size_x\":9,\"size_y\":5,\"col\":4,\"row\":1},{\"id\":\"METRICBEAT-SYSTEM-NAVIGATION\",\"type\":\"visualization\",\"panelIndex\":2,\"size_x\":3,\"size_y\":4,\"col\":1,\"row\":1}]",
+      "timeRestore": false,
+      "title": "Metricbeat-overview",
+      "uiStateJSON": "{\"P-1\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}}",
+      "version": 1
+    }

@@ -1,0 +1,13 @@
+    {
+      "description": "",
+      "hits": 0,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}]}"
+      },
+      "optionsJSON": "{\"darkTheme\":false}",
+      "panelsJSON": "[{\"col\":1,\"id\":\"METRICBEAT-SYSTEM-NAVIGATION\",\"panelIndex\":1,\"row\":1,\"size_x\":2,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"METRICBEAT-TOP-HOSTS-BY-MEMORY-USAGE\",\"panelIndex\":7,\"row\":9,\"size_x\":12,\"size_y\":5,\"type\":\"visualization\"},{\"col\":7,\"id\":\"METRICBEAT-MEMORY-USAGE-OVER-TIME\",\"panelIndex\":10,\"row\":4,\"size_x\":6,\"size_y\":5,\"type\":\"visualization\"},{\"col\":1,\"id\":\"METRICBEAT-SWAP-USAGE-OVER-TIME\",\"panelIndex\":11,\"row\":4,\"size_x\":6,\"size_y\":5,\"type\":\"visualization\"},{\"col\":3,\"id\":\"METRICBEAT-TOTAL-MEMORY\",\"panelIndex\":12,\"row\":1,\"size_x\":2,\"size_y\":3,\"type\":\"visualization\"},{\"col\":5,\"id\":\"METRICBEAT-AVAILABLE-MEMORY\",\"panelIndex\":13,\"row\":1,\"size_x\":2,\"size_y\":3,\"type\":\"visualization\"},{\"col\":7,\"id\":\"METRICBEAT-MEMORY-USAGE\",\"panelIndex\":14,\"row\":1,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":10,\"id\":\"METRICBEAT-SWAP-USAGE\",\"panelIndex\":15,\"row\":1,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"}]",
+      "timeRestore": false,
+      "title": "Metricbeat-memory",
+      "uiStateJSON": "{\"P-7\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":1,\"direction\":\"desc\"}}}}}",
+      "version": 1
+    }
