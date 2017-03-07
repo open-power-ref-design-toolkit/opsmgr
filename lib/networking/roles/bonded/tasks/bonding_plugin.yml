@@ -1,0 +1,49 @@
+---
+    - name: finds where check_linux_bonding plugin will be extracted
+      set_fact: bonding_plugin_tmp="{{ temp_dir }}/{{ bonding_plugin_download_file|replace('.tar.gz','') }}"
+
+    - name: cleanup bonding_plugin temp extract directory
+      file: dest={{ bonding_plugin_tmp }} state=absent
+
+    - name: download bonding_plugin source
+      get_url:
+          url: "{{ bonding_plugin_download_site }}/{{ bonding_plugin_download_file }}"
+          dest: "{{ temp_dir }}"
+          timeout: 90
+      register: bonding_plugin_download
+      until: bonding_plugin_download|success
+      retries: 3
+      delay: 10
+
+    - name: extract bonding_plugin source
+      unarchive: src={{ temp_dir }}/{{ bonding_plugin_download_file }} dest={{ temp_dir }} creates={{ bonding_plugin_tmp }} copy=no
+
+    - name: check if plugin extracted directory exists
+      stat: path={{ bonding_plugin_tmp }}
+      register: bonding_plugin_tmp_exists
+
+    - name: fails if bonding_plugin extracted directory does not exist
+      fail: msg="Extracted bonding_plugin directory {{ bonding_plugin_tmp }} does not exist"
+      when: bonding_plugin_tmp_exists.stat.exists == false
+
+    - name: copy bonding_plugin file
+      copy:
+          src: "{{ bonding_plugin_tmp }}/{{ check_linux_bonding_plugin }}"
+          dest: "{{ nagios_plugin_directory }}/{{ check_linux_bonding_plugin }}"
+          mode: 0755
+      notify: restart nrpe service
+
+    - name: add check for bonding_plugin file
+      lineinfile:
+          line: "command[server-network-bonding]   = sudo /etc/nagios/plugins/check_linux_bonding -v"
+          dest: "/etc/nagios/commands/server.cmd"
+          insertafter: EOF
+      notify: restart nrpe service
+
+    - name: cleanup download file and extracted dir
+      file: 
+          dest: "{{ item }}"
+          state: absent
+      with_items:
+          - "{{ bonding_plugin_tmp }}"
+          - "{{ temp_dir }}/{{ bonding_plugin_download_file }}"
