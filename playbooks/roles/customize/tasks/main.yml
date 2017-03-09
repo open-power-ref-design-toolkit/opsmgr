@@ -1,0 +1,58 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+    # remove unnecessary bridges created by OSA
+
+    - name: loop and bring down bridges not used by opsmgr
+      shell: ip link set {{ item }} down
+      retries: 3
+      delay: 2
+      with_items: "{{ bridges_to_remove }}"
+      ignore_errors: true
+
+    - name: loop and remove bridges not used by opsmgr
+      shell: brctl delbr {{ item }}
+      retries: 3
+      delay: 2
+      with_items: "{{ bridges_to_remove }}"
+      ignore_errors: true
+
+    # update network interfaces files
+
+    - name: keep only br-mgmt on osa_interfaces.cfg
+      shell: sed -n -i '/auto br-vxlan/q;p' /etc/network/interfaces.d/osa_interfaces.cfg 
+
+    - name: remove vxlan.cfg if it exists
+      file: path=/etc/network/interfaces.d/vxlan.cfg state=absent
+
+    # modify lxc group for OSA containers to denote opsmgr group
+
+    - name: iterate over container config files to change their group names
+      shell: sed -i 's/lxc.group = openstack/lxc.group = opsmgr/g' {{ item }}
+      with_fileglob: /var/lib/lxc/aio1_*/config
+
+    - name: register list of OSA containers
+      shell: lxc-ls -1 | grep "aio1_"
+      register: osa_containers
+
+    - name: stop lxc containers after group name change
+      lxc_container: name={{ item }} state=stopped
+      with_items: "{{ osa_containers.stdout_lines }}"
+
+    - name: restart lxc containers after group name change
+      lxc_container: name={{ item }} state=started
+      with_items: "{{ osa_containers.stdout_lines }}"
+
+

@@ -118,5 +118,14 @@ if [ $rc != 0 ]; then
         echo "Failed to execute playbooks/targets.yml, rc=$rc"
         exit 10 
 fi
+
+echo "Invoking playbook customize.yml from the opsmgr/playbooks directory"
+ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory customize.yml
+rc=$?
+if [ $rc != 0 ]; then
+        echo "Failed to execute playbooks/customize.yml, rc=$rc"
+        exit 11
+fi
+
 popd >/dev/null 2>&1
 
