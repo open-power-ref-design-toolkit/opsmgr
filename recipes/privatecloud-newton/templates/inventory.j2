@@ -16,3 +16,15 @@
 {% endfor %}
 {% endif %}
 {% endfor %}
+
+{# When reference-architecture is ceph-standalone #}
+{# the ceph monitor runs on the controllers #}
+
+{% if ceph_standalone==true %}
+[ceph-monitor]
+
+{% for host in nodes['controllers'] %}
+{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% endfor %}
+{% endif %}
+
