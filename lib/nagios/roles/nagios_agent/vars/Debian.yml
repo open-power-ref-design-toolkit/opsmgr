@@ -8,6 +8,7 @@ pre_packages:
     - gcc
     - make
     - patch
+    - lsvpd
 
 nrpe: nagios-nrpe-server=2.15*
 nrpe_plugins: nagios-nrpe-server=2.15*

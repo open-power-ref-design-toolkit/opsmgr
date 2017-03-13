@@ -41,6 +41,13 @@
     - name: ensures output directory exists
       file: path={{ output_dir }} mode=0755 state=directory
 
+    - name: check if ceph-standalone
+      shell: ./inventory_parse.py reference-architecture
+      register: parse_output
+
+    - set_fact: ceph_standalone="true"
+      when: "'ceph-standalone' in parse_output.stdout"
+
     - template:
           src: "templates/inventory.j2"
           dest: "{{ output_dir }}/inventory"

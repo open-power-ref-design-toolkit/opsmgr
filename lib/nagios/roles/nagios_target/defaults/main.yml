@@ -34,5 +34,6 @@ possible_interfaces_to_monitor:
     - br-storage
     - br-vlan
     - br-vxlan
+    - br-replication
 
 base_server_cmd_file: /etc/nagios/commands/server.cmd
