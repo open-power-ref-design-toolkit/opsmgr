@@ -1,0 +1,30 @@
+--- check_linux_bonding	2014-05-13 10:26:29.000000000 -0400
++++ check_linux_bonding_new	2017-03-14 11:12:14.000000000 -0400
+@@ -284,6 +284,13 @@
+ 	    $bonding{$bond}{ad_num} = $ad_num;
+ 	}
+ 
++	# get bond state
++	open my $BSTATE, '<', "$sysdir/$bond/operstate"
++	  or unknown_error("Couldn't open $sysdir/$bond/operstate: $!");
++	chop($bonding{$bond}{status} = <$BSTATE>);
++	close $BSTATE;
++
++	if ($bonding{$bond}{status} eq 'up') {
+ 	# get slaves
+ 	my @slaves = ();
+ 	open my $SLAVES, '<', "$sysdir/$bond/bonding/slaves"
+@@ -319,12 +326,7 @@
+ 	    chop($bonding{$bond}{slave}{$slave} = <$STATE>);
+ 	    close $STATE;
+ 	}
+-
+-	# get bond state
+-	open my $BSTATE, '<', "$sysdir/$bond/operstate"
+-	  or unknown_error("Couldn't open $sysdir/$bond/operstate: $!");
+-	chop($bonding{$bond}{status} = <$BSTATE>);
+-	close $BSTATE;
++	}
+     }
+ 
+     return \%bonding;
