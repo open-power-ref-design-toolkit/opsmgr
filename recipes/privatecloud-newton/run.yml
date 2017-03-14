@@ -45,6 +45,8 @@
       shell: ./inventory_parse.py reference-architecture
       register: parse_output
 
+    - set_fact: ceph_standalone="false"
+
     - set_fact: ceph_standalone="true"
       when: "'ceph-standalone' in parse_output.stdout"
 
