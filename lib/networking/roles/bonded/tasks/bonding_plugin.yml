@@ -26,16 +26,23 @@
       fail: msg="Extracted bonding_plugin directory {{ bonding_plugin_tmp }} does not exist"
       when: bonding_plugin_tmp_exists.stat.exists == false
 
+    - name: patch bonding_plugin file
+      patch:
+          src: files/check_linux_bonding.patch
+          dest:  "{{ bonding_plugin_tmp }}/{{ check_linux_bonding_plugin }}"
+
+
     - name: copy bonding_plugin file
       copy:
           src: "{{ bonding_plugin_tmp }}/{{ check_linux_bonding_plugin }}"
           dest: "{{ nagios_plugin_directory }}/{{ check_linux_bonding_plugin }}"
           mode: 0755
+          remote_src: true
       notify: restart nrpe service
 
     - name: add check for bonding_plugin file
       lineinfile:
-          line: "command[server-network-bonding]   = sudo /etc/nagios/plugins/check_linux_bonding -v"
+          line: "command[server-network-bonding]   = sudo /etc/nagios/plugins/check_linux_bonding -v --blacklist bond0"
           dest: "/etc/nagios/commands/server.cmd"
           insertafter: EOF
       notify: restart nrpe service
