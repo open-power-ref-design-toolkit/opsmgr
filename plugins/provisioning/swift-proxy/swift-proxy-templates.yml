@@ -13,9 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "{{ opsmgr_dir }}/lib/util/ops.yml"
-- include: "{{ opsmgr_dir }}/lib//filebeat/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/swift-proxy/filebeat"
-- include: "{{ opsmgr_dir }}/lib/nagios/update.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/swift-proxy/nagios"
-- include: swift-proxy-templates.yml
-- include: resources.yml
+- hosts: targets
+  vars_files:
+    - defaults.yml
+    - "{{ opsmgr_prl }}/vars.yml"
+  become: yes
 
+  tasks:
+    - name: Update the plugins for the path to the swift commands
+      template:
+          src: "{{ item }}"
+          dest: "/etc/nagios/plugins/{{ item }}"
+      with_items:
+          - check-swift-usage.sh
+          - swift_commands.py

@@ -4,7 +4,9 @@ import sys
 import os
 import subprocess
 
-p = subprocess.Popen(["/openstack/venvs/swift-13.1.0/bin/swift-orphans", "-a 1"], stdout=subprocess.PIPE)
+from swift_commands import SWIFT_ORPHANS
+
+p = subprocess.Popen([SWIFT_ORPHANS, "-a 1"], stdout=subprocess.PIPE)
 
 ret = 0
 lines = []
