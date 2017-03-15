@@ -101,6 +101,7 @@ db_host: "{{ global_overrides.internal_lb_vip_address }}"
 install_ui: true
 floating_ip: "{{ global_overrides.external_lb_vip_address }}"
 ui_enabled: "{{ horizon_lib_dir | dirname | replace('untagged', openstack_release) }}/site-packages/openstack_dashboard/local"
+swift_bin: "{{ swift_bin | replace('untagged', openstack_release) }}"
 
 # proxy mode installation - valid values: iptables or haproxy
 install_haproxy: false

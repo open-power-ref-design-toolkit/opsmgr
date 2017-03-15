@@ -19,6 +19,7 @@
         - "{{ osa_conf }}/openstack_user_config.yml"
         - "{{ osa_play }}/openstack_hosts/defaults/main.yml"
         - "{{ osa_play }}/os_horizon/defaults/main.yml"
+        - "{{ osa_play }}/os_swift/defaults/main.yml"
         - "{{ osa_play }}/galera_client/defaults/main.yml"
         - "{{ osa_home }}/playbooks/inventory/group_vars/all.yml"
 

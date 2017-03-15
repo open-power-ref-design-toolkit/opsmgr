@@ -5,6 +5,8 @@ import os
 import subprocess
 from optparse import OptionParser
 
+from swift_commands import SWIFT_RECON
+
 parser = OptionParser()
 parser.add_option("-i", "--interval", dest="interval",
                   help="choice for average internal [1m, 5m, 15m]", default="1m", type="string")
@@ -15,7 +17,7 @@ parser.add_option("-c", "--critical", dest="critical",
 
 (options, args) = parser.parse_args()
 
-process = subprocess.Popen(["/openstack/venvs/swift-13.1.0/bin/swift-recon", "-l"], stdout=subprocess.PIPE)
+process = subprocess.Popen([SWIFT_RECON, "-l"], stdout=subprocess.PIPE)
 
 # looking for line like
 #[5m_load_avg] low: 14, high: 22, avg: 18.0, total: 108, Failed: 0.0%, no_result: 0, reported: 6

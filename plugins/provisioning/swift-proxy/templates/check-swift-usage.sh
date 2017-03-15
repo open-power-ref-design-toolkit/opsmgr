@@ -58,7 +58,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-output=$(sudo /usr/bin/timeout -s 9 1s /usr/bin//openstack/venvs/swift-13.1.0/bin/swift-recon -d | egrep 'space used' | grep -o '[0-9]*')
+output=$(sudo /usr/bin/timeout -s 9 1s {{ swift_bin }}/swift-recon -d | egrep 'space used' | grep -o '[0-9]*')
 
 used_space=$(echo $output | awk '{print $1}')
 
