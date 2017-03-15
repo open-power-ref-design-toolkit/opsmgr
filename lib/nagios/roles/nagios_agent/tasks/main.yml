@@ -14,6 +14,14 @@
       retries: 5
       delay: 2
 
+    - name: installs lsvpd for ppc64le
+      package:
+        name: lsvpd
+        state: present
+      when: ansible_architecture == 'ppc64le'
+      retries: 5
+      delay: 2
+
     - name: uninstalls nrpe server
       package:
         name: "{{ nrpe }}"
