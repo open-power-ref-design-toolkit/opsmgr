@@ -20,6 +20,8 @@ import os
 import subprocess
 from optparse import OptionParser
 
+from swift_commands import SWIFT_RECON
+
 parser = OptionParser()
 parser.add_option("-w", "--warning", dest="warning",
                   help="threshold for WARNING", default="70", type="int")
@@ -28,7 +30,7 @@ parser.add_option("-c", "--critical", dest="critical",
 
 (options, args) = parser.parse_args()
 
-process = subprocess.Popen(["/openstack/venvs/swift-13.1.0/bin/swift-recon", "-d"], stdout=subprocess.PIPE)
+process = subprocess.Popen([SWIFT_RECON, "-d"], stdout=subprocess.PIPE)
 
 # looking for line like
 # Disk usage: lowest: 18.02%, highest: 29.2%, avg: 25.8431666667%

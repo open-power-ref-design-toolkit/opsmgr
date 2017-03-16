@@ -26,15 +26,15 @@ import os
 import sys
 import json
 
+from swift_commands import SWIFT_DISPERSION_REPORT
+
 STATE_OK=0
 STATE_WARNING=1
 STATE_CRITICAL=2
 STATE_UNKNOWN=3
 STATE_DEPENDENT=4
 
-#report = subprocess.check_output(["/openstack/venvs/swift-13.1.0/bin/swift-dispersion-report -j"],shell=True)
-#report = subprocess.call(["/openstack/venvs/swift-13.1.0/bin/swift-dispersion-report -j"],shell=True,stdout=subprocess.PIPE)
-p = subprocess.Popen(["/openstack/venvs/swift-13.1.0/bin/swift-dispersion-report","-j"],shell=False,stdout=subprocess.PIPE)
+p = subprocess.Popen([SWIFT_DISPERSION_REPORT,"-j"],shell=False,stdout=subprocess.PIPE)
 report = p.stdout.read()
 rep1 = report[report.find("{"):len(report)]
 stats = json.loads(rep1)

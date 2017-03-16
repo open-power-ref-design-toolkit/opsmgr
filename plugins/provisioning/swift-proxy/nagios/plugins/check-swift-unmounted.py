@@ -19,7 +19,9 @@ import sys
 import os
 import subprocess
 
-process = subprocess.Popen(["/openstack/venvs/swift-13.1.0/bin/swift-recon", "-u"], stdout=subprocess.PIPE)
+from swift_commands import SWIFT_RECON
+
+process = subprocess.Popen([SWIFT_RECON, "-u"], stdout=subprocess.PIPE)
 
 statuscode = 0
 errors = []
