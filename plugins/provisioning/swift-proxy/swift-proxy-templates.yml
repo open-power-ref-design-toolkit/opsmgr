@@ -27,3 +27,8 @@
       with_items:
           - check-swift-usage.sh
           - swift_commands.py
+
+    # Required for swift-dispersion-report check
+    - name: Run swift-dispersion-populate one time.
+      shell: "{{ swift_bin }}/swift-dispersion-populate"
+      run_once: true
