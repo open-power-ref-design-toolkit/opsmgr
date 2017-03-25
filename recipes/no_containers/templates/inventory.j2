@@ -1,0 +1,27 @@
+[opsmgr]
+{{ ansible_hostname }}
+
+[standard]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }}
+
+[opsmgr_mysql]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }}
+
+[opsmgr_nagios]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }} share=/usr/local/nagios/opsmgr/nagios_config
+
+[opsmgr_logstash]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }}
+
+[opsmgr_elasticsearch]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }} address={{ ansible_default_ipv4.address }}
+
+[opsmgr_kibana]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }}
+
+[opsmgr_core]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }}
+
+[{{ansible_os_family | lower }}]
+{{ ansible_hostname }} ansible_ssh_host={{ ansible_default_ipv4.address }}
+

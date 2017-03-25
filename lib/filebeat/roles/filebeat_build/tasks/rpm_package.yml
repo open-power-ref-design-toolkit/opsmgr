@@ -1,0 +1,70 @@
+---
+# Copyright 2017, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# path to where the files for filebeat are for the rpm build
+- set_fact:
+    beat_files: "{{ rpm_working_dir }}/{{ rpm_package_ppc64el|replace('.rpm','') }}"
+
+- name: Download filebeat x86_64 rpm file
+  get_url:
+    url: "{{ rpm_download_path }}/{{ rpm_package_amd64 }}"
+    dest: "{{ build_dir }}"
+
+- name: Make rpm_working_dir
+  file:
+    path: "{{ beat_files }}"
+    state: directory
+
+- name: Extract rpm file
+  shell: "rpm2cpio {{ build_dir }}/{{ rpm_package_amd64 }} | cpio -idmv"
+  args:
+    chdir:  "{{ beat_files }}"
+    creates: "{{ beat_files }}/usr/share/filebeat/bin"
+
+- name: Copy filebeat into rpm
+  copy:
+    src: "{{ filebeat_dir}}/filebeat"
+    dest: "{{ beat_files }}/usr/share/filebeat/bin/filebeat"
+    remote_src: True
+    mode: 0755
+
+- name: Copy filebeat-god into rpm
+  copy:
+    src: "{{ go_daemon_dir }}/god-linux-ppc64el"
+    dest: "{{ beat_files }}/usr/share/filebeat/bin/filebeat-god"
+    remote_src: True
+    mode: 0755
+
+- name: Delete the scripts directory since they x86 and not needed
+  file:
+    path: "{{ beat_files }}/usr/share/filebeat/scripts"
+    state: absent
+
+- name: Write out the spec file for the build
+  template:
+    src: filebeat.spec.j2
+    dest: "{{ build_dir }}/filebeat.spec"
+
+- name: Repackage filebeat for ppc64el rpm
+  command: "rpmbuild --define '_topdir {{ build_dir }}' -bb filebeat.spec"
+  args:
+    chdir: "{{ build_dir }}"
+    creates: "{{ build_dir }}/RPMS/ppc64le/{{ rpm_package_ppc64el }}"
+
+- name: Fetch the ppc64el deb package to the system running ansible
+  fetch:
+    src:  "{{ build_dir }}/RPMS/ppc64le/{{ rpm_package_ppc64el }}"
+    dest:  "{{ package_path_host }}/"
+    flat: yes

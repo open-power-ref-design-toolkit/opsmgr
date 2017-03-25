@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# profile to use
-recipe: "{{ lookup('env', 'OPSMGR_RECIPE') | default('standard', true) }}"
-
-# important directories
-opsmgr_dir: "{{ playbook_dir }}/../../.."
-opsmgr_prl: "{{ opsmgr_dir }}/recipes/{{ recipe }}/profile"
-opsmgr_lib: "{{ opsmgr_dir }}/lib"
-opsmgr_dat: "{{ opsmgr_lib }}/vars"
-opsmgr_key: "{{ opsmgr_lib }}/keys"
-
+package_file: filebeat-{{ filebeat_version }}-1.ppc64le.rpm

@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,5 +94,25 @@
       become: true
       with_items: "{{ import_containers }}"
       when: import_containers is defined
+
+    #For the install without any containers need to manually prime the host
+    - name: register opsmgr_core
+      add_host:
+          name:                         "{{ ansible_hostname }}"
+          group:                        "opsmgr_core"
+          host:                         "{{ ansible_hostname }}"
+          address:                      "{{ floating_ip }}"
+          hostaddr:                     "{{ ansible_ssh_host }}"
+      when: recipe == "no_containers"
+
+    - name: register opsmgr_nagios
+      add_host:
+          name:                         "{{ ansible_hostname }}"
+          group:                        "opsmgr_nagios"
+          host:                         "{{ ansible_hostname }}"
+          address:                      "{{ floating_ip }}"
+          hostaddr:                     "{{ ansible_ssh_host }}"
+          share:                        "{{ nagios_config_dir }}"
+      when: recipe == "no_containers"
 
 

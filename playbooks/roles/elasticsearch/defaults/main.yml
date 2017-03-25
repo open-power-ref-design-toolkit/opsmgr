@@ -27,36 +27,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# apt packages needed for lxc support
-apt_packages:
-  - apt-transport-https
-  - wget
-  - curl
-  - rsync
-  - python-pip
-
-jre_apt_repo_url: "http://ftp.us.debian.org/debian"
-
-jre_apt_repos:
-  - { repo: "deb {{ jre_apt_repo_url }} experimental main", state: "present" }
-  - { repo: "deb {{ jre_apt_repo_url }} sid main", state: "present" }
-
 elasticsearch_system_user: elasticsearch
 elasticsearch_system_group: elasticsearch
-
-jre_apt_package: openjdk-7-jre-headless
 
 elasticsearch_pip_packages:
   - elasticsearch
   - elasticsearch-curator
-
-#preq for openjdk-7-jre-headless can't be found with apt-get
-elasticsearch_preq_deb_packages:
-  - { url: "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo", file: "libjpeg62-turbo_1.5.1-2_ppc64el.deb" }
-
-#for ppc64le and x86 use the deb package to install
-elasticsearch_deb_packages:
-  - { url: "https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.4.1", file: "elasticsearch-2.4.1.deb" }
 
 # This sets the cluster name
 elasticsearch_cluster: openstack

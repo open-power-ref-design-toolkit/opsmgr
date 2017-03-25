@@ -1,5 +1,5 @@
 ---
-# Copyright 2015, Rackspace US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-beaver_log_monitors:
-  - name: "secure"
-    log_file: "/var/log/secure"
-    tags: "secure,infrastructure"
-  - name: "messages"
-    log_file: "/var/log/messages"
-    tags: "messages,infrastructure"
-  - name: "yum"
-    log_file: "/var/log/yum.log"
-    tags: "yum,infrastructure"
+logstash_pre_packages:
+  - wget
+  - curl
+  - rsync
+  - java-1.8.0-openjdk-headless
 
+logstash_packages:
+  - { url: "https://download.elastic.co/logstash/logstash/packages/centos", file: "logstash-2.4.1.noarch.rpm" }

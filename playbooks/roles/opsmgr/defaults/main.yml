@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 
 recipe: "{{ lookup('env', 'OPSMGR_RECIPE') | default('recipe', 'NOT_SET') }}"
 
-apt_packages:
+opsmgr_prereq_packages:
   - build-essential
   - python-pip
   - python-dev
@@ -25,7 +25,7 @@ apt_packages:
   - python-mysqldb
   - rsync
 
-pip_packages:
+opsmgr_pip_packages:
   - pbr
   - setuptools
   - pymysql

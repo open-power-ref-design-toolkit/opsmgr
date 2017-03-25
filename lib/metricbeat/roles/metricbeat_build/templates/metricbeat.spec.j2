@@ -1,0 +1,22 @@
+Name        : metricbeat
+Version     : {{ metricbeat_version }}
+Release     : 1
+Group       : default
+License     : ASL 2.0
+Vendor      : Elastic
+URL         : https://github.com/elastic/beats/metricbeat
+Summary     : Metricbeat sends metrics to Elasticsearch
+
+%description
+Metricbeat sends metrics to Elasticsearch
+
+%post
+#!/bin/bash
+systemctl daemon-reload 2> /dev/null || true
+
+%files
+/etc/metricbeat
+/etc/init.d/metricbeat
+/lib/systemd/system/metricbeat.service
+/usr/bin/metricbeat.sh
+/usr/share/metricbeat

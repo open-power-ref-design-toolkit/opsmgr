@@ -1,8 +1,23 @@
 ---
+# Copyright 2017, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 - name: installs prereq packages
-  apt: name={{ item }} state=present update_cache=true
-  with_items: "{{ prereq_packages }}"
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ build_prereq_packages }}"
 
 - name: Make temp directory for build
   file:
@@ -55,73 +70,11 @@
     chdir: "{{ go_daemon_dir }}"
     creates: "{{ go_daemon_dir }}/god-linux-ppc64el"
 
-- name: Download metricbeat amd64 deb file
-  get_url:
-    url: "{{ deb_download_path }}/{{ deb_package_amd64 }}"
-    dest: "{{ build_dir }}"
+- name: Package the result as a deb package
+  include: deb_package.yml
+  when: ansible_os_family == "Debian"
 
-- name: Make deb_working_dir
-  file:
-    path: "{{ deb_working_dir }}"
-    state: directory
-
-- name: Extract deb package
-  command: "dpkg-deb -R {{ deb_package_amd64 }} {{ deb_working_dir }}"
-  args:
-    chdir: "{{ build_dir }}"
-    creates: "{{ deb_working_dir }}/DEBIAN"
-
-- name: Copy metricbeat into deb package
-  copy:
-    src: "{{ metricbeat_dir}}/metricbeat"
-    dest: "{{ deb_working_dir }}/usr/share/metricbeat/bin/metricbeat"
-    remote_src: True
-    mode: 0755
-
-- name: Copy metricbeat-god into deb package
-  copy:
-    src: "{{ go_daemon_dir }}/god-linux-ppc64el"
-    dest: "{{ deb_working_dir }}/usr/share/metricbeat/bin/metricbeat-god"
-    remote_src: True
-    mode: 0755
-
-- name: Edit control file to set architecture
-  lineinfile:
-    dest: "{{ deb_control_file }}"
-    regexp: '^Architecture'
-    line: 'Architecture: ppc64el'
-
-- name: Store file stat of metricbeat
-  stat:
-    path: "{{ deb_working_dir }}/usr/share/metricbeat/bin/metricbeat"
-  register: metricbeat_stat
-
-- name: Update md5sum for metricbeat
-  lineinfile:
-   dest: "{{ deb_md5sums_file }}"
-   regexp: 'usr/share/metricbeat/bin/metricbeat$'
-   line: '{{ metricbeat_stat.stat.md5 }}  usr/share/metricbeat/bin/metricbeat'
-
-- name: Store file stat of metricbeat-god
-  stat:
-    path: "{{ deb_working_dir }}/usr/share/metricbeat/bin/metricbeat-god"
-  register: metricbeat_god_stat
-
-- name: Update md5sum for metricbeat-god
-  lineinfile:
-   dest: "{{ deb_md5sums_file }}"
-   regexp: 'usr/share/metricbeat/bin/metricbeat-god$'
-   line: '{{ metricbeat_god_stat.stat.md5 }}  usr/share/metricbeat/bin/metricbeat-god'
-
-- name: Repackage metric for ppc64el deb file
-  command: "dpkg-deb -b {{ deb_working_dir }} {{ deb_package_ppc64el }}"
-  args:
-    chdir: "{{ build_dir }}"
-    creates: "{{ build_dir }}/{{ deb_package_ppc64el }}"
-
-- name: Fetch the ppc64el deb package to the system running ansible
-  fetch:
-    src:  "{{ build_dir }}//{{ deb_package_ppc64el }}"
-    dest:  "{{ deb_package_path_host }}/"
-    flat: yes
+- name: Package the result as an rpm
+  include: rpm_package.yml
+  when: ansible_os_family == "RedHat"
 

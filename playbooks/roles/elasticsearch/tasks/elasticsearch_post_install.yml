@@ -32,7 +32,7 @@
   with_items:
     - elasticsearch.yml
     - logging.yml
-  notify: 
+  notify:
     - Restart ElasticSearch
   tags:
     - elasticsearch-post-install
@@ -45,7 +45,7 @@
     group: "{{ elasticsearch_system_group }}"
   with_items:
     - elasticsearch
-  notify: 
+  notify:
     - Restart ElasticSearch
   tags:
     - elasticsearch-post-install
@@ -83,22 +83,13 @@
   tags:
     - elasticsearch-post-install
 
-- name: Remove the preq deb package in /tmp (ppc64le)
-  file:
-    path: "/tmp/{{ item.file }}"
-    state: absent
-  with_items: "{{ elasticsearch_preq_deb_packages }}" 
-  when: ansible_architecture == 'ppc64le'
+# open firewall port 9200 for metricbeat to access ES
+- name: open firewall rules
+  firewalld:
+    port: "{{ elasticsearch_http_port }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  when: ansible_os_family == "RedHat"
   tags:
-    - elasticsearch-deb-package
     - elasticsearch-post-install
-
-- name: Remove the deb package in /tmp 
-  file:
-    path: "/tmp/{{ item.file }}"
-    state: absent
-  with_items: "{{ elasticsearch_deb_packages }}"
-  tags:
-    - elasticsearch-deb-package
-    - elasticsearch-post-install
-

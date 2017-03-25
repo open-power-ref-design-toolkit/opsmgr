@@ -13,16 +13,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install deb package
-  apt:
-    deb="/tmp/{{ item.file }}"
-    state=installed
-  with_items: "{{ logstash_deb_packages }}"
+- name: Download deb/rpm package
+  get_url:
+    url: "{{ item.url }}/{{ item.file }}"
+    dest: "/tmp/{{ item.file }}"
+  with_items: "{{ logstash_packages }}"
   tags:
-    - logstash-deb-package
+    - logstash-package
+    - logstash-install
+
+- name: install logstash from deb
+  apt:
+    deb: "/tmp/{{ item.file }}"
+    state: present
+  with_items: "{{ logstash_packages }}"
+  when: ansible_os_family == "Debian"
+  register: install_deb
+  until: install_deb|success
+  retries: 5
+  delay: 2
+  tags:
+    - logstash-package
+    - logstash-install
+
+
+- name: installs logstash from rpm
+  package:
+    name: "/tmp/{{ item.file }}"
+    state: present
+  with_items: "{{ logstash_packages }}"
+  when: ansible_os_family == "RedHat"
+  register: install
+  until: install|success
+  retries: 5
+  delay: 2
+  tags:
+    - logstash-package
+    - logstash-install
+
+- name: remove deb/rpm file
+  file:
+    path: "/tmp/{{ item.file }}"
+    state: absent
+  with_items: "{{ logstash_packages }}"
+  tags:
+    - logstash-package
     - logstash-install
 
 - name: Enable Logstash Service
   service:
     name: logstash
     enabled: yes
+  tags:
+    - logstash-install
+

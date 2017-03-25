@@ -14,31 +14,7 @@
 # limitations under the License.
 #
 
-# apt packages needed for lxc support
-apt_packages:
-  - apt-transport-https
-  - wget
-  - curl
-  - rsync
-  - apache2
-  - python-passlib
-  - python-pip
-
-kibana_pip_packages:
-  - httplib2  # NOTE(sigmavirus24): Need this for the uri module
-
 kibana_root: /opt/kibana
-
-# the apt repository url to use for installing kibana from
-kibana_apt_repo_url: "http://packages.elasticsearch.org/kibana/4.6/debian"
-
-# the apt repository to use for installing logstash from
-kibana_apt_repos:
-  - { repo: "deb {{ kibana_apt_repo_url }} stable main", state: "present" }
-
-# the apt repository key url
-kibana_apt_keys:
-  - { url: "https://packages.elasticsearch.org/GPG-KEY-elasticsearch", state: "present" }
 
 elasticsearch_http_port: 9200
 elasticsearch_vip: "{{ internal_ip }}"
@@ -47,7 +23,7 @@ elasticsearch_vip: "{{ internal_ip }}"
 elasticsearch_ip: "{{ hostvars[groups['opsmgr_elasticsearch'][0]]['address'] }}"
 kibana_index_on_elasticsearch: "http://{{ elasticsearch_ip }}:{{ elasticsearch_http_port}}/.kibana"
 
-kibana_apt_packages:
+kibana_packages:
   - kibana
 
 kibana_apache_modules:

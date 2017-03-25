@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 
 - name: restart apache
   service:
-    name: apache2
+    name: "{{ apache_service }}"
     state: restarted
-    pattern: apache2
+    pattern: "{{ apache_service }}"
   register: result
   failed_when: "result|failed and 'no service' not in result.msg"
 

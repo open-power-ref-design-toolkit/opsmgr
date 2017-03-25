@@ -17,3 +17,4 @@
   when: install_haproxy is defined and install_haproxy == true
 
 - include: haproxy_configure.yml
+  when: configure_haproxy is undefined or configure_haproxy == true

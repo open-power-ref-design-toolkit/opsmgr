@@ -13,19 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-metricbeat_apt_gpg_keys:
-  - { url: "https://packages.elasticsearch.org/GPG-KEY-elasticsearch", state: present }
-
-metricbeat_apt_repo_url: "https://artifacts.elastic.co/packages/5.x/apt"
-
-metricbeat_apt_repos:
-  - { repo: "deb {{ metricbeat_apt_repo_url }} stable main", state: present }
-
-metricbeat_apt_packages:
-  - "metricbeat"
-
-deb_package_path_host: /tmp
-deb_package_path: /tmp/metricbeat_install
+package_path_host: /tmp
+package_path: /tmp/metricbeat_install
+download_url: https://artifacts.elastic.co/downloads/beats/metricbeat
+metricbeat_version: 5.2.2
 
 metricbeat_configuration_files:
   - { src: "metricbeat.yml.j2", dest: "/etc/metricbeat/metricbeat.yml" }

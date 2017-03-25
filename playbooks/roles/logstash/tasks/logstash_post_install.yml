@@ -83,25 +83,6 @@
   tags:
     - logstash-post-install
 
-- name: Remove the preq deb package in /tmp (ppc64le)
-  file:
-    path: "/tmp/{{ item.file }}"
-    state: absent
-  with_items: "{{ jre_preq_deb_packages }}"
-  when: ansible_architecture == 'ppc64le'
-  tags:
-    - logstash-deb-package
-    - logstash-post-install
-
-- name: Remove the deb package in /tmp
-  file:
-    path: "/tmp/{{ item.file }}"
-    state: absent
-  with_items: "{{ logstash_deb_packages }}"
-  tags:
-    - logstash-deb-package
-    - logstash-post-install
-
 - name: Enable Logstash Plugins
   command: "/opt/logstash/bin/logstash-plugin install {{ item }}"
   with_items: "{{ logstash_plugins }}"
@@ -110,3 +91,13 @@
     - logstash-plugins
     - logstash-post-install
 
+# open firewall port 5044 for filebeat to access logstash
+- name: open firewall rules
+  firewalld:
+    port: "{{ logstash_beats_port }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  when: ansible_os_family == "RedHat"
+  tags:
+    - logstash-post-install
