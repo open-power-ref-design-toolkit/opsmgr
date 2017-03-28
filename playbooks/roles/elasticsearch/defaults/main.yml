@@ -86,8 +86,8 @@ elasticsearch_index_number_of_replicas: 0
 elasticsearch_curator_logstash_prune_days: 60
 elasticsearch_curator_metricbeat_prune_days: 30
 elasticsearch_curator_config_dir: /etc/curator
-elasticsearch_curator_config_file: {{ elasticsearch_curator_config_dir }}/curator.yml
-elasticsearch_curator_action_file: {{ elasticsearch_curator_config_dir }}/curator_action.yml
+elasticsearch_curator_config_file: "{{ elasticsearch_curator_config_dir }}/curator.yml"
+elasticsearch_curator_action_file: "{{ elasticsearch_curator_config_dir }}/curator_action.yml"
 
 elasticsearch_curator_configuration_files:
   - { src: "curator.yml.j2", dest: "{{ elasticsearch_curator_config_file }}" }
