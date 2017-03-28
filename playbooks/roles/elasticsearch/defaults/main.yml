@@ -78,10 +78,19 @@ elasticsearch_bootstrap_mlockall: "false"
 # is intentionally set to 'unlimited' instead.
 # elasticsearch_max_locked_memory_mb: 1024
 
-# This sets the retention period for data in ElasticSearch
-elasticsearch_prune_days: 90
-
 # Note that this effectively disables the distributed features
 # If you're expanding beyond one node these should be adjusted
 elasticsearch_index_number_of_shards: 1
 elasticsearch_index_number_of_replicas: 0
+
+elasticsearch_curator_logstash_prune_days: 60
+elasticsearch_curator_metricbeat_prune_days: 30
+elasticsearch_curator_config_dir: /etc/curator
+elasticsearch_curator_config_file: {{ elasticsearch_curator_config_dir }}/curator.yml
+elasticsearch_curator_action_file: {{ elasticsearch_curator_config_dir }}/curator_action.yml
+
+elasticsearch_curator_configuration_files:
+  - { src: "curator.yml.j2", dest: "{{ elasticsearch_curator_config_file }}" }
+
+elasticsearch_curator_action_files:
+  - { src: "curator_action.yml.j2", dest: "{{ elasticsearch_curator_action_file }}" }

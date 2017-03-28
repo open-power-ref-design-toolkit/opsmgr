@@ -4,13 +4,18 @@ metricbeat.modules:
   metricsets:
     - cpu
     - load
-    - filesystem
     - fsstat
     - memory
     - network
+  enabled: true
+  period: "{{ metricbeat_period }}"
+  processes: ['.*']
+- module: system
+  metricsets:
+    - filesystem
     - process
   enabled: true
-  period: 10s
+  period: "{{ metricbeat_process_period }}"
   processes: ['.*']
 output.elasticsearch:
     hosts:
@@ -18,4 +23,3 @@ output.elasticsearch:
     - '{{ host }}'
 {% endfor %}
 
-#  hosts: ["localhost:9200"]

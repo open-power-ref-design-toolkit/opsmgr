@@ -33,3 +33,6 @@ metricbeat_configuration_files:
 metricbeat_elasticsearch_port: "{{ elasticsearch_beats_port |default(9200) }}"
 
 metricbeat_elasticsearch_hosts: "{{ internal_ip }}:{{ metricbeat_elasticsearch_port }}"
+
+metricbeat_period: 1m
+metricbeat_process_period: 5m

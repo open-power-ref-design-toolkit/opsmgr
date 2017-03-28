@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+client:
+  hosts:
+    - {{ hostvars[inventory_hostname]['address'] }}
+  port: "{{ elasticsearch_http_port }}"
+  timeout: 30
+
+logging:
+  loglevel: INFO
+  logfile: /var/log/curator.log
+  logformat: default

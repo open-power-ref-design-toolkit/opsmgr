@@ -16,4 +16,6 @@
 - include: elasticsearch_pre_install.yml
 - include: elasticsearch_install.yml
 - include: elasticsearch_post_install.yml
+- include: elasticsearch_curator_config.yml
+  run_once: true
 

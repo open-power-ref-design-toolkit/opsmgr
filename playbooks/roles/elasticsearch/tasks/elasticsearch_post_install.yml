@@ -83,20 +83,6 @@
   tags:
     - elasticsearch-post-install
 
-- name: Setup the ElasticSearch Curator cron job
-  cron:
-    name: "ElasticSearch Curator"
-    minute: 0
-    hour: 0
-    user: "{{ elasticsearch_system_user }}"
-    job: |
-      "/usr/local/bin/curator --host {{ hostvars[inventory_hostname]['address'] }}
-      delete indices --older-than {{ elasticsearch_prune_days }} --time-unit 'days' --timestring '%Y.%m.%d'
-      --prefix 'logstash'"
-    cron_file: "elasticsearch_curator"
-  tags:
-    - elasticsearch-post-install
-
 - name: Remove the preq deb package in /tmp (ppc64le)
   file:
     path: "/tmp/{{ item.file }}"
