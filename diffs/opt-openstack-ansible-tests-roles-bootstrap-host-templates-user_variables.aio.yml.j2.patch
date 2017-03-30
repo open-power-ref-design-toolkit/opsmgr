@@ -1,0 +1,16 @@
+diff -Naur a/opt/openstack-ansible/tests/roles/bootstrap-host/templates/user_variables.aio.yml.j2 b/opt/openstack-ansible/tests/roles/bootstrap-host/templates/user_variables.aio.yml.j2
+--- a/opt/openstack-ansible/tests/roles/bootstrap-host/templates/user_variables.aio.yml.j2	2017-03-30 20:17:23.919840821 +0000
++++ b/opt/openstack-ansible/tests/roles/bootstrap-host/templates/user_variables.aio.yml.j2	2017-03-30 19:58:29.785961838 +0000
+@@ -60,12 +60,6 @@
+ lxc_net_netmask: 255.255.255.0
+ lxc_net_dhcp_range: 10.255.255.2,10.255.255.253
+ 
+-{% if repo_build_pip_extra_indexes is defined %}
+-## Wheel mirrors for the repo_build to use
+-repo_build_pip_extra_indexes:
+-{{ repo_build_pip_extra_indexes | to_nice_yaml }}
+-{% endif %}
+-
+ {% if uca_apt_repo_url is defined %}
+ ## Ubuntu Cloud Archive mirror to use
+ uca_apt_repo_url: {{ uca_apt_repo_url }}
