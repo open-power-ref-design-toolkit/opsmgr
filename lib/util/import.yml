@@ -103,7 +103,7 @@
           host:                         "{{ ansible_hostname }}"
           address:                      "{{ floating_ip }}"
           hostaddr:                     "{{ ansible_ssh_host }}"
-      when: recipe == "no_containers"
+      when: recipe == "minimal"
 
     - name: register opsmgr_nagios
       add_host:
@@ -113,6 +113,4 @@
           address:                      "{{ floating_ip }}"
           hostaddr:                     "{{ ansible_ssh_host }}"
           share:                        "{{ nagios_config_dir }}"
-      when: recipe == "no_containers"
-
-
+      when: recipe == "minimal"
