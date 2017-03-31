@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,79 +13,99 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+    - name: include os dependent variables
+      include_vars: "{{ item }}"
+      with_first_found:
+        - files:
+            - "vars/{{ ansible_os_family | lower }}.yml"
+          skip: true
+
+
+    # Enable new repo, prepare packages
+    - name: install the epel repo
+      yum:
+        name: "{{ epel_repo_rpm }}"
+        state: present
+      when: ansible_os_family == "RedHat"
+
     # install pre-reqs
-    
-    - name: installs prereq packages with aptitude
-      apt: name={{ item }} state=present update_cache=true
+    - name: installs prereq packages
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ nagios_pre_packages }}"
       retries: 5
       delay: 2
-      with_items: "{{ apt_packages }}"
-    
+
     - name: installs prereq packages with pip
       pip: name={{ item }}
       retries: 5
       delay: 2
-      with_items: "{{ pip_packages }}"
+      with_items: "{{ nagios_pip_packages }}"
 
     - name: for nagios plugins that use python3 , install pip3 packages
       pip: name={{ item }} executable=pip3
       retries: 5
       delay: 2
-      with_items: "{{ pip3_packages }}"
-    
+      with_items: "{{ nagios_pip3_packages }}"
+
     # finds out where temporary directories are located
-    
+
     - name: finds where plugin will be extracted
       set_fact: plugin_dir="{{ temp_dir }}/{{ plugin_download_file|replace('.tar.gz','') }}"
-    
+
     - name: finds where nagios will be extracted
       set_fact: nagios_dir="{{ temp_dir }}/{{ nagios_download_file|replace('.tar.gz','') }}"
-    
+
     # clean temporary directories if they exist
-    
+
     - name: cleanup nagios core directory
-      command: rm -rf {{ nagios_dir }}
-    
+      file:
+          path: "{{ nagios_dir }}"
+          state: absent
+
     - name: cleanup nagios plugin directory
-      command: rm -rf {{ plugin_dir }}
-    
+      file:
+          path: "{{ plugin_dir }}"
+          state: absent
+
     # download, install and configure nagios
-    
+
     - name: download nagios core
       get_url:
           url: "{{ nagios_download_site }}/{{ nagios_download_file }}"
           dest: "{{ temp_dir }}"
       retries: 5
       delay: 2
-    
+
     - name: create nagios group
       group: name={{ nagios_group }} state=present
-    
+
     - name: create nagios user and add him to the nagios group
       user: name={{ nagios_user }} groups={{ nagios_group }}
-    
-    - name: add the apache user www-data to the nagios group
-      user: name=www-data groups={{ nagios_group }} append=yes
-    
+
+    - name: add the apache user to the nagios group
+      user: name={{ apache_user_name }} groups={{ nagios_group }} append=yes
+
     - name: extract nagios core
       unarchive: src={{ temp_dir }}/{{ nagios_download_file }} dest={{ temp_dir }} creates={{ nagios_dir }} copy=no
-    
+
     - name: check if nagios extracted directory exists
       stat: path={{ nagios_dir }}
       register: nagios_dir_exists
-    
+
     - name: fails if nagios extracted directory does not exist
       fail: msg="Extracted nagios directory {{ nagios_dir }} does not exist"
       when: nagios_dir_exists.stat.exists == false
 
     - name: configure nagios core x86
       command: |
-          ./configure 
+          ./configure
           --with-nagios-user={{ nagios_user }} --with-nagios-group={{ nagios_group }}
           --with-command-user={{ nagios_user }} --with-command-group={{ nagios_group }}
           chdir={{ nagios_dir }}
       when: ansible_architecture == 'x86_64'
-    
+
     - name: configure nagios core ppc64le
       command: |
           ./configure --build=ppc64le-unknown-linux-gnu
@@ -96,53 +116,61 @@
 
     - name: make all
       command: make all chdir={{ nagios_dir }}
-    
+
     - name: make install
       command: make install chdir={{ nagios_dir }}
-    
+
     - name: make install-init
       command: make install-init chdir={{ nagios_dir }}
-    
+
     - name: make install-config
       command: make install-config chdir={{ nagios_dir }}
-    
+
     - name: make install-commandmode
       command: make install-commandmode chdir={{ nagios_dir }}
-    
-    - name: make nagios start on boot
+
+    - name: make nagios start on boot on Ubuntu
       command: ln -sf /etc/init.d/nagios /etc/rcS.d/S99nagios
-    
+      when: ansible_os_family == "Debian"
+
     - name: copy nagios conf to apache
       command: /usr/bin/install -c -m 644 sample-config/httpd.conf /etc/apache2/sites-enabled/nagios.conf chdir={{ nagios_dir }}
-    
+      when: ansible_os_family == "Debian"
+
+    - name: Install the Nagios web config file in the conf.d directory.
+      command: make install-webconf chdir={{ nagios_dir }}
+      when: ansible_os_family == "RedHat"
+
     - name: create default nagios ui user and password
       command: htpasswd -c -b /usr/local/nagios/etc/htpasswd.users {{ nagios_user }} {{ nagios_pass }}
 
     - name: fix cgi.cfg to match nagios ui user
       replace: dest=/usr/local/nagios/etc/cgi.cfg regexp='nagiosadmin' replace={{ nagios_user }} backup=yes
-    
+
     - name: allow urls rewrites
       command: a2enmod rewrite
-    
+      when: ansible_os_family == "Debian"
+
     - name: allow cgi-bins
       command: a2enmod cgi
-    
+      when: ansible_os_family == "Debian"
+
     # download, install and configure nagios plugins
-    
+
     - name: download nagios plugins
       get_url:
           url: "{{ plugin_download_site }}/{{ plugin_download_file }}"
           dest: "{{ temp_dir }}"
       retries: 5
       delay: 2
-    
+
     - name: extract nagios plugins
       unarchive: src={{ temp_dir }}/{{ plugin_download_file }} dest={{ temp_dir }} creates={{ plugin_dir }} copy=no
-    
+
     - name: check if plugin extracted directory exists
       stat: path={{ plugin_dir }}
       register: plugin_dir_exists
-    
+
     - name: fails if plugin extracted directory does not exist
       fail: msg="Extracted plugin directory {{ plugin_dir }} does not exist"
       when: plugin_dir_exists.stat.exists == false
@@ -153,31 +181,35 @@
           --with-nagios-user=nagios --with-nagios-group=nagios
           chdir={{ plugin_dir }}
       when: ansible_architecture == 'x86_64'
-    
+
     - name: configure nagios plugins ppc64le
       command: |
           ./configure --build=ppc64le-unknown-linux-gnu
           --with-nagios-user=nagios --with-nagios-group=nagios
           chdir={{ plugin_dir }}
       when: ansible_architecture == 'ppc64le'
-    
+
     - name: make plugins
       command: make chdir={{ plugin_dir }}
-    
+
     - name: make install plugins
       command: make install chdir={{ plugin_dir }}
-    
+
     - name: installs nrpe
-      apt: name={{item}} install_recommends=no state=present update_cache=yes
+      package:
+        name: "{{ item }}"
+        state: present
       with_items: "{{ nrpe_packages }}"
+      retries: 5
+      delay: 2
 
     # additional nagios configuration
-    
+
     - name: ensures plugins directory exists
       file:
           path: /usr/local/nagios/libexec
           state: directory
-    
+
     - name: copy custom plugins
       copy:
           src: "{{ item }}"
@@ -185,12 +217,12 @@
           mode: 0755
       with_fileglob:
           - plugins/*
-    
+
     - name: ensures commands directory exists
       file:
           path: "{{ hostvars[inventory_hostname].share }}/commands"
           state: directory
-    
+
     - name: copy custom commands
       copy:
           src: "{{ item }}"
@@ -198,12 +230,12 @@
           mode: 0644
       with_fileglob:
           - commands/*
-    
+
     - name: ensures hosts directory exists
       file:
           path: "{{ hostvars[inventory_hostname].share }}/hosts"
           state: directory
-    
+
     - name: copy custom hosts
       copy:
           src: "{{ item }}"
@@ -211,12 +243,12 @@
           mode: 0644
       with_fileglob:
           - hosts/*
-    
+
     - name: ensures roles directory exists
       file:
           path: "{{ hostvars[inventory_hostname].share }}/roles"
           state: directory
-    
+
     - name: copy custom roles
       copy:
           src: "{{ item }}"
@@ -224,17 +256,17 @@
           mode: 0644
       with_fileglob:
           - roles/*
-    
+
     - name: tell nagios to read the commands files in our directory
       lineinfile:
           line: "cfg_dir={{ hostvars[inventory_hostname].share }}/commands"
           dest: "/usr/local/nagios/etc/nagios.cfg"
-    
+
     - name: tell nagios to read the hosts files in our directory
       lineinfile:
           line: "cfg_dir={{ hostvars[inventory_hostname].share }}/hosts"
           dest: "/usr/local/nagios/etc/nagios.cfg"
-    
+
     - name: increase load check levels for local server config
       lineinfile:
           dest: "/usr/local/nagios/etc/objects/localhost.cfg"
@@ -250,23 +282,42 @@
       copy:
           src: "nagios.service"
           dest: "/etc/systemd/system/nagios.service"
-    
-    # start nagios and apache services
-    
+
+    # start apache and nagios services
     - name: restart apache
-      service: name=apache2 state=restarted enabled=yes
-    
+      service: name={{ apache_service_name }} state=restarted enabled=yes
+
     - name: restart nagios
       service: name=nagios state=restarted enabled=yes
       register: nagios_enabled
       until: nagios_enabled|success
       retries: 5
       delay: 5
-    
+
+    # open firewall port 80 for access to nagios http
+    - name: open firewall rules
+      firewalld:
+        port: "80/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      when: ansible_os_family == "RedHat"
+
+    # prevent a 403 error when nagios is checking localhost http
+    - name: copy default index.html
+      copy:
+        src: /usr/share/httpd/noindex/index.html
+        dest: /var/www/html
+        remote_src: true
+      when: ansible_os_family == "RedHat"
+
     # clean temporary directories after installation
-    
     - name: cleanup nagios core directory
-      command: rm -rf {{ nagios_dir }}
-    
+      file:
+          path: "{{ nagios_dir }}"
+          state: absent
+
     - name: cleanup nagios plugin directory
-      command: rm -rf {{ plugin_dir }}
+      file:
+          path: "{{ plugin_dir }}"
+          state: absent

@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,33 +23,13 @@ nagios_group: nagios
 nagios_user:  nagios
 nagios_pass:  nagios
 
-nrpe_packages:
-  - nagios-nrpe-plugin
-
-apt_packages:
-  - apache2
-  - apache2-utils
-  - build-essential
-  - libapache2-mod-php7.0
-  - libgd-dev
-  - php
-  - php-gd
-  - lxc-dev
-  - python-dev
-  - python-pip
-  - python3-pip
-  - sendmail
-  - snmp
-  - unzip
-  - wget
-
 #Using specific paramiko version until bug is fixed:
 #https://github.com/paramiko/paramiko/issues/750
-pip_packages:
+nagios_pip_packages:
   - lxc-python2
   - paramiko==1.17.1
   - pyCrypto
 
-pip3_packages:
+nagios_pip3_packages:
   - paramiko==1.17.1
 

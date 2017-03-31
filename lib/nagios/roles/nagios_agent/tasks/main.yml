@@ -1,8 +1,25 @@
 ---
+# Copyright 2017, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-    - include_vars: "{{ item }}"
+
+    - name: include os dependent variables
+      include_vars: "{{ item }}"
       with_first_found:
-        - "../vars/{{ ansible_os_family }}.yml"
+        - files:
+            - "vars/{{ ansible_os_family | lower }}.yml"
+          skip: true
 
     # install pre-reqs
 
@@ -10,7 +27,9 @@
       package:
         name: "{{ item }}"
         state: present
-      with_items: "{{ pre_packages }}"
+      with_items: "{{ nrpe_pre_packages }}"
+      register: install_packages
+      until: install_packages|success
       retries: 5
       delay: 2
 
@@ -19,6 +38,8 @@
         name: lsvpd
         state: present
       when: ansible_architecture == 'ppc64le'
+      register: install_lsvpd
+      until: install_lsvpd|success
       retries: 5
       delay: 2
 
@@ -65,6 +86,22 @@
       when: patch_nrpe is defined and patch_nrpe == true and (install_server is defined and install_server == true)
          or (install_plugin is defined and install_plugin == true)
 
+    # Nagios expects check_nrpe to be at /usr/lib/nagios/plugins/check_nrpe
+    # if it is not there, we need to symlink it
+    - name: Ensure /usr/lib/nagios/plugins/ exists
+      file:
+        path: /usr/lib/nagios/plugins
+        state: directory
+
+    - name: Create a symlink if necessary
+      file:
+        src: "{{ check_nrpe_bin }}"
+        dest: /usr/lib/nagios/plugins/check_nrpe
+        state: link
+      when:
+        - check_nrpe_bin != '/usr/lib/nagios/plugins/check_nrpe'
+        - install_plugin is defined and install_plugin == true
+
     # run the daemon-reload before enabling the service(systemd is fully supported since Ubuntu 15.04).
     # older endpoints needing to be managed may not have sysmctl
     - name: daemon-reload
@@ -80,3 +117,7 @@
       when: install_server is defined and install_server == true
       notify: restart nrpe service
 
+    - name: Enable nrpe to start on reboot
+      service:
+        name: "{{ nrpe_service }}"
+        enabled: yes

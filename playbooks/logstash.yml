@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
 # limitations under the License.
 
 - hosts: localhost
-  gather_facts: no
+  gather_facts: yes
   connection: local
   become: false
   vars_files:
     - defaults.yml
   pre_tasks:
+    - include: "{{ opsmgr_lib }}/util/env.yml"
     - include: "{{ opsmgr_lib }}/util/import.yml"
 
 - hosts: opsmgr_logstash
@@ -29,6 +30,7 @@
     - defaults.yml
   pre_tasks:
     - include: "{{ opsmgr_lib }}/util/env.yml"
+    - include: "{{ opsmgr_lib }}/util/import.yml"
   roles:
     - logstash
 

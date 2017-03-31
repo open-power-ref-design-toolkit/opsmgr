@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-    # install pre-reqs
+    - name: include os dependent variables
+      include_vars: "{{ item }}"
+      with_first_found:
+        - files:
+            - "vars/{{ ansible_os_family | lower }}.yml"
+          skip: true
 
-    - name: installs prereq packages with aptitude
-      apt: name={{ item }} state=present update_cache=true
-      with_items: "{{ apt_packages }}"
-      when: imported is undefined or imported != true
+    - name: installs prereq packages
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ opsmgr_prereq_packages }}"
+      register: package_install
+      until: package_install|success
       retries: 5
       delay: 2
 
@@ -27,8 +35,14 @@
       when: imported is defined and imported == true
 
     - name: installs prereq packages with pip
-      pip: name={{ item }} state=present executable={{ pipexec }} extra_args="{{ pipargs }}"
-      with_items: "{{ pip_packages }}"
+      pip:
+        name: "{{ item }}"
+        state: latest
+        executable: "{{ pipexec }}"
+        extra_args: "{{ pipargs }}"
+      with_items: "{{ opsmgr_pip_packages }}"
+      register: pip_install
+      until: pip_install|success
       retries: 5
       delay: 2
 
@@ -121,6 +135,15 @@
       with_subelements:
         - "{{ opsmgr_containers }}"
         - ports
+
+    # For the no container install
+    - name: create opsmgr_nagios.conf using localhost values
+      template:
+        src: opsmgr_nagios.conf.localhost.j2
+        dest: /etc/opsmgr/tmp/opsmgr_nagios.conf
+        force: yes
+      when: opsmgr_containers | length == 0
+
 
     - name: create opsmgr_ganglia.conf
       template:

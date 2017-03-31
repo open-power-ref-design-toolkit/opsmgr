@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, Rackspace US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,44 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install Metricbeat Apt Packages - x86
-  apt:
-    pkg: "{{ item }}"
-    state: latest
-    update_cache: yes
-    cache_valid_time: 600
-  when: ansible_architecture == 'x86_64'
-  register: install_beats_apt_packages
-  until: install_beats_apt_packages|success
-  retries: 5
-  delay: 2
-  with_items: "{{ metricbeat_apt_packages }}"
-  tags:
-    - "metricbeat-apt-packages"
-    - "metricbeat-install"
-
 - name: Create deb_package_path
   file:
-    path: "{{ deb_package_path }}"
+    path: "{{ package_path }}"
     state: directory
-  when: ansible_architecture == 'ppc64le'
+  tags:
+    - "metricbeat-install"
 
-- name: Copy over deb package
+- name: Copy over package ppc64le
   copy:
-    src: "{{ deb_package_path_host }}/{{ deb_package_ppc64el }}"
-    dest: "{{ deb_package_path }}/{{ deb_package_ppc64el }}"
+    src: "{{ package_path_host }}/{{ package_file }}"
+    dest: "{{ package_path }}/{{ package_file }}"
   when: ansible_architecture == 'ppc64le'
+  tags:
+    - "metricbeat-install"
 
-- name: Install Metricbeat Deb Package - ppc64el
+- name: Download package x86
+  get_url:
+    url: "{{ download_url }}/{{ package_file }}"
+    dest: "{{ package_path }}"
+  when: ansible_architecture == 'x86_64'
+  tags:
+    - "metricbeat-install"
+
+- name: Install metricbeat deb package
   apt:
-    deb: "{{ deb_package_path }}/{{ deb_package_ppc64el }}"
-  when: ansible_architecture == 'ppc64le'
-  register: dpkg_status
-  until: dpkg_status|success
+    deb: "{{ package_path }}/{{ package_file }}"
+    state: present
+  when: ansible_os_family == "Debian"
+  register: install_deb
+  until: install_deb|success
   retries: 5
   delay: 2
   tags:
-    - "metricbeat-apt-packages"
     - "metricbeat-install"
 
+- name: Install metricbeat rpm package
+  package:
+    name: "{{ package_path }}/{{ package_file }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+  register: install_package
+  until: install_package|success
+  retries: 5
+  delay: 2
+  tags:
+    - "metricbeat-install"
 
+- name: Remove the package file
+  file:
+    path: "{{ package_path }}/{{ package_file }}"
+    state: absent
+  tags:
+    - "metricbeat-install"

@@ -1,0 +1,48 @@
+---
+# Copyright 2017, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+containers: []
+
+# imported ssh key to use for deployment
+provisioning_key_prv: "/root/.ssh/id_rsa"
+provisioning_key_pub: "/root/.ssh/id_rsa.pub"
+
+internal_ip: {{ ansible_default_ipv4.address }}
+
+# database installation
+install_mysql: true
+db_login_user: "{{ ansible_user_id }}"
+db_login_password: passw0rd
+db_login_host: 127.0.0.1
+db_user: opsmgr
+db_host: 127.0.0.1
+
+# user interface installation
+install_ui: false
+ui_enabled: /etc/opsmgr/shared/ui
+floating_ip: "{{ ansible_default_ipv4.address }}"
+
+# wether to install haproxy (true) or use existing one (false)
+install_haproxy: false
+configure_haproxy: false
+
+# configure standalone opsmgr GUI on install
+patch_ui: false
+
+# Ganglia configuration
+install_ganglia: false
+
+
+nagios_config_dir: /usr/local/nagios/opsmgr/nagios_config

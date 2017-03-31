@@ -1,0 +1,59 @@
+---
+# Copyright 2017, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+    # install pre-reqs
+
+    - name: install prereq packages
+      become: true
+      package:
+        name: "{{ item }}"
+        state: present
+      retries: 5
+      delay: 2
+      with_items: "{{ mysql_pre_packages }}"
+
+    # configure service
+
+    - name: change bind address to allow remote connections
+      lineinfile:
+        dest: "/etc/mysql/my.cnf"
+        regexp: "^bind-address"
+        line: "#bind-address = 127.0.0.1"
+      notify:
+        - restart service
+
+    #for mysql on ubuntu 16.04
+
+    - name: change bind-address to allow remote connections
+      lineinfile:
+        dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+        regexp: "^bind-address"
+        line: "#bind-address = 127.0.0.1"
+      notify:
+        - restart service
+
+    - name: update mysql root user
+      mysql_user:
+        host: "{{ item }}"
+        name: "{{ mysql_root_user }}"
+        password: "{{ mysql_root_password }}"
+        state: present
+        priv: "*.*:ALL,GRANT"
+      with_items:
+        - "%"
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost

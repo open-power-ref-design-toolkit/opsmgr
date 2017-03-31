@@ -13,13 +13,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install deb package 
-  apt:
-    deb="/tmp/{{ item.file }}"
-    state=installed
-  with_items: "{{ elasticsearch_deb_packages }}"
+- name: Download deb/rpm package
+  get_url:
+    url: "{{ item.url }}/{{ item.file }}"
+    dest: "/tmp/{{ item.file }}"
+  with_items: "{{ elasticsearch_packages }}"
   tags:
-    - elasticsearch-deb-package
+    - elasticsearch-package
+    - elasticsearch-install
+
+- name: installs elasticsearch from deb
+  apt:
+    deb: "/tmp/{{ item.file }}"
+    state: present
+  with_items: "{{ elasticsearch_packages }}"
+  when: ansible_os_family == "Debian"
+  register: install_deb
+  until: install_deb|success
+  retries: 5
+  delay: 2
+  tags:
+    - elasticsearch-package
+    - elasticsearch-install
+
+- name: installs elasticsearch from rpm
+  package:
+    name: "/tmp/{{ item.file }}"
+    state: present
+  with_items: "{{ elasticsearch_packages }}"
+  when: ansible_os_family == "RedHat"
+  register: install
+  until: install|success
+  retries: 5
+  delay: 2
+  tags:
+    - elasticsearch-package
+    - elasticsearch-install
+
+- name: remove deb/rpm file
+  file:
+    path: "/tmp/{{ item.file }}"
+    state: absent
+  with_items: "{{ elasticsearch_packages }}"
+  tags:
+    - elasticsearch-package
     - elasticsearch-install
 
 #Patch /usr/share/elasticsearch/bin/plugin to remove

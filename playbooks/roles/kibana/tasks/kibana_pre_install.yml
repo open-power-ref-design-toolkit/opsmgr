@@ -14,34 +14,86 @@
 # limitations under the License.
 #
 
-# install prereq packages to lxc containers
-- name: installs prereq packages with aptitude
-  apt: name={{ item }} state=present update_cache=true
-  with_items: "{{ apt_packages }}"
+- name: installs prereq packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ kibana_pre_packages }}"
+  register: install_preq
+  until: install_preq|success
+  retries: 5
+  delay: 2
+  tags:
+    - kibana-install-prereq
+    - kibana-pre-install
 
+
+# Debian only
 - name: Add Kibana apt keys
   apt_key:
     url: "{{ item.url }}"
     state: "{{ item.state }}"
-  with_items: "{{ kibana_apt_keys }}"
-  when: kibana_apt_keys is defined
+  with_items: "{{ kibana_keys }}"
+  when:
+      - kibana_keys is defined
+      - ansible_os_family == "Debian"
   register: add_keys_url
   until: add_keys_url|success
   retries: 5
   delay: 2
   tags:
-    - kibana-apt-keys
+    - kibana-keys
     - kibana-pre-install
 
 - name: Add Kibana apt repositories
   apt_repository:
     repo: "{{ item.repo }}"
     state: "{{ item.state }}"
-  with_items: "{{ kibana_apt_repos }}"
+  with_items: "{{ kibana_repos }}"
+  when:
+      - kibana_repos is defined
+      - ansible_os_family == "Debian"
   register: add_repos
   until: add_repos|success
   retries: 5
   delay: 2
   tags:
-    - kibana-apt-repos
+    - kibana-repos
+    - kibana-pre-install
+
+#Redhat only
+- name: Add Kibana rpm keys
+  rpm_key:
+    key: "{{ item.url }}"
+    state: "{{ item.state }}"
+  with_items: "{{ kibana_keys }}"
+  when:
+      - kibana_keys is defined
+      - ansible_os_family == "Redhat"
+  register: add_keys_url
+  until: add_keys_url|success
+  retries: 5
+  delay: 2
+  tags:
+    - kibana-keys
+    - kibana-pre-install
+
+
+- name: Add Kibana repo
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    baseurl: "{{ item.url }}"
+    gpgkey: "{{ item.gpgkey }}"
+    gpgcheck: yes
+  with_items: "{{ kibana_repos }}"
+  when:
+      - kibana_repos is defined
+      - ansible_os_family == "Redhat"
+  register: add_repos
+  until: add_repos|success
+  retries: 5
+  delay: 2
+  tags:
+    - kibana-repos
     - kibana-pre-install

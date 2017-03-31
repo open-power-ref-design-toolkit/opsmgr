@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,14 @@
 
 - name: restart service
   service:
-    name: mysql
+    name: "{{ mysql_service }}"
     state: restarted
+  when: ansible_architecture == 'x86_64'
+
+- name: restart service
+  service:
+    name: "{{ mysql_service_p }}"
+    state: restarted
+  when: ansible_architecture == 'ppc64le'
 
 

@@ -1,0 +1,9 @@
+
+[NAGIOS]
+server       = "{{ floating_ip }}"
+userid       = "{{ ansible_user_id }}"
+sshkey       = "/etc/opsmgr/opsmgr.key"
+web_protocol = "http://"
+web_proxy    = "{{ floating_ip }}"
+web_port     = 80
+web_path     = "/nagios"

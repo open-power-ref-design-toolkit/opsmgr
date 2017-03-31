@@ -1,0 +1,22 @@
+Name        : filebeat
+Version     : {{ filebeat_version }}
+Release     : 1
+Group       : default
+License     : ASL 2.0
+Vendor      : Elastic
+URL         : https://github.com/elastic/beats/filebeat
+Summary     : Filebeat sends log files to Logstash or directly to Elasticsearch.
+
+%description
+Filebeat sends log files to Logstash or directly to Elasticsearch.
+
+%post
+#!/bin/bash
+systemctl daemon-reload 2> /dev/null || true
+
+%files
+/etc/filebeat
+/etc/init.d/filebeat
+/lib/systemd/system/filebeat.service
+/usr/bin/filebeat.sh
+/usr/share/filebeat

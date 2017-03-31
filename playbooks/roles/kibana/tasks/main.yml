@@ -13,8 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- name: include os dependent variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "vars/{{ ansible_os_family | lower }}.yml"
+      skip: true
+
 - include: kibana_pre_install.yml
   when: ansible_architecture == 'x86_64'
+
 - include: kibana_install.yml
   when: ansible_architecture == 'x86_64'
 

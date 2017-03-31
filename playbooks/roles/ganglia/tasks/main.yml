@@ -43,7 +43,7 @@
       user: name=www-data groups={{ ganglia_group }} append=yes
 
     - name: copy ganglia web front end configuration file
-      sudo: True
+      become: True
       #copy:
       #    src: "/etc/ganglia-webfrontend/apache.conf"
       #    dest: "/etc/apache2/sites-enabled/ganglia.conf"
@@ -51,35 +51,35 @@
       command: cp /etc/ganglia-webfrontend/apache.conf /etc/apache2/sites-enabled/ganglia.conf
 
     - name: modify gmetad configuration
-      sudo: True
+      become: True
       replace: dest=/etc/ganglia/gmetad.conf regexp='data_source "my cluster" localhost' replace='data_source "{{cluster_name}}" 60 localhost' backup=yes
 
     - name: modify cluster name in gmond configuration
-      sudo: True
+      become: True
       replace: "dest=/etc/ganglia/gmond.conf regexp='name = \"unspecified\"' replace='name = \"{{cluster_name}}\"' backup=yes"
 
     - name: modify mcast_join in gmond configuration
-      sudo: True
+      become: True
       replace: dest=/etc/ganglia/gmond.conf regexp='^mcast_join = 239.2.11.71' replace='mcast_join = 239.2.11.71' backup=yes
 
     - name: modify hostname in gmond configuration
-      sudo: True
+      become: True
       lineinfile: dest=/etc/ganglia/gmond.conf state=present  insertafter='udp_send_channel' line='  host = localhost'
 
     - name: modify recevice channel's bind in gmond configuration
-      sudo: True
+      become: True
       replace: dest=/etc/ganglia/gmond.conf regexp='^bind = 239.2.11.71' replace='#bind = 239.2.11.71' backup=yes
 
     - name: restart apache
-      sudo: True
+      become: True
       service: name=apache2 state=restarted enabled=yes
 
     - name: restart ganglia monitor
-      sudo: True
+      become: True
       service: name=ganglia-monitor state=restarted enabled=yes
 
     - name: restart gmetad
-      sudo: True
+      become: True
       service: name=gmetad state=restarted enabled=yes
 
 

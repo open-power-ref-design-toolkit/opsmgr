@@ -1,4 +1,4 @@
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ setup(
                  ],
 
     install_requires = [
+        'pbr>=2.0',
         'paramiko>=1.16.0',
         'sqlalchemy>=1.0.12',
         'stevedore>=1.12.0',

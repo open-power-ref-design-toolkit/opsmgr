@@ -24,6 +24,8 @@
     - name: clean target inventory files
       local_action: file dest={{ opsmgr_dat }}/inventory-{{ item }} state=absent
       with_items: "{{ group_names }}"
+    - name: Ensure the opsmgr_dat directory exist
+      local_action: file dest={{ opsmgr_dat }} state=directory
     - name: create target inventory files
       local_action: copy dest={{ opsmgr_dat }}/inventory-{{ item }} content='[targets]' force=no
       with_items: "{{ group_names }}"
