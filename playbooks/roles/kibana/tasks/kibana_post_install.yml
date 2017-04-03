@@ -82,8 +82,6 @@
       what: '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
     - where: "/config/{{ kibana_version.stdout }}"
       what: '{"defaultIndex" : "logstash-*"}'
-    - where: "/index-pattern/metricbeat-*?op_type=create"
-      what: '{"title" : "metricbeat-*",  "timeFieldName": "@timestamp"}'
   tags:
     - kibana-post-install
 
@@ -112,6 +110,32 @@
   notify: Restart Apache
   tags:
     - kibana-apache
+    - kibana-post-install
+
+- name: Download Metricbeat dashboard zip
+  unarchive:
+    src: "{{ beats_dashboards_zip }}"
+    dest: "{{ kibana_temp_directory }}"
+    copy: no
+    remote_src: yes
+  tags:
+    - kibana-post-install
+
+- name: Read in the metricbeat_index_file
+  slurp:
+    src: "{{ kibana_temp_directory }}/{{ metricbeat_index_file }}"
+  register: metricbeat_index_text
+  tags:
+    - kibana-post-install
+
+- name: Import Metricbeat Index Configuration
+  uri:
+    method: "PUT"
+    url: "{{ kibana_index_on_elasticsearch }}/index-pattern/metricbeat-*?op_type=create"
+    body: "{{ metricbeat_index_text.content|b64decode }}"
+    body_format: "json"
+    status_code: 200,201,409
+  tags:
     - kibana-post-install
 
 - name: Remove tmp directory for the code
