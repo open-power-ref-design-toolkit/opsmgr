@@ -26,7 +26,7 @@ echo "allNodes=$allNodes"
 echo "GIT_MIRROR=$GIT_MIRROR"
 
 OSA_RELEASE="stable/newton"
-OSA_TAG=${OSA_TAG:-"14.0.8"}
+OSA_TAG=${OSA_TAG:-"14.1.1"}
 OSA_DIR="/opt/openstack-ansible"
 OSA_PLAYS="${OSA_DIR}/playbooks"
 
@@ -69,6 +69,30 @@ if [ ! -d /opt/openstack-ansible ]; then
     # An openstack-ansible script is invoked below to install ansible
     rm -rf /etc/ansible
     INSTALL=True
+fi
+
+# Apply patches to /opt/openstack-ansible so that bootstrap-ansible.sh
+# related patches are applied before bootstrap-ansible.sh is run.
+if [ -d $PCLD_DIR/diffs ]; then
+
+    echo "Applying patches to /opt/openstack-ansible"
+    pushd / >/dev/null 2>&1
+
+    for f in ${PCLD_DIR}/diffs/opt-openstack-ansible-*.patch; do
+        patch -N -p1 < $f
+        rc=$?
+        if [ $rc != 0 ]; then
+            echo "Applying patches to /opt/openstack-ansible failed, rc=$rc"
+            echo "Patch $f could not be applied"
+            echo "Manual retry procedure:"
+            echo "1) fix patch $f"
+            echo "2) rm -rf /opt/openstack-ansible"
+            echo "3) re-run command"
+            exit 1
+        fi
+    done
+
+    popd >/dev/null 2>&1
 fi
 
 # Bootstrap ansible
