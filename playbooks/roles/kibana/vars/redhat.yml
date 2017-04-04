@@ -20,6 +20,7 @@ kibana_pre_packages:
   - httpd
   - openssl
   - mod_ssl
+  - unzip
 
 apache_log_dir: /var/log/httpd
 
@@ -41,4 +42,3 @@ kibana_repos:
 # the yum repository key url
 kibana_keys:
   - { url: "{{ kibana_gpgkey }}", state: "present" }
-
