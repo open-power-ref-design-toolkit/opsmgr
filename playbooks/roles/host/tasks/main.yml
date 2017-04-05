@@ -209,5 +209,4 @@
           src=lxc-ext.j2
           dest={{ opsmgr_dat }}/lxc-ext/lxc-{{ inventory_hostname }}-{{ item.name }}
       with_items: "{{ import_containers }}"
-      when: item.host == inventory_hostname
 

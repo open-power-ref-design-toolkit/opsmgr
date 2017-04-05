@@ -1,0 +1,40 @@
+---
+
+# updates OpsMgr with target resources roles
+- hosts: opsmgr_core
+  become: true
+
+  vars:
+
+    osa_services:
+        - galera
+        - horizon
+        - keystone
+        - memcached
+        - rabbitmq
+        - pkg_repo
+        - rsyslog
+        - utility
+
+  tasks:
+
+    - name: show the component associated with a container
+      debug:
+        msg: "The container {{ item }} is associated with the component: {{ hostvars[item].component }}"
+      with_items: "{{ groups['all_containers'] }}"
+
+    - name: register container resource roles in opsmgr
+      shell: >
+          opsmgr add_role -l "{{ hostvars[item].physical_host }}" -r "osa_{{ hostvars[item].component }}"
+      when: |
+          hostvars[item].component in osa_services
+      with_items: "{{ groups['all_containers'] }}"
+      ignore_errors: true
+
+# reload new configuration on nagios servers
+- hosts: opsmgr_nagios
+  become: true
+  tasks:
+    - name: restart nagios service
+      service: name="nagios" state=restarted
+
