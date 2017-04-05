@@ -33,18 +33,7 @@ apt_packages:
   - wget
   - curl
   - rsync
-
-jre_apt_repo_url: "http://ftp.us.debian.org/debian"
-
-jre_apt_repos:
-  - { repo: "deb {{ jre_apt_repo_url }} experimental main", state: "present" }
-  - { repo: "deb {{ jre_apt_repo_url }} sid main", state: "present" }
-
-jre_apt_package: openjdk-7-jre-headless
-
-#preq for openjdk-7-jre-headless can't be found with apt-get
-jre_preq_deb_packages:
-  - { url: "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo", file: "libjpeg62-turbo_1.5.1-2_ppc64el.deb" }
+  - openjdk-8-jre-headless
 
 #for ppc64le and x86 use the deb package to install
 logstash_deb_packages:

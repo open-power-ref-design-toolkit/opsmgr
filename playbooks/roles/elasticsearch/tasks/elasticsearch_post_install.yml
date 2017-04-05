@@ -97,16 +97,6 @@
   tags:
     - elasticsearch-post-install
 
-- name: Remove the preq deb package in /tmp (ppc64le)
-  file:
-    path: "/tmp/{{ item.file }}"
-    state: absent
-  with_items: "{{ elasticsearch_preq_deb_packages }}" 
-  when: ansible_architecture == 'ppc64le'
-  tags:
-    - elasticsearch-deb-package
-    - elasticsearch-post-install
-
 - name: Remove the deb package in /tmp 
   file:
     path: "/tmp/{{ item.file }}"
@@ -115,4 +105,3 @@
   tags:
     - elasticsearch-deb-package
     - elasticsearch-post-install
-

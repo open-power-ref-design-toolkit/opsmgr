@@ -18,18 +18,6 @@
   apt: name={{ item }} state=present update_cache=true
   with_items: "{{ apt_packages }}"
 
-- name: Download preq deb packages
-  get_url: 
-    url="{{ item.url }}/{{ item.file }}"
-    dest="/tmp/{{ item.file }}"
-  with_items: "{{ elasticsearch_preq_deb_packages }}"
-  when: ansible_architecture == 'ppc64le'
-  retries: 5
-  delay: 2
-  tags:
-    - elasticsearch-deb-package
-    - elasticsearch-pre-install
-
 - name: Download deb packages
   get_url:
     url="{{ item.url }}/{{ item.file }}"
@@ -39,44 +27,6 @@
   delay: 2
   tags:
     - elasticsearch-deb-package
-    - elasticsearch-pre-install
-
-- name: Install preq deb packages (ppc64le)
-  apt:
-    deb="/tmp/{{ item.file }}"
-    state=installed
-  with_items: "{{ elasticsearch_preq_deb_packages }}"
-  when: ansible_architecture == 'ppc64le'
-  tags:
-    - elasticsearch-deb-package
-    - elasticsearch-pre-install
-
-- name: Add apt repositories
-  apt_repository:
-    repo: "{{ item.repo }}"
-    state: "{{ item.state }}"
-  with_items: "{{ jre_apt_repos }}"
-  register: add_repos
-  until: add_repos|success
-  retries: 5
-  delay: 2
-  tags:
-    - jre-apt-repos
-    - elasticsearch-pre-install
-
-- name: Install jre
-  apt:
-    pkg: "{{ jre_apt_package }}"
-    state: latest
-    update_cache: yes
-    cache_valid_time: 600
-    allow_unauthenticated: yes
-  register: install_apt_packages
-  until: install_apt_packages|success
-  retries: 5
-  delay: 2
-  tags:
-    - jre-apt-packages
     - elasticsearch-pre-install
 
 - name: Create the ElasticSearch System Group
