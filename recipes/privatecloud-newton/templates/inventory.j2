@@ -1,30 +1,35 @@
 [opsmgr]
-
-{% for host in nodes['controllers'] %}
-{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% if groups['controller'] is defined %}
+{% for host in groups['controller'] %}
+{{ hostvars[host]['hostname']}} ansible_ssh_host={{ hostvars[host]['openstack_mgmt_addr'] }}
 {% endfor %}
+{% endif %}
+{# #}
+{# Backwards compatibility: Inventory files before cluster-genesis 1.2 #}
+{# controllers (pural) is for older genesis inventory files #}
+{% if groups['controllers'] is defined %}
+{% for host in groups['controllers'] %}
+{{ hostvars[host]['hostname']}} ansible_ssh_host={{ hostvars[host]['openstack_mgmt_addr'] }}
+{% endfor %}
+{% endif %}
 
 [osa-newton]
-
 {{ ansible_hostname }}
 
-{% for node, hosts in nodes.iteritems() %}
-{% if node != 'controllers' %}
-[{{ node }}]
+{% for group, hosts in groups.iteritems() %}
+{% if group not in ('ungrouped','all','controller','controllers') %}
+[{{ group }}]
 {% for host in hosts %}
-{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{{ hostvars[host]['hostname']}} ansible_ssh_host={{ hostvars[host]['openstack_mgmt_addr'] }}
 {% endfor %}
 {% endif %}
-{% endfor %}
 
-{# When reference-architecture is ceph-standalone #}
-{# the ceph monitor runs on the controllers #}
-
-{% if ceph_standalone==true %}
+{# Backwards compatibility: Inventory files before cluster-genesis 1.2 #}
+{# controllers (pural) also were ceph-monitors #}
+{% if group == 'controllers' %}
 [ceph-monitor]
-
-{% for host in nodes['controllers'] %}
-{{ host.hostname }} ansible_ssh_host={{ host['openstack-mgmt-addr'] }}
+{% for host in hosts %}
+{{ hostvars[host]['hostname']}} ansible_ssh_host={{ hostvars[host]['openstack_mgmt_addr'] }}
 {% endfor %}
 {% endif %}
-
+{% endfor %}
