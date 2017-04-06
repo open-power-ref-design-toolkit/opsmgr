@@ -112,6 +112,16 @@
     - kibana-apache
     - kibana-post-install
 
+- name: Import the Metricbeat template file before the index file
+  uri:
+    method: "PUT"
+    url: "http://{{ elasticsearch_ip }}:{{ elasticsearch_http_port}}/_template/metricbeat"
+    body: "{{ lookup('file', 'files/es_templates/metricbeat.template-es2x.json') }}"
+    body_format: "json"
+    status_code: 200,201,409
+  tags:
+    - kibana-post-install
+
 - name: Download Metricbeat dashboard zip
   unarchive:
     src: "{{ beats_dashboards_zip }}"
