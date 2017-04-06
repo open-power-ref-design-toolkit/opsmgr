@@ -1,0 +1,4 @@
+---
+
+- include: "{{ opsmgr_dir }}/lib/util/redirect.yml play={{ opsmgr_dir }}/plugins/provisioning/standalone"
+

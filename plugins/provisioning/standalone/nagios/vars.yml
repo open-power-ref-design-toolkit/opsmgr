@@ -1,0 +1,36 @@
+---
+# Copyright 2017, IBM US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+nagios_command_files:
+    - { file_name: "osa_lxc_galera.cmd" , container_name: "galera" }
+    - { file_name: "osa_lxc_horizon.cmd" , container_name: "horizon" }
+    - { file_name: "osa_lxc_keystone.cmd" , container_name: "keystone" }
+    - { file_name: "osa_lxc_memcached.cmd" , container_name: "memcached" }
+    - { file_name: "osa_lxc_rabbit_mq.cmd" , container_name: "rabbit_mq" }
+    - { file_name: "osa_lxc_repo.cmd" , container_name: "repo" }
+    - { file_name: "osa_lxc_rsyslog.cmd" , container_name: "rsyslog" }
+    - { file_name: "osa_lxc_utility.cmd" , container_name: "utility" }
+
+nagios_common_checks:
+    - command[osa_lxc_cpu]         = sudo /etc/nagios/plugins/check-lxc.sh container_name check-cpu.rb '-w 80 -c 90'
+    - command[osa_lxc_mem]         = sudo /etc/nagios/plugins/check-lxc.sh container_name check-mem.sh '-w 250 -c 100'
+    - command[osa_lxc_disk]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-disk.rb '-x iso9660'
+    - command[osa_lxc_large_files] = sudo /etc/nagios/plugins/check-lxc.sh container_name check-for-large-files.sh '-d /var/log -s 1048576'
+    - command[osa_lxc_slsocket]    = sudo /etc/nagios/plugins/check-lxc.sh container_name check-syslog-socket.rb ''
+    - command[osa_lxc_eth0]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-netif.rb '-c 500 -w 350 --interfaces eth0'
+    - command[osa_lxc_eth1]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-netif.rb '-c 500 -w 350 --interfaces eth1'
+    - command[osa_lxc_rsyslogd]    = sudo /etc/nagios/plugins/check-lxc.sh container_name check-procs.rb '-p rsyslogd -w 15 -c 30 -W 1 -C 1'
+    - command[osa_lxc_sshd]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-procs.rb '-p sshd -w 15 -c 30 -W 1 -C 1'
+    - command[osa_lxc_cron]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-procs.rb '-p cron -w 15 -c 30 -W 1 -C 1'
