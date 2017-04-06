@@ -60,9 +60,9 @@
   tags:
     - "filebeat-install"
 
-- name: Remove the package file
+- name: Remove the package_path directory
   file:
-    path: "{{ package_path }}/{{ package_file }}"
+    path: "{{ package_path }}"
     state: absent
   tags:
     - "filebeat-install"
