@@ -5,6 +5,6 @@
       "description": "",
       "version": 1,
       "kibanaSavedObjectMeta": {
-        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"tags:ceph\",\"analyze_wildcard\":true}},\"filter\":[]}"
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"tags:ceph AND _exists_:bytes_written\",\"analyze_wildcard\":true}},\"filter\":[]}"
       }
     }
