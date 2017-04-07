@@ -78,3 +78,7 @@
   include: rpm_package.yml
   when: ansible_os_family == "RedHat"
 
+- name: Remove build_dir
+  file:
+    path: "{{ build_dir }}"
+    state: absent
