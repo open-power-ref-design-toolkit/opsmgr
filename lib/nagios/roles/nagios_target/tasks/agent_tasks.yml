@@ -47,8 +47,23 @@
           - "{{ nagios_common_checks }}"
       notify: restart nrpe service
 
-    # Logic to monitor only the interfaces that exist on the system
+    - name: For the minimal install remove the call to check-lxc.sh
+      replace:
+          dest: "{{ nrpe_dir }}/commands/{{ item.file_name }}"
+          regexp: "/etc/nagios/plugins/check-lxc.sh {{ item.container_name }} "
+          replace: "/etc/nagios/plugins/"
+      with_items: "{{ nagios_command_files }}"
+      when: recipe == 'minimal'
 
+    - name: For the minimal install remove the single quotes around parameters 
+      replace:
+          dest: "{{ nrpe_dir }}/commands/{{ item.file_name }}"
+          regexp: "'"
+          replace: ""
+      with_items: "{{ nagios_command_files }}"
+      when: recipe == 'minimal'
+
+    # Logic to monitor only the interfaces that exist on the system
     - name: Find the interfaces on the system
       shell: "{{ list_interfaces_command }} "
       register: interface_list
