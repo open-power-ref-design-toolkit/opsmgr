@@ -23,4 +23,4 @@ elasticsearch_pre_packages:
 
 #for ppc64le and x86 use the deb package to install
 elasticsearch_packages:
-  - { url: "https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.4.1", file: "elasticsearch-2.4.1.deb" }
+  - { url: "https://artifacts.elastic.co/downloads/elasticsearch", file: "elasticsearch-5.3.0.deb" } 

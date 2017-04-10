@@ -44,7 +44,7 @@ elasticsearch_http_port: 9200
 elasticsearch_tcp_port: 9300
 
 # Change this to 'true' will ensure that elasticsearch never uses swap space
-elasticsearch_bootstrap_mlockall: "false"
+elasticsearch_bootstrap_memory_lock: "false"
 
 # Change this to override the default value (which is 50% of total memory)
 # elasticsearch_heap_size_mb: 1024

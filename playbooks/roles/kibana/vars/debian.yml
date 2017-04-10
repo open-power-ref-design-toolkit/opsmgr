@@ -31,7 +31,7 @@ kibana_pip_packages:
   - httplib2
 
 # the apt repository url to use for installing kibana from
-kibana_repo_url: "http://packages.elasticsearch.org/kibana/4.6/debian"
+kibana_repo_url: "https://artifacts.elastic.co/downloads/kibana"
 
 # the apt repository to use for installing logstash from
 kibana_repos:
@@ -40,3 +40,4 @@ kibana_repos:
 # the apt repository key url
 kibana_keys:
   - { url: "https://packages.elasticsearch.org/GPG-KEY-elasticsearch", state: "present" }
+

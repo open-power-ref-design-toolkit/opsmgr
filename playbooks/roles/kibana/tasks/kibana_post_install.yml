@@ -1,5 +1,5 @@
 ---
-# Copyright 2014, Rackspace US, Inc.
+# copyright 2014, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@
     url: "{{ kibana_index_on_elasticsearch }}{{ item.where }}"
     # NOTE(sigmavirus24): There's a bug in Ansible < 2.1.x where without the
     # leading ' ' this will be interpreted as a dictionary (EVEN WITH to_json)
-    # and so the only way to unbreak this is to use a leading ' '. ಠ_ಠ
+    # and so the only way to unbreak this is to use a leading ' '. ._.
     body: " {{ item.what }}"
     body_format: "json"
     # NOTE(sigmavirus24): The first request we make may return a 409 status
@@ -116,7 +116,7 @@
   uri:
     method: "PUT"
     url: "http://{{ elasticsearch_ip }}:{{ elasticsearch_http_port}}/_template/metricbeat"
-    body: "{{ lookup('file', 'files/es_templates/metricbeat.template-es2x.json') }}"
+    body: "{{ lookup('file', 'files/es_templates/metricbeat.template.json') }}"
     body_format: "json"
     status_code: 200,201,409
   tags:
