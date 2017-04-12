@@ -30,18 +30,8 @@ export OPSMGR_RECIPE
 RECIPE_DIR="${OPSMGR_DIR}/recipes/${OPSMGR_RECIPE}"
 OPSMGR_PRL="${RECIPE_DIR}/profile"
 
-# Apply patches to opsmgr if "diffs" directory exists
-echo "Applying patches"
-if [ -d $OPSMGR_DIR/diffs ]; then
-    pushd / >/dev/null 2>&1
-    for f in $OPSMGR_DIR/diffs/*.patch; do
-        patch -N -p1 < $f
-    done
-    popd >/dev/null 2>&1
-fi
-
 # Bootstrap opsmgr
-if [ ! -d ${OPSMGR_DIR}/recipes ]; then
+if [ -d ${OPSMGR_DIR}/recipes ]; then
     echo "bootstrap opsmgr..."
     pushd ${OPSMGR_DIR}/recipes >/dev/null 2>&1
     ansible-playbook -e "opsmgr_lib=../lib" -i $OPSMGR_PRL/inventory setup.yml

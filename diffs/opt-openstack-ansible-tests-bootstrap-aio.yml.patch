@@ -1,0 +1,19 @@
+diff -Naur a/opt/openstack-ansible/tests/bootstrap-aio.yml b/opt/openstack-ansible/tests/bootstrap-aio.yml
+--- a/opt/openstack-ansible/tests/bootstrap-aio.yml     2017-04-11 13:28:49.840291648 +0000
++++ b/opt/openstack-ansible/tests/bootstrap-aio.yml     2017-04-11 13:39:30.960521251 +0000
+@@ -50,15 +50,7 @@
+       LogLevel: "INFO"
+       LoginGraceTime: 120
+       StrictModes: yes
+-      RSAAuthentication: yes
+-      PubkeyAuthentication: yes
+       IgnoreRhosts: yes
+-      RhostsRSAAuthentication: no
+-      HostbasedAuthentication: no
+-      PermitEmptyPasswords: no
+-      PermitRootLogin: yes
+-      ChallengeResponseAuthentication: no
+-      PasswordAuthentication: no
+       X11DisplayOffset: 10
+       PrintMotd: no
+       PrintLastLog: no

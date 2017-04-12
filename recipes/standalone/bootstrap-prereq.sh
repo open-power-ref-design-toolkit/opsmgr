@@ -22,6 +22,8 @@ SCRIPTS_DIR=$(readlink -ne $SCRIPTS_DIR)
 ARGS=$@
 source $SCRIPTS_DIR/args.sh
 
+OPSMGR_DIR="${SCRIPTS_DIR}/../.."
+
 echo "DEPLOY_AIO=$DEPLOY_AIO"
 echo "infraNodes=$infraNodes"
 echo "allNodes=$allNodes"
@@ -69,12 +71,12 @@ fi
 
 # Apply patches to /opt/openstack-ansible so that bootstrap-ansible.sh
 # related patches are applied before bootstrap-ansible.sh is run.
-if [ -d $PCLD_DIR/diffs ]; then
+if [ -d $OPSMGR_DIR/diffs ]; then
 
     echo "Applying patches to /opt/openstack-ansible"
     pushd / >/dev/null 2>&1
 
-    for f in ${PCLD_DIR}/diffs/opt-openstack-ansible-*.patch; do
+    for f in ${OPSMGR_DIR}/diffs/opt-openstack-ansible-*.patch; do
         patch -N -p1 < $f
         rc=$?
         if [ $rc != 0 ]; then

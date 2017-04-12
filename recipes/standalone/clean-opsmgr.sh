@@ -56,47 +56,13 @@ if [ $rc != 0 ]; then
 fi
 popd >/dev/null 2>&1
 
-# Configure opsmgr hosts
+# Clean opsmgr
 pushd ${OPSMGR_DIR}/playbooks >/dev/null 2>&1
-echo "Invoking playbook hosts.yml from the opsmgr/playbooks directory"
-ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory hosts.yml
+echo "Invoking playbook clean.yml from the opsmgr/playbooks directory"
+ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory clean.yml
 rc=$?
 if [ $rc != 0 ]; then
-        echo "Failed to execute playbooks/hosts.yml, rc=$rc"
-        exit 8
+        echo "Failed to execute playbooks/clean.yml, rc=$rc"
+        exit 7
 fi
 popd >/dev/null 2>&1
-
-# Configure opsmgr control plane
-pushd ${OPSMGR_DIR}/playbooks >/dev/null 2>&1
-echo "Invoking playbook site.yml from the opsmgr/playbooks directory"
-ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR patch_ui=true" -i $OPSMGR_PRL/inventory site.yml
-rc=$?
-if [ $rc != 0 ]; then
-        echo "Failed to execute playbooks/site.yml, rc=$rc"
-        exit 9
-fi
-popd >/dev/null 2>&1
-
-# Configure opsmgr targets
-pushd ${OPSMGR_DIR}/playbooks >/dev/null 2>&1
-echo "Invoking playbook targets.yml from the opsmgr/playbooks directory"
-ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory targets.yml
-rc=$?
-if [ $rc != 0 ]; then
-        echo "Failed to execute playbooks/targets.yml, rc=$rc"
-        exit 10
-fi
-popd >/dev/null 2>&1
-
-# Customize opsmgr 
-pushd ${OPSMGR_DIR}/playbooks >/dev/null 2>&1
-echo "Invoking playbook customize.yml from the opsmgr/playbooks directory"
-ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory customize.yml
-rc=$?
-if [ $rc != 0 ]; then
-        echo "Failed to execute playbooks/customize.yml, rc=$rc"
-        exit 11
-fi
-popd >/dev/null 2>&1
-
