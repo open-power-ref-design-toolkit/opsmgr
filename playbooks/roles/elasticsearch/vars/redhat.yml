@@ -21,4 +21,4 @@ elasticsearch_pre_packages:
   - crontabs
 
 elasticsearch_packages:
-  - { url: "https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.4.3", file: "elasticsearch-2.4.3.rpm" }
+  - { url: "https://artifacts.elastic.co/downloads/elasticsearch", file: "elasticsearch-5.3.0.rpm" }

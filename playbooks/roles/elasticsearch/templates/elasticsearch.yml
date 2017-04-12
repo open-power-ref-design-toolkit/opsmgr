@@ -40,7 +40,7 @@ node.name: {{ inventory_hostname }}
 #
 # Lock the memory on startup:
 #
-bootstrap.mlockall: {{ elasticsearch_bootstrap_mlockall }}
+bootstrap.memory_lock: {{ elasticsearch_bootstrap_memory_lock }}
 #
 # Make sure that the heap size is set to about half the memory available
 # on the system and that the owner of the process is allowed to use this
@@ -103,3 +103,6 @@ discovery.zen.ping.unicast.hosts: [
 #
 # action.destructive_requires_name: true
 
+{% if ansible_architecture == 'ppc64le' %}
+bootstrap.system_call_filter: false
+{% endif %}

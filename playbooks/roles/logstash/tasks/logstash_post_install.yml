@@ -84,7 +84,7 @@
     - logstash-post-install
 
 - name: Enable Logstash Plugins
-  command: "/opt/logstash/bin/logstash-plugin install {{ item }}"
+  command: "/usr/share/logstash/bin/logstash-plugin install {{ item }}"
   with_items: "{{ logstash_plugins }}"
   register: plugin_install
   until: plugin_install|success

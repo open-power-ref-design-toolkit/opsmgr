@@ -41,7 +41,7 @@ MAX_LOCKED_MEMORY={{ elasticsearch_max_locked_memory_mb }}
 #LOG_DIR=/var/log/elasticsearch
 
 # Elasticsearch data directory
-#DATA_DIR=/var/lib/elasticsearch
+DATA_DIR=/var/lib/elasticsearch/openstack
 
 # Elasticsearch work directory
 #WORK_DIR=/tmp/elasticsearch

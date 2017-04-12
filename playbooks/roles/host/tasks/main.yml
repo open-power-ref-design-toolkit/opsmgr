@@ -210,3 +210,13 @@
           dest={{ opsmgr_dat }}/lxc-ext/lxc-{{ inventory_hostname }}-{{ item.name }}
       with_items: "{{ import_containers }}"
 
+    - name: Create a 30-elasticsearch.conf in /etc/sysctl.d/ directory
+      copy:
+        src: 30-elasticsearch.conf
+        dest: "/etc/sysctl.d/30-elasticsearch.conf"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Run sysctl --system
+      shell: sysctl --system
