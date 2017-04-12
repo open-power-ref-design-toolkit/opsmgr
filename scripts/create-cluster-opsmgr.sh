@@ -33,6 +33,7 @@ source $SCRIPTS_DIR/process-args.sh
 
 pushd $PCLD_DIR/recipes/privatecloud-newton >/dev/null 2>&1
 echo "Invoking run.sh in privatecloud-newton"
+mkdir profile
 ./run.sh
 rc=$?
 if [ $rc != 0 ]; then

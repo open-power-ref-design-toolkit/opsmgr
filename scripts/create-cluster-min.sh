@@ -73,6 +73,7 @@ popd >/dev/null 2>&1
 #popd >/dev/null 2>&1
 pushd $PCLD_DIR/recipes/osa-newton >/dev/null 2>&1
 echo "Invoking run.sh in osa-newton"
+mkdir profile
 ./run.sh
 rc=$?
 if [ $rc != 0 ]; then
