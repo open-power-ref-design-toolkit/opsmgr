@@ -115,12 +115,34 @@ if [ ! -d /etc/ansible ]; then
         echo "scripts/bootstrap-aio.sh failed, rc=$rc"
         echo "Manual retry procedure:"
         echo "1) fix root cause of error if known"
-        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"        
+        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"
         echo "3) re-run command"
         exit 1
     fi
 
     popd >/dev/null 2>&1
     INSTALL=True
-fi
 
+    # Apply patches to /etc/ansible/roles after it is downloaded
+    if [ -d $OPSMGR_DIR/diffs ]; then
+
+        echo "Applying patches to /etc/ansible/roles"
+        pushd / >/dev/null 2>&1
+
+        for f in ${OPSMGR_DIR}/diffs/etc-ansible-roles-*.patch; do
+            patch -N -p1 < $f
+            rc=$?
+            if [ $rc != 0 ]; then
+                echo "Applying patches to /etc/ansible/roles, rc=$rc"
+                echo "Patch $f could not be applied"
+                echo "Manual retry procedure:"
+                echo "1) fix patch $f"
+                echo "2) rm -rf /etc/ansible/roles"
+                echo "3) re-run command"
+                exit 1
+            fi
+        done
+
+        popd >/dev/null 2>&1
+    fi
+fi

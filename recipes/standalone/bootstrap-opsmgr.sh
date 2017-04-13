@@ -40,13 +40,6 @@ if [ -d ${OPSMGR_DIR}/recipes ]; then
         echo "Failed running opsmgr recipes/setup.yml, rc=$rc"
         exit 2
     fi
-    ansible-playbook updatessh.yml
-    rc=$?
-    if [ $rc != 0 ]; then
-        echo "Failed to update /etc/ssh/sshd_config and/or /etc/ssh/ssh_config, rc=$rc"
-        exit 3
-    fi
-    popd >/dev/null 2>&1
     INSTALL=True
 fi
 
