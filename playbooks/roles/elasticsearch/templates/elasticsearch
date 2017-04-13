@@ -12,7 +12,7 @@
 {%     set elasticsearch_heap_size_mb = 32768 %}
 {%   endif %}
 {% endif %}
-ES_HEAP_SIZE={{ elasticsearch_heap_size_mb|int }}m
+#ES_HEAP_SIZE={{ elasticsearch_heap_size_mb|int }}m
 
 # Heap new generation
 #ES_HEAP_NEWSIZE=
@@ -26,7 +26,7 @@ ES_HEAP_SIZE={{ elasticsearch_heap_size_mb|int }}m
 # Maximum locked memory size. Set to "unlimited" if you use the
 # bootstrap.mlockall option in elasticsearch.yml. You must also set
 # ES_HEAP_SIZE.
-{% if elasticsearch_bootstrap_mlockall == true %}
+{% if elasticsearch_bootstrap_memory_lock == true %}
 {%   set elasticsearch_max_locked_memory_mb = "unlimited" %}
 {% endif %}
 {% if elasticsearch_max_locked_memory_mb is not defined %}
