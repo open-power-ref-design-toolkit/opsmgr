@@ -27,13 +27,6 @@ nagios_command_files: []
 
 nagios_common_checks: ''
 
-list_interfaces_command: "netstat -i | cut -f1 -d' '"
-
-possible_interfaces_to_monitor:
-    - br-mgmt
-    - br-storage
-    - br-vlan
-    - br-vxlan
-    - br-replication
+list_interfaces_command: "find /sys/class/net -type l -not -lname '*virtual*' -printf '%f\n'"
 
 base_server_cmd_file: /etc/nagios/commands/server.cmd
