@@ -64,7 +64,7 @@
       when: recipe == 'minimal'
 
     # Logic to monitor only the interfaces that exist on the system
-    - name: Find the interfaces on the system
+    - name: Find the phyiscal interfaces on the system
       shell: "{{ list_interfaces_command }} "
       register: interface_list
 
@@ -73,5 +73,5 @@
           dest: "{{ base_server_cmd_file }}"
           line: "command[server-{{ item }}]  = sudo /etc/nagios/plugins/check-netif.rb -c 500 -w 350 --interfaces {{ item }}"
           insertafter: EOF
-      with_items: "{{ interface_list.stdout_lines | intersect(possible_interfaces_to_monitor) }}"
+      with_items: "{{ interface_list.stdout_lines }}"
       notify: restart nrpe service
