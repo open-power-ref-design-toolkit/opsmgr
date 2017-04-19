@@ -24,4 +24,6 @@ logstash_pre_packages:
 
 #for ppc64le and x86 use the deb package to install
 logstash_packages:
-  - { url: "https://artifacts.elastic.co/downloads/logstash", file: "logstash-5.3.0.deb" }
+  - { url: "https://artifacts.elastic.co/downloads/logstash",
+      file: "logstash-5.3.0.deb",
+      checksum: "sha1:12f1a8c3f6de535d8a9b723e6bc396523e706f15" }

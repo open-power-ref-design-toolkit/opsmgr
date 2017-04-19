@@ -23,4 +23,6 @@ elasticsearch_pre_packages:
 
 #for ppc64le and x86 use the deb package to install
 elasticsearch_packages:
-  - { url: "https://artifacts.elastic.co/downloads/elasticsearch", file: "elasticsearch-5.3.0.deb" } 
+  - { url: "https://artifacts.elastic.co/downloads/elasticsearch",
+      file: "elasticsearch-5.3.0.deb",
+      checksum: "sha1:dab27ca0f49463a0f2e194780186653d22327660" }

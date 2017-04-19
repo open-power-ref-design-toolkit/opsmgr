@@ -22,4 +22,5 @@ filebeat_version: 5.2.2
 rpm_package_amd64: filebeat-{{ filebeat_version }}-x86_64.rpm
 rpm_package_ppc64el: filebeat-{{ filebeat_version }}-1.ppc64le.rpm
 rpm_download_path: https://artifacts.elastic.co/downloads/beats/filebeat
+rpm_download_checksum: "sha1:f37f0d2246b682c8720420fef70ae130d0acb037"
 rpm_working_dir: "{{ build_dir }}/BUILDROOT"

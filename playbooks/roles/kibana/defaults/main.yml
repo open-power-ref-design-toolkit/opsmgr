@@ -59,5 +59,9 @@ kibana_default_dashboard: LogManagementOpenStackAPI
 kibana_temp_directory: /tmp/kibana_dashboards
 kibana_password: kibana
 
-beats_dashboards_zip: https://artifacts.elastic.co/downloads/beats/beats-dashboards/beats-dashboards-5.2.2.zip
+beats_dashboards:
+  - { url: "https://artifacts.elastic.co/downloads/beats/beats-dashboards",
+      file: "beats-dashboards-5.2.2.zip",
+      checksum: "sha1:a165e887241edb0fe83759f4b840f7f9774c4913" }
+
 metricbeat_index_file: beats-dashboards-5.2.2/metricbeat/index-pattern/metricbeat.json

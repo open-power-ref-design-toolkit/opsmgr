@@ -21,4 +21,6 @@ elasticsearch_pre_packages:
   - crontabs
 
 elasticsearch_packages:
-  - { url: "https://artifacts.elastic.co/downloads/elasticsearch", file: "elasticsearch-5.3.0.rpm" }
+  - { url: "https://artifacts.elastic.co/downloads/elasticsearch",
+      file: "elasticsearch-5.3.0.rpm",
+      checksum: "sha1:82aab520da1f9c82d51183f8ab85124bc2487a25" }

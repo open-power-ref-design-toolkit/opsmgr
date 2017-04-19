@@ -15,8 +15,10 @@
 
 nagios_download_site: https://assets.nagios.com/downloads/nagioscore/releases
 nagios_download_file: nagios-4.3.1.tar.gz
+nagios_download_checksum: "sha1:10d80a0588d729bd65bde108ebc5aa82a471a5e7"
 plugin_download_site: http://nagios-plugins.org/download
 plugin_download_file: nagios-plugins-2.2.0.tar.gz
+plugin_download_checksum: "sha1:a62703708d550798cfcc2217e05e6ef89c470597"
 temp_dir: /tmp
 
 nagios_group: nagios

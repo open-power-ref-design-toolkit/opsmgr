@@ -14,3 +14,4 @@
 # limitations under the License.
 
 package_file: filebeat-{{ filebeat_version }}-amd64.deb
+download_checksum: "sha1:710d95c50aad87b675d756791ebd0ff3cc9fc876"

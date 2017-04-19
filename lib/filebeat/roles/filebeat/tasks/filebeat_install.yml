@@ -32,7 +32,12 @@
   get_url:
     url: "{{ download_url }}/{{ package_file }}"
     dest: "{{ package_path }}"
+    checksum: "{{ download_checksum }}"
   when: ansible_architecture == 'x86_64'
+  register: filebeat_download
+  until: filebeat_download | success
+  retries: 5
+  delay: 2
   tags:
     - "filebeat-install"
 

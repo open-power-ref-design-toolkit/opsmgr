@@ -20,4 +20,6 @@ logstash_pre_packages:
   - java-1.8.0-openjdk-headless
 
 logstash_packages:
-  - { url: "https://artifacts.elastic.co/downloads/logstash", file: "logstash-5.3.0.rpm" }
+  - { url: "https://artifacts.elastic.co/downloads/logstash",
+      file: "logstash-5.3.0.rpm",
+      checksum: "5d1e69ebcba8c674b336ebf88478cffd177a71bc" }

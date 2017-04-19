@@ -17,6 +17,11 @@
   get_url:
     url: "{{ deb_download_path }}/{{ deb_package_amd64 }}"
     dest: "{{ build_dir }}"
+    checksum: "{{ deb_download_checksum }}"
+  register: deb_filebeat_download
+  until: deb_filebeat_download | success
+  retries: 5
+  delay: 2
 
 - name: Make deb_working_dir
   file:

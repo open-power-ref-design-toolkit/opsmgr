@@ -12,10 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-kibana_download: "https://artifacts.elastic.co/downloads/kibana/kibana-5.3.0-linux-x86_64.tar.gz"
-nodejs_download: "http://nodejs.org/dist/v6.9.5/node-v6.9.5-linux-ppc64le.tar.gz"
-
 temp_install_directory: /tmp/kibana_install
 
 kibana_directory: kibana-5.3.0-linux-x86_64
 nodejs_directory: node-v6.9.5-linux-ppc64le
+
+kibana_packages:
+  - { url: "https://artifacts.elastic.co/downloads/kibana",
+      file: "kibana-5.3.0-linux-x86_64.tar.gz",
+      directory: "{{ kibana_directory }}",
+      checksum: "sha1:4e9daf275f8ef749fba931c1f5c35f85662efd53" }
+  - { url: "http://nodejs.org/dist/v6.9.5",
+      file: "node-v6.9.5-linux-ppc64le.tar.gz",
+      directory: "{{ nodejs_directory }}",
+      checksum: "sha1:f6beaac743e57df39eb022330dca4e331735ab61" }
+
+

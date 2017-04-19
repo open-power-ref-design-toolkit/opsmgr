@@ -22,4 +22,5 @@ metricbeat_version: 5.2.2
 rpm_package_amd64: metricbeat-{{ metricbeat_version }}-x86_64.rpm
 rpm_package_ppc64el: metricbeat-{{ metricbeat_version }}-1.ppc64le.rpm
 rpm_download_path: https://artifacts.elastic.co/downloads/beats/metricbeat
+rpm_download_checksum: "sha1:f480291b4a16422528fa81ad3387e210fda93de3"
 rpm_working_dir: "{{ build_dir }}/BUILDROOT"
