@@ -22,6 +22,8 @@
 # Get the full path to the scripts directory
 SCRIPTS_DIR=$(dirname $0)
 SCRIPTS_DIR=$(readlink -ne $SCRIPTS_DIR)
+$SCRIPTS_DIR/setup-env.sh
+
 ARGS=$@
 source $SCRIPTS_DIR/args.sh
 
@@ -99,4 +101,6 @@ if [ $rc != 0 ]; then
         exit 11
 fi
 popd >/dev/null 2>&1
+
+$SCRIPTS_DIR/unset-env.sh
 

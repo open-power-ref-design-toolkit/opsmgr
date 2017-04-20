@@ -16,6 +16,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+CURRENT_DIR=$(dirname $0)
+SCRIPTS_DIR=$(readlink -ne $CURRENT_DIR)
+$SCRIPTS_DIR/setup-env.sh
+
 # Checkout the openstack-ansible repository
 if [ -d /opt/openstack-ansible ]; then
 
@@ -56,4 +60,10 @@ if [ -d /opt/openstack-ansible ]; then
     rm -rf /etc/ansible
     rm -rf /etc/openstack_deploy
     rm -rf /opt/openstack-ansible
+
+    lxc-stop -qn ubuntu-xenial-ppc64el
+    lxc-destroy -fqn ubuntu-xenial-ppc64el
 fi
+
+$SCRIPTS_DIR/unset-env.sh
+
