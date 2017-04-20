@@ -28,6 +28,8 @@
           hostaddr:                     "{{ item.hostaddr }}"
           share:                        "/{{ item.mount }}"
           lxc:                          "{{ item }}"
+          ansible_user:                 root
+          ansible_ssh_private_key_file: "{{ opsmgr_key }}/current/opsmgr.key"
       with_items: "{{ opsmgr_containers }}"
       when: opsmgr_containers is defined
 
@@ -40,6 +42,8 @@
           hostaddr:                     "{{ item.hostaddr }}"
           share:                        "/{{ item.mount }}"
           lxc:                          "{{ item }}"
+          ansible_user:                 root
+          ansible_ssh_private_key_file: "{{ opsmgr_key }}/current/opsmgr.key"
       with_items: "{{ opsmgr_containers }}"
       when: opsmgr_containers is defined
 
@@ -67,7 +71,7 @@
           hostaddr:                     "{{ item.hostaddr }}"
           lxc:                          "{{ item }}"
           imported:                     false
-#          ansible_ssh_user:             root
+          ansible_user:                 root
           ansible_ssh_private_key_file: "{{ opsmgr_key }}/current/opsmgr.key"
       with_items: "{{ import_containers }}"
       when: import_containers is defined
@@ -81,7 +85,7 @@
           hostaddr:                     "{{ item.hostaddr }}"
           lxc:                          "{{ item }}"
           imported:                     true
-#          ansible_ssh_user:             root
+          ansible_user:                 root
           ansible_ssh_private_key_file: "{{ opsmgr_key }}/current/opsmgr.key"
       with_items: "{{ import_containers }}"
       when: import_containers is defined
@@ -114,3 +118,4 @@
           hostaddr:                     "{{ ansible_ssh_host }}"
           share:                        "{{ nagios_config_dir }}"
       when: recipe == "minimal"
+

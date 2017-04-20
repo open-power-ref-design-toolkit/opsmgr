@@ -16,18 +16,17 @@
     # sets up ssh keys and configuration
     
     - name: check if ssh keys should be imported
-      become: yes
       stat:
           path: "{{ item }}"
       with_items:
         - "{{ provisioning_key_prv }}"
         - "{{ provisioning_key_pub }}"
       register: provisioning_keys
-    
+
     - name: test if provisioning keys exist
       set_fact:
         use_existing_keys: "{{ provisioning_keys.results[0].stat.exists and provisioning_keys.results[1].stat.exists }}"
-        
+
     - name: ensure keys/current directory exists
       file:
         path: "{{ opsmgr_lib }}/keys/current"
@@ -35,7 +34,6 @@
         mode: 0700
     
     - name: copy existing keys
-      become: yes
       copy:
         src: "{{ item.0 }}"
         dest: "{{ opsmgr_lib }}/keys/current/{{ item.1 }}"
@@ -58,19 +56,6 @@
         - opsmgr.pub
       when: use_existing_keys | bool == false
     
-    - name: ensure ~/.ssh exists
-      file: path=~/.ssh state=directory
-
-    - name: copy provisioning keys to ~/.ssh
-      copy:
-        src: "{{ opsmgr_lib }}/keys/current/{{ item.0 }}"
-        dest: "~/.ssh/{{ item.1 }}"
-        mode: 0600
-        backup: yes
-      with_together:
-        - [ 'opsmgr.key', 'opsmgr.pub' ]
-        - [ 'id_rsa',     'id_rsa.pub' ]
-    
     # configure ssh proxy information
 
     - name: remove ~/.ssh/config.d directory if it exists
@@ -86,7 +71,7 @@
 
     - name: create ssh config entries for hosts from extravars
       template:
-          src: ssh.hst.j2
+          src: ssh.hst.ext.j2
           dest: "~/.ssh/config.d/ssh.host-{{ item }}"
           mode: 0644
       with_items: "{{ ssh_hosts }}"
@@ -94,10 +79,41 @@
 
     - name: create ssh config entries for containers from extravars
       template:
-          src: ssh.lxc.j2
+          src: ssh.lxc.ext.j2
           dest: "~/.ssh/config.d/ssh.lxc-{{ item.hostname }}"
           mode: 0644
       with_items: "{{ ssh_containers }}"
       when: ssh_containers is defined
 
+    - name: hosts to be proxied for ssh
+      debug: msg=hostvars[item].inventory_hostname
+      with_items: "{{ groups['all'] }}"
+      when: hostvars[item].lxc is not defined
+
+    - name: create ssh config entry for hosts from inventory
+      template:
+          src: ssh.hst.inv.j2
+          dest: "~/.ssh/config.d/ssh.hst-{{ hostvars[item].inventory_hostname }}"
+          mode: 0644
+      with_items: "{{ groups['all'] }}"
+      when: hostvars[item].lxc is not defined
+
+    - name: containers to be proxied for ssh
+      debug: msg=hostvars[item].inventory_hostname
+      with_items: "{{ groups['all'] }}"
+      when: hostvars[item].lxc is defined
+
+    - name: create ssh config entry for containers from inventory
+      template:
+          src: ssh.lxc.inv.j2
+          dest: "~/.ssh/config.d/ssh.lxc-{{ hostvars[item].inventory_hostname }}"
+          mode: 0644
+      with_items: "{{ groups['all'] }}"
+      when: hostvars[item].lxc is defined
+
+    - name: assemble ~/.ssh/config file
+      assemble:
+          src: ~/.ssh/config.d
+          dest: ~/.ssh/config
+          backup: yes
 

@@ -1,0 +1,32 @@
+# {{ ansible_managed }}
+#
+Host {{ hostvars[item].lxc.hostname }}
+  Hostname {{ hostvars[item].lxc.address }}
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+{% if hostvars[item].ansible_user is defined %}
+  ProxyCommand ssh -q {{ hostvars[item].ansible_user }}@{{ hostvars[item].lxc.host }} nc -q0 %h %p
+{% else %}
+  ProxyCommand ssh -q %r@{{ hostvars[item].lxc.host }} nc -q0 %h %p
+{% endif %}
+{% if hostvars[item].ansible_ssh_private_key_file is defined %}
+  IdentityFile {{ hostvars[item].ansible_ssh_private_key_file }}
+{% else %}
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
+{% endif %}
+
+Host {{ hostvars[item].lxc.address }}
+  Hostname {{ hostvars[item].lxc.address }}
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+{% if hostvars[item].ansible_user is defined %}
+  ProxyCommand ssh -q {{ hostvars[item].ansible_user }}@{{ hostvars[item].lxc.host }} nc -q0 %h %p
+{% else %}
+  ProxyCommand ssh -q %r@{{ hostvars[item].lxc.host }} nc -q0 %h %p
+{% endif %}
+{% if hostvars[item].ansible_ssh_private_key_file is defined %}
+  IdentityFile {{ hostvars[item].ansible_ssh_private_key_file }}
+{% else %}
+  IdentityFile {{ opsmgr_lib }}/keys/current/opsmgr.key
+{% endif %}
+

@@ -50,12 +50,3 @@
   roles:
     - { role: provisioned, is_container: true }
 
-- hosts: localhost
-  connection: local
-  tasks:
-    - name: assemble ~/.ssh/config file
-      assemble:
-          src: ~/.ssh/config.d
-          dest: ~/.ssh/config
-          backup: yes
-

@@ -72,6 +72,9 @@ allowed_hosts={{ hostvars[host].address }}
 allowed_hosts={{ hostvars[host].hostaddr }}
 {% endfor %}
 {% endif %}
+{% if routing_address is defined %}
+allowed_hosts={{ routing_address }}
+{% endif %}
 
 # COMMAND ARGUMENT PROCESSING
 # This option determines whether or not the NRPE daemon will allow clients

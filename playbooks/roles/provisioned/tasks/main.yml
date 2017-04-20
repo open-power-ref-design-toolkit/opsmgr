@@ -75,32 +75,4 @@
         state: absent
       when: sudoers_remove
 
-    # configure ssh proxy information
-
-    - name: ensures ~/.ssh/config.d directory exists
-      become: no
-      file:
-          path: ~/.ssh/config.d/
-          mode: 0700
-          state: directory
-      delegate_to: localhost
-
-    - name: create ssh config entry for host
-      become: no
-      template:
-          src: ssh.hst.j2
-          dest: "~/.ssh/config.d/ssh.hst-{{ inventory_hostname }}"
-          mode: 0644
-      when: is_container == false
-      delegate_to: localhost
-
-    - name: create ssh config entry for container
-      become: no
-      template:
-          src: ssh.lxc.j2
-          dest: "~/.ssh/config.d/ssh.lxc-{{ inventory_hostname }}"
-          mode: 0644
-      when: is_container == true
-      delegate_to: localhost
-
 

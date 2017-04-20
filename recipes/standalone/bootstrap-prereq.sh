@@ -19,6 +19,8 @@
 # Get the full path to the scripts directory
 SCRIPTS_DIR=$(dirname $0)
 SCRIPTS_DIR=$(readlink -ne $SCRIPTS_DIR)
+$SCRIPTS_DIR/setup-env.sh
+
 ARGS=$@
 source $SCRIPTS_DIR/args.sh
 
@@ -41,6 +43,12 @@ if [ "$1" == "--help" ]; then
     echo "export ADMIN_PASSWORD=                             Not applicable unless set"
     exit 1
 fi
+
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must run as root."
+    exit 1
+fi
+ulimit -n 100000
 
 # Checkout the openstack-ansible repository
 INSTALL=False
@@ -146,3 +154,6 @@ if [ ! -d /etc/ansible ]; then
         popd >/dev/null 2>&1
     fi
 fi
+
+$SCRIPTS_DIR/unset-env.sh
+
