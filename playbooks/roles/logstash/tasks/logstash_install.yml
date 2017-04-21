@@ -17,7 +17,12 @@
   get_url:
     url: "{{ item.url }}/{{ item.file }}"
     dest: "/tmp/{{ item.file }}"
+    checksum: "{{ item.checksum }}"
   with_items: "{{ logstash_packages }}"
+  register: logstash_download
+  until: logstash_download | success
+  retries: 5
+  delay: 2
   tags:
     - logstash-package
     - logstash-install

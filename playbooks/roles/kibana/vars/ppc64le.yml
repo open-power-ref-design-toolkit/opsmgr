@@ -13,12 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-kibana_download: "https://download.elastic.co/kibana/kibana/kibana-4.6.2-linux-x86_64.tar.gz"
-nodejs_download: "http://nodejs.org/dist/v4.6.2/node-v4.6.2-linux-ppc64le.tar.gz"
-
 temp_install_directory: /tmp/kibana_install
 
 kibana_directory: kibana-4.6.2-linux-x86_64
 nodejs_directory: node-v4.6.2-linux-ppc64le
+
+kibana_packages:
+  - { url: "https://download.elastic.co/kibana/kibana",
+      file: "kibana-4.6.2-linux-x86_64.tar.gz",
+      directory: "{{ kibana_directory }}",
+      checksum: "sha1:b77b58b6a2b25152e1f208ee959261ee6868d57b" }
+  - { url: "http://nodejs.org/dist/v4.6.2",
+      file: "node-v4.6.2-linux-ppc64le.tar.gz",
+      directory: "{{ nodejs_directory }}",
+      checksum: "sha1:3e829360f664a427285c543b6c2ea2ad4688e2aa" }
 
 

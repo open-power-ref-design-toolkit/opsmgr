@@ -20,6 +20,7 @@ build_prereq_packages:
 deb_package_amd64: metricbeat-5.2.2-amd64.deb
 deb_package_ppc64el: metricbeat-5.2.2-ppc64el.deb
 deb_download_path: https://artifacts.elastic.co/downloads/beats/metricbeat
+deb_download_checksum: "sha1:74baeb7e643a576e0769cd67375ce3308919c9bc"
 deb_working_dir: "{{ build_dir }}/debworkingdir"
 deb_binary_path: "{{ deb_working_dir }}/usr/share/metricbeat/bin"
 deb_control_file: "{{ deb_working_dir }}/DEBIAN/control"

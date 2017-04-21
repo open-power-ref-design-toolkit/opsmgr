@@ -47,23 +47,24 @@
     path: "{{ temp_install_directory }}"
     state: directory
 
+- name: Download kibana & nodejs
+  get_url:
+    url: "{{ item.url }}/{{ item.file }}"
+    dest: "/tmp/{{ item.file }}"
+    checksum: "{{ item.checksum }}"
+  with_items: "{{ kibana_packages }}"
+  register: kibana_download
+  until: kibana_download | success
+  retries: 5
+  delay: 2
+
 - name: download and extract kibana
   unarchive:
-    src: "{{ kibana_download }}"
+    src: "/tmp/{{ item.file }}"
     dest: "{{ temp_install_directory }}"
-    creates: "{{ temp_install_directory }}/{{ kibana_directory}}"
+    creates: "{{ temp_install_directory }}/{{ item.directory }}"
     copy: no
-  retries: 5
-  delay: 10
-
-- name: download and extract nodejs
-  unarchive:
-    src: "{{ nodejs_download }}"
-    dest: "{{ temp_install_directory }}"
-    creates: "{{ temp_install_directory }}/{{ nodejs_directory}}"
-    copy: no
-  retries: 5
-  delay: 10
+  with_items: "{{ kibana_packages }}"
 
 - name: make sure /opt exists
   file:

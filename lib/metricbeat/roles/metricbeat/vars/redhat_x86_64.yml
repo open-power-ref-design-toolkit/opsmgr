@@ -14,3 +14,4 @@
 # limitations under the License.
 
 package_file: metricbeat-{{ metricbeat_version }}-x86_64.rpm
+download_checksum: sha1:f480291b4a16422528fa81ad3387e210fda93de3

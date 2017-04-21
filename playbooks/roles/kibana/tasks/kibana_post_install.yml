@@ -123,11 +123,24 @@
     - kibana-post-install
 
 - name: Download Metricbeat dashboard zip
+  get_url:
+    url: "{{ item.url }}/{{ item.file }}"
+    dest: "/tmp/{{ item.file }}"
+    checksum: "{{ item.checksum }}"
+  with_items: "{{ beats_dashboards }}"
+  register: beats_dashboard_download
+  until: beats_dashboard_download | success
+  retries: 5
+  delay: 2
+  tags:
+    - kibana-post-install
+
+- name: Extract the dashboard zip
   unarchive:
-    src: "{{ beats_dashboards_zip }}"
+    src: "/tmp/{{ item.file }}"
     dest: "{{ kibana_temp_directory }}"
     copy: no
-    remote_src: yes
+  with_items: "{{ beats_dashboards }}"
   tags:
     - kibana-post-install
 

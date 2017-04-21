@@ -20,4 +20,6 @@ logstash_pre_packages:
   - java-1.8.0-openjdk-headless
 
 logstash_packages:
-  - { url: "https://download.elastic.co/logstash/logstash/packages/centos", file: "logstash-2.4.1.noarch.rpm" }
+  - { url: "https://download.elastic.co/logstash/logstash/packages/centos",
+      file: "logstash-2.4.1.noarch.rpm",
+      checksum: "sha1:68c5e78c3d941f06f77d638c0756b6aea715bec5" }

@@ -75,6 +75,9 @@
       get_url:
           url: "{{ nagios_download_site }}/{{ nagios_download_file }}"
           dest: "{{ temp_dir }}"
+          checksum: "{{ nagios_download_checksum }}"
+      register: nagios_core_download
+      until: nagios_core_download | success
       retries: 5
       delay: 2
 
@@ -161,6 +164,9 @@
       get_url:
           url: "{{ plugin_download_site }}/{{ plugin_download_file }}"
           dest: "{{ temp_dir }}"
+          checksum: "{{ plugin_download_checksum }}"
+      register: plugin_download
+      until: plugin_download | success
       retries: 5
       delay: 2
 

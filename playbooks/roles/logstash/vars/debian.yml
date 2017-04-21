@@ -24,4 +24,6 @@ logstash_pre_packages:
 
 #for ppc64le and x86 use the deb package to install
 logstash_packages:
-  - { url: "https://download.elastic.co/logstash/logstash/packages/debian", file: "logstash-2.4.1_all.deb" }
+  - { url: "https://download.elastic.co/logstash/logstash/packages/debian",
+      file: "logstash-2.4.1_all.deb",
+      checksum: "sha1:7ba3b174a3ef48a7d0945d9b5c7f12c5005abb47" }

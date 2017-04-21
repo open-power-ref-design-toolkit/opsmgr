@@ -17,7 +17,12 @@
   get_url:
     url: "{{ item.url }}/{{ item.file }}"
     dest: "/tmp/{{ item.file }}"
+    checksum: "{{ item.checksum }}"
   with_items: "{{ elasticsearch_packages }}"
+  register: es_download
+  until: es_download | success
+  retries: 5
+  delay: 2
   tags:
     - elasticsearch-package
     - elasticsearch-install
