@@ -1,0 +1,15 @@
+ {
+      "title": "Nagios Dashboard",
+      "hits": 0,
+      "description": "",
+      "panelsJSON": "[{\"col\":6,\"id\":\"NAGIOS-SERVICE-STATES-BY-DAY\",\"panelIndex\":13,\"row\":1,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"NAGIOS-SERVICE-ALERTS-BY-DAY\",\"panelIndex\":14,\"row\":1,\"size_x\":5,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"columns\":[\"nagios_hostname\",\"nagios_service\",\"nagios_message\"],\"id\":\"NAGIOS-SERVICE-ALERTS\",\"panelIndex\":15,\"row\":4,\"size_x\":9,\"size_y\":3,\"sort\":[\"@timestamp\",\"desc\"],\"type\":\"search\"},{\"col\":1,\"columns\":[\"nagios_hostname\",\"nagios_host_state\",\"nagios_message\"],\"id\":\"NAGIOS-HOST-ALERTS\",\"panelIndex\":16,\"row\":7,\"size_x\":9,\"size_y\":3,\"sort\":[\"@timestamp\",\"desc\"],\"type\":\"search\"},{\"id\":\"NAGIOS-SERVICE-FLAPPING-ALERTS\",\"type\":\"search\",\"panelIndex\":17,\"size_x\":9,\"size_y\":3,\"col\":1,\"row\":10,\"columns\":[\"nagios_hostname\",\"nagios_service\",\"nagios_flapping_state\",\"nagios_message\"],\"sort\":[\"@timestamp\",\"desc\"]}]",
+      "optionsJSON": "{\"darkTheme\":false}",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "timeRestore": true,
+      "timeTo": "now",
+      "timeFrom": "now-7d",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}]}"
+      }
+    }

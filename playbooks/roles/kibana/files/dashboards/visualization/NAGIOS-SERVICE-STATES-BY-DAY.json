@@ -1,0 +1,10 @@
+ {
+      "title": "NAGIOS SERVICE STATES BY DAY",
+      "visState": "{\"title\":\"NAGIOS SERVICE STATES BY DAY\",\"type\":\"area\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"smoothLines\":false,\"scale\":\"linear\",\"interpolate\":\"linear\",\"mode\":\"stacked\",\"times\":[],\"addTimeMarker\":true,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"cardinality\",\"schema\":\"metric\",\"params\":{\"field\":\"nagios_service.raw\",\"customLabel\":\"Unique count of Nagios Services\"}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"d\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{},\"customLabel\":\"Service States by Day\"}},{\"id\":\"3\",\"type\":\"filters\",\"schema\":\"group\",\"params\":{\"filters\":[{\"input\":{\"query\":{\"query_string\":{\"query\":\"nagios_type: \\\"CURRENT SERVICE STATE\\\" AND nagios_hardness: \\\"HARD\\\" AND nagios_state: \\\"CRITICAL\\\"\",\"analyze_wildcard\":true}}},\"label\":\"CRITICAL\"},{\"input\":{\"query\":{\"query_string\":{\"query\":\"nagios_type: \\\"CURRENT SERVICE STATE\\\" AND nagios_hardness: \\\"HARD\\\" AND nagios_state: \\\"WARNING\\\"\",\"analyze_wildcard\":true}}},\"label\":\"WARNING\"},{\"input\":{\"query\":{\"query_string\":{\"query\":\"nagios_type: \\\"CURRENT SERVICE STATE\\\" AND nagios_hardness: \\\"HARD\\\" AND nagios_state: \\\"OK\\\"\",\"analyze_wildcard\":true}}},\"label\":\"OK\"}]}}],\"listeners\":{}}",
+      "uiStateJSON": "{\"vis\":{\"colors\":{\"CRITICAL\":\"#E24D42\",\"WARNING\":\"#F2C96D\",\"OK\":\"#629E51\"}}}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}},\"filter\":[]}"
+      }
+    }

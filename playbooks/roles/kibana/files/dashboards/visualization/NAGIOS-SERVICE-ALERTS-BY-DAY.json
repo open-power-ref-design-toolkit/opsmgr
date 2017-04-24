@@ -1,0 +1,10 @@
+ {
+      "title": "NAGIOS SERVICE ALERTS BY DAY",
+      "visState": "{\"title\":\"NAGIOS SERVICE ALERTS BY DAY\",\"type\":\"area\",\"params\":{\"addLegend\":true,\"addTimeMarker\":true,\"addTooltip\":true,\"defaultYExtents\":false,\"interpolate\":\"linear\",\"mode\":\"stacked\",\"scale\":\"linear\",\"setYExtents\":false,\"shareYAxis\":true,\"smoothLines\":false,\"times\":[],\"yAxis\":{}},\"aggs\":[{\"id\":\"1\",\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"d\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{},\"customLabel\":\"Service Alerts by Day\"}},{\"id\":\"3\",\"type\":\"filters\",\"schema\":\"group\",\"params\":{\"filters\":[{\"input\":{\"query\":{\"query_string\":{\"query\":\"nagios_type: \\\"SERVICE ALERT\\\" AND nagios_hardness: \\\"HARD\\\" AND nagios_state: \\\"CRITICAL\\\"\",\"analyze_wildcard\":true}}},\"label\":\"CRITICAL\"},{\"input\":{\"query\":{\"query_string\":{\"query\":\"nagios_type: \\\"SERVICE ALERT\\\" AND nagios_hardness: \\\"HARD\\\" AND nagios_state: \\\"WARNING\\\"\",\"analyze_wildcard\":true}}},\"label\":\"WARNING\"},{\"input\":{\"query\":{\"query_string\":{\"query\":\"nagios_type: \\\"SERVICE ALERT\\\" AND nagios_hardness: \\\"HARD\\\" AND nagios_state: \\\"OK\\\"\",\"analyze_wildcard\":true}}},\"label\":\"OK\"}]}}],\"listeners\":{}}",
+      "uiStateJSON": "{\"vis\":{\"colors\":{\"CRITICAL\":\"#E24D42\",\"OK\":\"#629E51\",\"WARNING\":\"#F2C96D\"}}}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}},\"filter\":[]}"
+      }
+    }

@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "{{ opsmgr_dir }}/lib/util/ops.yml"
-- include: "{{ opsmgr_dir }}/lib/filebeat/site.yml target_hosts=hosts target_containers=opsmgr_containers files={{ opsmgr_dir }}/plugins/provisioning/opsmgr/filebeat"
-- include: "{{ opsmgr_dir }}/lib/nagios/site.yml target_hosts=targets target_containers=opsmgr_containers files={{ opsmgr_dir }}/plugins/provisioning/opsmgr/nagios"
-- include: resources.yml
+playbook_name: "opsmgr.yml"
 
-
+filebeat_logging_paths:
+  - paths:
+    - '/usr/local/nagios/var/*.log'
+    document_type: openstack
+    tags:
+    - nagios
+    - infrastructure
