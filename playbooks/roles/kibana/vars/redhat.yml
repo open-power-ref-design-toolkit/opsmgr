@@ -30,16 +30,18 @@ kibana_pip_packages:
   - httplib2
   - passlib
 
-kibana_gpgkey: "http://packages.elastic.co/GPG-KEY-elasticsearch"
+kibana_gpgkey: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
 
 # the yum repository to use for installing kibana from
 kibana_repos:
   - { name: "Kibana",
       description: "Kibana repository for 5.3 packages",
-      baseurl: "https://artifacts.elastic.co/downloads/kibana",
+      baseurl: "https://artifacts.elastic.co/packages/5.x/yum",
       gpgkey: "{{ kibana_gpgkey }}" }
 
 # the yum repository key url
 kibana_keys:
   - { url: "{{ kibana_gpgkey }}", state: "present" }
 
+config_dir: /etc/kibana
+install_dir: /usr/share/kibana

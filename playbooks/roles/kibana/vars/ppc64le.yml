@@ -27,4 +27,5 @@ kibana_packages:
       directory: "{{ nodejs_directory }}",
       checksum: "sha1:f6beaac743e57df39eb022330dca4e331735ab61" }
 
-
+config_dir: /opt/kibana/config
+install_dir: /opt/kibana

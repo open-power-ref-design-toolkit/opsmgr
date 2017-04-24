@@ -17,7 +17,7 @@
 - name: Deploy Kibana configuration files
   template:
     src: "{{ item }}"
-    dest: "/opt/kibana/config/{{ item }}"
+    dest: "{{ config_dir }}/{{ item }}"
     owner: "root"
     group: "root"
   with_items:
@@ -60,7 +60,7 @@
 - name: Guessing current kibana version
   shell: cat package.json | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["version"];'
   args:
-    chdir: "/opt/kibana/"
+    chdir: "{{ install_dir }}"
   register: kibana_version
   tags:
     - kibana-post-install
