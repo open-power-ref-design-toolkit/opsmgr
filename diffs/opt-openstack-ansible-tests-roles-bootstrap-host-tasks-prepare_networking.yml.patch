@@ -1,18 +1,16 @@
 diff -Naur a/opt/openstack-ansible/tests/roles/bootstrap-host/tasks/prepare_networking.yml b/opt/openstack-ansible/tests/roles/bootstrap-host/tasks/prepare_networking.yml
 --- a/opt/openstack-ansible/tests/roles/bootstrap-host/tasks/prepare_networking.yml     2017-04-25 14:31:18.319159976 +0000
-+++ b/opt/openstack-ansible/tests/roles/bootstrap-host/tasks/prepare_networking.yml     2017-04-25 14:44:20.011641719 +0000
-@@ -82,6 +82,10 @@
-     - br-storage
-     - br-vlan
-     - br-vxlan
-+  register: start_network_interfaces
-+  until: start_network_interfaces | success
-+  retries: 5
-+  delay: 2
-   tags:
++++ b/opt/openstack-ansible/tests/roles/bootstrap-host/tasks/prepare_networking.yml     2017-04-25 21:09:02.966110439 +0000
+@@ -75,7 +75,7 @@
      - networking-interfaces-start
 
-@@ -89,4 +93,4 @@
+ - name: Start the network interfaces
+-  command: "ifup {{ item }}"
++  command: "ifup --ignore-errors {{ item }}"
+   when: osa_interfaces | changed
+   with_items:
+     - br-mgmt
+@@ -89,4 +89,4 @@
    setup:
      filter: "ansible_br*"
    tags:

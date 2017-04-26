@@ -45,5 +45,7 @@ if [ $rc != 0 ]; then
 fi
 popd >/dev/null 2>&1
 
+rm -rf /etc/opsmgr/shared
+
 $SCRIPTS_DIR/unset-env.sh
 
