@@ -37,6 +37,8 @@
   until: install_deb|success
   retries: 5
   delay: 2
+  environment:
+    ES_SKIP_SET_KERNEL_PARAMETERS: "true"
   tags:
     - elasticsearch-package
     - elasticsearch-install
