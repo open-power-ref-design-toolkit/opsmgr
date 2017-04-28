@@ -1,4 +1,4 @@
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -97,6 +97,11 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
         if new_address != old_address:
             GangliaPlugin._change_config_files(old_address)
             GangliaPlugin._reload_gmetad()
+    
+    @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
+    def get_status():
+        return (None, None)
 
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])

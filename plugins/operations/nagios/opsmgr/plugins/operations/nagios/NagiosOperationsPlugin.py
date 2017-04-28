@@ -1,4 +1,4 @@
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ from opsmgr.inventory.interfaces.IOperationsPlugin import IOperationsPlugin
 from opsmgr.inventory import persistent_mgr, plugins
 from opsmgr.common import exceptions
 from opsmgr.common.utils import entry_exit
+from opsmgr.plugins.operations.nagios.NagiosStatusParsing import parse_host_data, parse_service_data
 
 class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
 
@@ -114,6 +115,52 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
     def change_device_post_save(device, old_device_info):
         NagiosPlugin._remove_config_files(old_device_info["hostname"])
         NagiosPlugin.add_device_post_save(device)
+
+    @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
+    def get_status():
+        red_stats = []
+        yellow_stats = []
+        STATUS_FILE = "/usr/local/nagios/var/status.dat"
+
+        # connect to nagios container
+        client = NagiosPlugin._connect()
+
+        # get status.dat file over the network b/c it will be running in a different container
+        lines = []
+        command = "cat " + STATUS_FILE
+        (_stdin, stdout, _stderr) = client.exec_command(command)
+        for line in stdout.read().decode().splitlines():
+            lines.append(line.strip())
+
+        # call stoplight routines to get status of nagios hosts and services
+        host_stats = parse_host_data(lines)
+        service_stats = parse_service_data(lines)
+
+        # parse host status for red/yellow status strings
+        for key in host_stats:
+            if host_stats[key].get('host_status') == "CRITICAL":
+                red_stats.append(host_stats[key].get('host_name') + ':' + host_stats[key].get('host_err') + "\n")
+            if host_stats[key].get('host_status') == "WARNING":
+                yellow_stats.append(host_stats[key].get('host_name') + ':' + host_stats[key].get('host_err') + "\n")
+            if host_stats[key].get('host_status') == "UNKNOWN":
+                yellow_stats.append(host_stats[key].get('host_name') + ':' + host_stats[key].get('host_err') + "\n")
+
+        # parse service status for red/yellow status strings; should return more than service_err
+        for key in service_stats:
+            if service_stats[key].get('service_status') == "CRITICAL":
+                red_stats.append(service_stats[key].get('host_name')+':'+service_stats[key].get('service_name')+':'+service_stats[key].get('service_err') + "\n")
+            if service_stats[key].get('service_status') == "WARNING":
+                yellow_stats.append(service_stats[key].get('host_name')+':'+service_stats[key].get('service_name')+':'+service_stats[key].get('service_err') + "\n")
+            if service_stats[key].get('service_status') == "UNKNOWN":
+                yellow_stats.append(service_stats[key].get('host_name')+':'+service_stats[key].get('service_name')+':'+service_stats[key].get('service_err') + "\n")
+
+        return (red_stats, yellow_stats)
+
+
+    ###########################################################################
+    #                      PRIVATE METHODS BELOW HERE                         #
+    ###########################################################################
 
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])

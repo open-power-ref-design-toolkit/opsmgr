@@ -1,4 +1,4 @@
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,4 +42,10 @@ class ELKPlugin(IOperationsPlugin):
             except configparser.Error:
                # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
                pass
-        return pluginApp 
+        return pluginApp
+
+    @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
+    def get_status():
+        return (None, None)
+ 

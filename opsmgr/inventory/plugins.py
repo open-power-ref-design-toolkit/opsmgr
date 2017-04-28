@@ -1,4 +1,4 @@
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,6 +53,23 @@ class PluginApplication():
             if plugin_app is not None:
                 plugin_apps.append(plugin_app)
         return plugin_apps
+
+    @staticmethod
+    @entry_exit(exclude_index=[], exclude_name=[])
+    def get_plugins_status():
+        """ Returns two list of Strings for critical and warning messages from
+            all plugins on the localhost.
+        """
+        critical_messages = []
+        warning_messages = []
+        plugins = PluginApplication._load_operations_plugins()
+        for _plugin_name, plugin_class in plugins.items():
+            (crit, warn) = plugin_class.get_status()
+            if crit is not None:
+                critical_messages.extend(crit)
+            if warn is not None:
+                warning_messages.extend(warn)
+        return (critical_messages, warning_messages)
 
     @staticmethod
     def _load_operations_plugins():

@@ -1,4 +1,4 @@
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,4 +20,9 @@ class IOperationsPlugin(object):
     @staticmethod
     @abstractmethod
     def get_application_url():
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_plugins_status():
         pass
