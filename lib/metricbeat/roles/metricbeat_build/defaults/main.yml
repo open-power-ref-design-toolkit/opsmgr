@@ -25,6 +25,7 @@ go_path: "{{ build_dir }}/go_path"
 
 beats_path: "{{ go_path}}/src/github.com/elastic/beats"
 beats_url: https://github.com/elastic/beats.git
+beats_tag: v5.2.2
 metricbeat_dir: "{{ beats_path }}/metricbeat"
 
 go_daemon_dir: "{{ build_dir }}/go_daemon"

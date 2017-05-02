@@ -69,5 +69,9 @@
   file:
     path: "{{ package_path }}"
     state: absent
+  register: remove_path
+  until: remove_path | success
+  retries: 5
+  delay: 2
   tags:
     - "filebeat-install"
