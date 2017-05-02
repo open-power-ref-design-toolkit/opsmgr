@@ -43,6 +43,7 @@
   git:
     repo: "{{ beats_url }}"
     dest: "{{ beats_path }}"
+    version: "{{ beats_tag }}"
 
 - name: Build filebeat
   make:
