@@ -61,5 +61,7 @@
 
 - name: Upgrade pip to the latest version
   command: pip install --upgrade pip
+  retries: 5
+  delay: 2
   tags:
     - elasticsearch-pre-install
