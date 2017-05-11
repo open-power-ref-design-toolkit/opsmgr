@@ -61,6 +61,8 @@
 
 - name: Upgrade pip to the latest version
   command: pip install --upgrade pip
+  register: pip_upgrade
+  until: pip_upgrade|success
   retries: 5
   delay: 2
   tags:
