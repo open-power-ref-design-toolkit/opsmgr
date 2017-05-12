@@ -22,7 +22,7 @@
 
     - name: register elasticsearch resource role in opsmgr
       shell: >
-          opsmgr add_role -l "{{ item }}" -r "logstash, elasticsearch, kibana"
+          opsmgr add_role -l "{{ item }}" -r "logstash, elasticsearch, kibana, nagios"
       with_items: "{{ groups['targets'] }}"
       ignore_errors: true
 

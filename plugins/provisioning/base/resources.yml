@@ -56,6 +56,12 @@
 - hosts: opsmgr_nagios
   become: yes
   tasks:
+    - name: comment out call to localhost.cfg in nagios.cfg
+      replace:
+           dest="/usr/local/nagios/etc/nagios.cfg"
+           regexp="cfg_file=/usr/local/nagios/etc/objects/localhost.cfg"
+           replace="#cfg_file=/usr/local/nagios/etc/objects/localhost.cfg"
+
     - name: restart nagios service
       service: name="nagios" state=restarted
 

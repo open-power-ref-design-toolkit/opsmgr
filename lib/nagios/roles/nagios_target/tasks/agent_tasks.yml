@@ -47,6 +47,15 @@
           - "{{ nagios_common_checks }}"
       notify: restart nrpe service
 
+    - name: insert fq_hostname into check_http checks for kibana and nagios
+      replace:
+          dest: "{{ nrpe_dir }}/commands/{{ item.file_name }}"
+          regexp: "HostName"
+          replace: "{{ ansible_ssh_host }}"
+      with_items:
+         - "{{ nagios_command_files }}"
+         - [ file_name: "server.cmd" ]
+
     - name: For the minimal install remove the call to check-lxc.sh
       replace:
           dest: "{{ nrpe_dir }}/commands/{{ item.file_name }}"

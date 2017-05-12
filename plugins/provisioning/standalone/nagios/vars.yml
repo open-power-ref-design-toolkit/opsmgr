@@ -24,9 +24,6 @@ nagios_command_files:
     - { file_name: "osa_lxc_utility.cmd" , container_name: "utility" }
 
 nagios_common_checks:
-    - command[osa_lxc_cpu]         = sudo /etc/nagios/plugins/check-lxc.sh container_name check-cpu.rb '-w 80 -c 90'
-    - command[osa_lxc_mem]         = sudo /etc/nagios/plugins/check-lxc.sh container_name check-mem.sh '-w 250 -c 100'
-    - command[osa_lxc_disk]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-disk.rb '-x iso9660'
     - command[osa_lxc_large_files] = sudo /etc/nagios/plugins/check-lxc.sh container_name check-for-large-files.sh '-d /var/log -s 1048576'
     - command[osa_lxc_slsocket]    = sudo /etc/nagios/plugins/check-lxc.sh container_name check-syslog-socket.rb ''
     - command[osa_lxc_eth0]        = sudo /etc/nagios/plugins/check-lxc.sh container_name check-netif.rb '-c 500 -w 350 --interfaces eth0'
