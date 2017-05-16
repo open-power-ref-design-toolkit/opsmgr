@@ -1,7 +1,17 @@
 diff -Naur a/opt/openstack-ansible/tests/bootstrap-aio.yml b/opt/openstack-ansible/tests/bootstrap-aio.yml
---- a/opt/openstack-ansible/tests/bootstrap-aio.yml     2017-04-11 13:28:49.840291648 +0000
-+++ b/opt/openstack-ansible/tests/bootstrap-aio.yml     2017-04-11 13:39:30.960521251 +0000
-@@ -50,15 +50,7 @@
+--- a/opt/openstack-ansible/tests/bootstrap-aio.yml	2017-05-15 18:09:16.124829540 -0400
++++ b/opt/openstack-ansible/tests/bootstrap-aio.yml	2017-05-15 18:08:34.168768423 -0400
+@@ -33,6 +33,9 @@
+         - name: neutron.yml.aio
+         - name: nova.yml.aio
+         - name: swift.yml.aio
++      ui_only:
++        - name: horizon.yml.aio
++        - name: keystone.yml.aio
+     sshd:
+       ListenAddress:
+         - 0.0.0.0
+@@ -50,15 +53,7 @@
        LogLevel: "INFO"
        LoginGraceTime: 120
        StrictModes: yes

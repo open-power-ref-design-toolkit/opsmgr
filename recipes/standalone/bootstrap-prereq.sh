@@ -112,18 +112,25 @@ if [ ! -d /etc/ansible ]; then
         echo "scripts/bootstrap-ansible.sh failed, rc=$rc"
         echo "Manual retry procedure:"
         echo "1) fix root cause of error if known"
-        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"        
+        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"
         echo "3) re-run command"
         exit 1
     fi
+
     # Bootstrap AIO
+    if [ ! -d /etc/openstack_deploy ]; then
+        mkdir /etc/openstack_deploy
+    fi
+    cp $SCRIPTS_DIR/etc/openstack_deploy/* /etc/openstack_deploy
+
+    export SCENARIO="ui_only"
     scripts/bootstrap-aio.sh
     rc=$?
     if [ $rc != 0 ]; then
         echo "scripts/bootstrap-aio.sh failed, rc=$rc"
         echo "Manual retry procedure:"
         echo "1) fix root cause of error if known"
-        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"
+        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime; rm -rf /etc/openstack_deploy"
         echo "3) re-run command"
         exit 1
     fi

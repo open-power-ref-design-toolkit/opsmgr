@@ -1,0 +1,4 @@
+---
+bootstrap_host_loopback_cinder: no
+bootstrap_host_loopback_swift: no
+bootstrap_host_loopback_nova: no
