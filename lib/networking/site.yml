@@ -19,10 +19,12 @@
 - hosts: "{{ target_hosts }}"
   become: yes
   vars_files:
-    - defaults.yml
+    - "{{ opsmgr_dir }}/playbooks/defaults.yml"
+    - "{{ opsmgr_dir }}/playbooks/deploy_environment.yml"
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
     - include_vars: "{{ opsmgr_prl }}/vars.yml"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   roles:
     - { role: bonded, when: proceed }
 
