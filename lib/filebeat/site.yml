@@ -5,11 +5,13 @@
 - hosts: "{{ target_hosts }}:{{ target_containers }}"
   become: yes
   vars_files:
-    - defaults.yml
+    - "{{ opsmgr_dir }}/playbooks/defaults.yml"
+    - "{{ opsmgr_dir }}/playbooks/deploy_environment.yml"
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
     - include_vars: "{{ opsmgr_prl }}/vars.yml"
     - include_vars: "{{ files }}/data.yml"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   roles:
     - { role: filebeat_build, when: proceed and ansible_architecture == 'ppc64le' }
     - { role: filebeat, when: proceed }

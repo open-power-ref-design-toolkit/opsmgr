@@ -31,6 +31,8 @@
   connection: local
   vars_files:
     - defaults.yml
+    - deploy_environment.yml
+  environment: "{{ deployment_environment_variables | default({}) }}"
   roles:
     - provisioner
 
@@ -49,4 +51,3 @@
     - defaults.yml
   roles:
     - { role: provisioned, is_container: true }
-

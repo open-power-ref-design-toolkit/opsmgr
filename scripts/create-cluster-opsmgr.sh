@@ -30,6 +30,7 @@ PCLD_DIR=`pwd`
 
 SCRIPTS_DIR=$(dirname $0)
 source $SCRIPTS_DIR/process-args.sh
+load_env_vars
 
 pushd $PCLD_DIR/recipes/privatecloud-newton >/dev/null 2>&1
 echo "Invoking run.sh in privatecloud-newton"

@@ -13,15 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# profile to use
-recipe: "{{ lookup('env', 'OPSMGR_RECIPE') | default('standard', true) }}"
-
-# important directories
-opsmgr_dir: "{{ playbook_dir }}/../.."
-opsmgr_prl: "{{ opsmgr_dir }}/recipes/{{ recipe }}/profile"
-opsmgr_lib: "{{ opsmgr_dir }}/lib"
-opsmgr_dat: "{{ opsmgr_lib }}/vars"
-opsmgr_key: "{{ opsmgr_lib }}/keys"
-
-
 install_nvidia: false
