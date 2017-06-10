@@ -1,0 +1,11 @@
+---
+# For the privatecloud install this entire file is overwritten
+# with the deployment-environment section of /var/oprc/inventory.yml
+
+#Sample deployment environment variables for using a proxy to download files
+#deployment_environment_variables:
+#    http_proxy: http://10.10.10.9:9000/
+#    https_proxy: http://10.10.10.9:9000/
+#    no_proxy: "localhost,127.0.0.1,{{ internal_lb_vip_address }},{{ external_lb_vip_address }}"
+
+deployment_environment_variables: {}

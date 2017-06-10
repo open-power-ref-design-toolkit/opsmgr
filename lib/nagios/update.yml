@@ -16,7 +16,9 @@
 - hosts: opsmgr_nagios
   become: true
   vars_files:
-    - defaults.yml
+    - "{{ opsmgr_dir }}/playbooks/defaults.yml"
+    - "{{ opsmgr_dir }}/playbooks/deploy_environment.yml"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   roles:
     - { role: nagios_server }
 
@@ -25,7 +27,8 @@
 - hosts: "{{ target_hosts }}"
   become: true
   vars_files:
-    - defaults.yml
+    - "{{ opsmgr_dir }}/playbooks/defaults.yml"
+    - "{{ opsmgr_dir }}/playbooks/deploy_environment.yml"
   pre_tasks:
     - set_fact: proceed={{ locking is not defined or locking != 'true' or lock.stdout == inventory_hostname }}
     - include_vars: "{{ opsmgr_prl }}/vars.yml"
@@ -33,6 +36,7 @@
       with_first_found:
       - files: "{{ files }}/vars.yml"
         skip: true
+  environment: "{{ deployment_environment_variables | default({}) }}"
   roles:
     - { role: nagios_target, when: proceed, is_monitored: false, has_agent: true }
 
