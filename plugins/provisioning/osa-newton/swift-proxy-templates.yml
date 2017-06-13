@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: targets
+- hosts: swift-proxy_hosts
   vars_files:
     - defaults.yml
     - "{{ opsmgr_prl }}/vars.yml"
@@ -29,6 +29,13 @@
           - check-swift-usage.sh
           - swift_commands.py
 
+- hosts: swift_proxy_container
+  vars_files:
+    - defaults.yml
+    - "{{ opsmgr_prl }}/vars.yml"
+  become: yes
+
+  tasks:
     # Required for swift-dispersion-report check
     - name: Run swift-dispersion-populate one time.
       shell: "{{ swift_bin }}/swift-dispersion-populate"

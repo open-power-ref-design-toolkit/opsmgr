@@ -11,8 +11,14 @@ RARGS=$@
 
 if [[ -d /var/lib/lxc/$NAME/delta0/tmp ]]; then
         cp /etc/nagios/plugins/$FILE /var/lib/lxc/$NAME/delta0/tmp
+        if [[ $NICK == "swift_proxy" ]]; then
+           cp /etc/nagios/plugins/swift_commands.py /var/lib/lxc/$NAME/delta0/tmp
+        fi
 elif [[ -d /var/lib/lxc/$NAME/rootfs/tmp ]]; then
         cp /etc/nagios/plugins/$FILE /var/lib/lxc/$NAME/rootfs/tmp
+        if [[ $NICK == "swift_proxy" ]]; then
+           cp /etc/nagios/plugins/swift_commands.py /var/lib/lxc/$NAME/rootfs/tmp
+        fi
 else
         echo "check-lxc.sh - Unable to locate the filesystem for the container $NAME on the host."
         exit 3

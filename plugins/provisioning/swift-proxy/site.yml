@@ -13,9 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "{{ opsmgr_dir }}/lib/util/ops.yml"
-- include: "{{ opsmgr_dir }}/lib//filebeat/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/swift-proxy/filebeat"
-- include: "{{ opsmgr_dir }}/lib/nagios/update.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/swift-proxy/nagios"
-- include: swift-proxy-templates.yml
-- include: resources.yml
+- hosts: localhost
+  become: no
+  connection: local
+  gather_facts: no
 
+  tasks:
+
+    - name: create ismetal var
+      set_fact:
+        ismetal: True
+
+    - debug:
+        msg: "ismetal = {{ ismetal }}"
+
+    - include_vars: "/etc/openstack_deploy/env.d/swift_proxy-container.yml"
+      ignore_errors: yes
+
+    - name: check is_metal
+      set_fact:
+        ismetal: False
+      when: container_skel.swift_proxy_container.properties.is_metal is defined and container_skel.swift_proxy_container.properties.is_metal == False
+
+    - debug:
+        msg: "ismetal = {{ ismetal }}"
+
+
+- include: plays.yml
+  when: "hostvars['localhost']['ismetal'] == True"
