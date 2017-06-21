@@ -24,6 +24,7 @@
       template:
           src: "{{ item }}"
           dest: "/etc/nagios/plugins/{{ item }}"
+          mode: 0755
       with_items:
           - check-swift-usage.sh
           - swift_commands.py
