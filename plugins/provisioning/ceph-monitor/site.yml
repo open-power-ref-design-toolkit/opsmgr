@@ -1,5 +1,5 @@
 ---
-# Copyright 2016, IBM US, Inc.
+# Copyright 2017, IBM US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "{{ opsmgr_dir }}/lib/util/ops.yml"
-- include: "{{ opsmgr_dir }}/lib/filebeat/site.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/ceph-monitor/filebeat"
-- include: "{{ opsmgr_dir }}/lib/nagios/update.yml target_hosts=targets target_containers=none files={{ opsmgr_dir }}/plugins/provisioning/ceph-monitor/nagios"
-- include: resources.yml
+- hosts: targets
+  become: no
+  gather_facts: no
+
+  tasks:
+
+    - name: create installCeph var
+      set_fact:
+        installCeph: False
+
+    - debug:
+        msg: "installCeph = {{ installCeph }}"
+
+    - name: check if ceph cmd line is installed
+      stat:
+         path: /usr/bin/ceph
+      register: cephCmdLine
+
+    - name: check cephCmdLine
+      set_fact:
+        installCeph: True
+      when: cephCmdLine.stat.exists == True
+
+    - name: copy installCeph var to localhost
+      set_fact:
+        installCeph: "{{ installCeph }}"
+      delegate_to: "localhost"
+      delegate_facts: True
+
+
+- include: plays.yml
+  when: "hostvars['localhost']['installCeph'] == True"
 
