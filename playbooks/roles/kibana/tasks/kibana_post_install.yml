@@ -82,6 +82,8 @@
       what: '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
     - where: "/config/{{ kibana_version.stdout }}"
       what: '{"defaultIndex" : "logstash-*"}'
+  environment:
+      no_proxy: "{{ elasticsearch_ip }}"
   tags:
     - kibana-post-install
 
@@ -108,6 +110,8 @@
   args:
     chdir: "{{ kibana_temp_directory }}"
   notify: Restart Apache
+  environment:
+      no_proxy: "{{ elasticsearch_ip }}"
   tags:
     - kibana-apache
     - kibana-post-install
@@ -119,6 +123,8 @@
     body: "{{ lookup('file', 'files/es_templates/metricbeat.template-es2x.json') }}"
     body_format: "json"
     status_code: 200,201,409
+  environment:
+      no_proxy: "{{ elasticsearch_ip }}"
   tags:
     - kibana-post-install
 
@@ -158,6 +164,8 @@
     body: "{{ metricbeat_index_text.content|b64decode }}"
     body_format: "json"
     status_code: 200,201,409
+  environment:
+      no_proxy: "{{ elasticsearch_ip }}"
   tags:
     - kibana-post-install
 

@@ -94,12 +94,7 @@ DEPLOY_ENVIRONMENT_CONFIG="$PCLD_DIR/playbooks/deploy_environment.yml"
 
 function load_env_vars {
     if real_genesis_inventory_present; then
-        # Create a new yaml file
-        echo "---" > $DEPLOY_ENVIRONMENT_CONFIG
-        # Set any deployment variables that are present in the inventory
-        while read -r line; do
-            echo "$line" >> $DEPLOY_ENVIRONMENT_CONFIG
-        done < <($SCRIPTS_DIR/get_env_vars.py -i $GENESIS_INVENTORY)
+        $SCRIPTS_DIR/set_env_vars.py -i $GENESIS_INVENTORY -o $DEPLOY_ENVIRONMENT_CONFIG
     fi
 }
 

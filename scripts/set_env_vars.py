@@ -41,19 +41,28 @@ def _load_yml(inventory_name):
     return gen_dict
 
 
-def process_inventory(inv_name):
+def process_inventory(inv_name,output_file):
     """Process the input inventory file.
 
     :param inv_name: The path name of the input genesis inventory.
+    :param output_file: The ansible variable yml file to create.
     """
-    gen_dict = _load_yml(inv_name)
-    env_vars_dict = gen_dict.get('deployment-environment')
-    if env_vars_dict == None or env_vars_dict == {}:
-        print 'deployment_environment_variables: {}'
-    else:
-        print 'deployment_environment_variables:'
-        for k in env_vars_dict:
-            print '    ' + k + ': "' + env_vars_dict[k] + '"'
+    try:
+        gen_dict = _load_yml(inv_name)
+        env_vars_dict = gen_dict.get('deployment-environment')
+        out = open(output_file, 'w')
+        if env_vars_dict == None or env_vars_dict == {}:
+            out.write('---\n')
+            out.write('deployment_environment_variables: {}\n')
+        else:
+            out.write('---\n')
+            out.write('deployment_environment_variables:\n')
+            for k in env_vars_dict:
+                out.write('    ' + k + ': ' + env_vars_dict[k] + '\n')
+        out.close()
+    except Exception:
+        sys.stderr.write("Unable to write the file: " + output_file + "\n")
+        sys.exit(1)
 
 
 def parse_command():
@@ -64,6 +73,8 @@ def parse_command():
                      ' based on the Genesis inventory YAML file.'))
     parser.add_argument('-i', '--input-file', required=True,
                         help=('Path to the Genesis inventory YAML file'))
+    parser.add_argument('-o', '--output-file', required=True,
+                        help=('Ansible variable yml file to create'))
 
     parser.set_defaults(func=process_inventory)
     return parser
@@ -81,11 +92,11 @@ def main():
     args = parser.parse_args()
     signal.signal(signal.SIGINT, signal_handler)
 
-    if (len(sys.argv) < 1):
+    if (len(sys.argv) < 2):
         parser.print_help()
         sys.exit(1)
 
-    args.func(args.input_file)
+    args.func(args.input_file,args.output_file)
 
     return 0
 
