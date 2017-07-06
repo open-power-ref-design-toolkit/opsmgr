@@ -34,6 +34,14 @@ export OPSMGR_RECIPE
 RECIPE_DIR="${OPSMGR_DIR}/recipes/${OPSMGR_RECIPE}"
 OPSMGR_PRL="${RECIPE_DIR}/profile"
 
+# Check is ansible is installed before proceeding
+ansible-playbook --version >/dev/null 2>&1
+rc=$?
+if [ $rc != 0 ]; then
+        echo "ansible-playbook is not installed, nothing to clean"
+        exit 0
+fi
+
 # Clean opsmgr
 pushd ${OPSMGR_DIR}/playbooks >/dev/null 2>&1
 echo "Invoking playbook clean.yml from the opsmgr/playbooks directory"
