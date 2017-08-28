@@ -22,12 +22,22 @@
     path: "{{ build_dir }}"
     state: directory
 
-- name: Download go and unpack it
+- name: Download go
+  get_url:
+    url: "{{ go_download_url }}/{{ go_download_file }}"
+    dest: "{{ build_dir }}"
+    checksum: "{{ go_download_checksum }}"
+  register: go_download
+  until: go_download | success
+  retries: 5
+  delay: 2
+
+- name: unpack go
   unarchive:
-    src: "{{ go_download }}"
+    src: "{{ build_dir }}/{{ go_download_file }}"
     dest: "{{ build_dir }}"
     creates: "{{ go_root }}"
-    copy: no
+    copy: "no"
 
 - name: Make gopath
   file:
@@ -44,6 +54,10 @@
     repo: "{{ beats_url }}"
     dest: "{{ beats_path }}"
     version: "{{ beats_tag }}"
+  register: beats_download
+  until: beats_download | success
+  retries: 5
+  delay: 2
 
 - name: Build filebeat
   make:
@@ -62,6 +76,10 @@
   git:
     repo: "{{ go_daemon_url }}"
     dest: "{{ go_daemon_dir }}"
+  register: go_daemon_download
+  until: go_daemon_download | success
+  retries: 5
+  delay: 2
 
 - name: Build go daemon
   command: "{{ go_daemon_build_cmd }}"
@@ -81,4 +99,3 @@
   file:
     path: "{{ build_dir }}"
     state: absent
-
