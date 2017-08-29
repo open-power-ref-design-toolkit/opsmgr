@@ -32,7 +32,7 @@ elasticsearch_system_group: elasticsearch
 
 elasticsearch_pip_packages:
   - elasticsearch
-  - elasticsearch-curator
+  - elasticsearch-curator==4.3
 
 # This sets the cluster name
 elasticsearch_cluster: openstack
