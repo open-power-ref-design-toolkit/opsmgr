@@ -13,6 +13,7 @@
 # limitations under the License.
 
 #THIS FILE IS MANAGED BY THE GLOBAL REQUIREMENTS REPO - DO NOT EDIT
+import os
 import setuptools
 
 # In python < 2.7.4, a lazy loading of package `pbr` will break
@@ -22,6 +23,8 @@ try:
     import multiprocessing  # noqa
 except ImportError:
     pass
+
+os.environ['PBR_VERSION'] = '1.0.0.1'
 
 setuptools.setup(
     setup_requires=['pbr>=1.8'],

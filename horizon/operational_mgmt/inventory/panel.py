@@ -31,4 +31,4 @@ class Inventory(horizon.Panel):
 
     @staticmethod
     def can_register():
-        return keystone.VERSIONS.active >= 3
+        return keystone.VERSIONS.active >= 2

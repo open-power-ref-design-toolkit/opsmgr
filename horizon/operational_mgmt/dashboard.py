@@ -15,10 +15,36 @@
 from django.utils.translation import ugettext_lazy as _
 
 import horizon
+import imp
+import os
+import sys
+
+def get_module_path(module_name):
+    """Gets the module path without importing anything.
+
+    Avoids conflicts with package dependencies.
+    (taken from http://github.com/sitkatech/pypatch)
+    """
+    path = sys.path
+    for name in module_name.split('.'):
+        file_pointer, path, desc = imp.find_module(name, path)
+        path = [path, ]
+        if file_pointer is not None:
+            file_pointer.close()
+
+    return os.path.dirname(path[0])
+
+def find_settings_file():
+    module_path = os.path.abspath(
+        get_module_path(os.environ['DJANGO_SETTINGS_MODULE'])
+    )
+    settings_dir = os.path.join(module_path, 'local')
+    settings_file = os.path.join(settings_dir, 'local_settings.py')
+    return settings_file
 
 
 def minimal_footprint():
-    settingsFile = file('/etc/horizon/local_settings.py')
+    settingsFile = file(find_settings_file())
     found = False
     for line in settingsFile:
         if "patch_ui = True" in line:
