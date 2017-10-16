@@ -92,7 +92,7 @@ echo "Invoking playbook setup.yml from the opsmgr/playbooks directory"
 ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory setup.yml
 rc=$?
 if [ $rc != 0 ]; then
-	echo "Failed to execute playbooks/setup.yml, rc=$rc"
+        echo "Failed to execute playbooks/setup.yml, rc=$rc"
         exit 7
 fi
 
@@ -117,7 +117,7 @@ ansible-playbook -e "opsmgr_dir=$OPSMGR_DIR" -i $OPSMGR_PRL/inventory targets.ym
 rc=$?
 if [ $rc != 0 ]; then
         echo "Failed to execute playbooks/targets.yml, rc=$rc"
-        exit 10 
+        exit 10
 fi
 
 echo "Invoking playbook customize.yml from the opsmgr/playbooks directory"

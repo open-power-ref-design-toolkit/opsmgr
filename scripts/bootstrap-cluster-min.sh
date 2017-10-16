@@ -105,7 +105,7 @@ if [ ! -d /etc/ansible ]; then
         echo "scripts/bootstrap-ansible.sh failed, rc=$rc"
         echo "Manual retry procedure:"
         echo "1) fix root cause of error if known"
-        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"        
+        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"
         echo "3) re-run command"
         exit 1
     fi
@@ -117,7 +117,7 @@ if [ ! -d /etc/ansible ]; then
         echo "scripts/bootstrap-aio.sh failed, rc=$rc"
         echo "Manual retry procedure:"
         echo "1) fix root cause of error if known"
-        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"        
+        echo "2) rm -rf /etc/ansible; rm -rf /opt/ansible-runtime"
         echo "3) re-run command"
         exit 1
     fi

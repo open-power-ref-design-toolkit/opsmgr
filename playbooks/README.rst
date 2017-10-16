@@ -82,7 +82,7 @@ may need (if not yet available).
 Once the targets.yml playbook runs successfully the OpsMgr cluster is ready for use.
 Note that individual integrated Ops applications such as Nagios and ELK may
 need additional steps. For example, for Nagios users may want to tweak the frequency
-of checks, or other configuration parameters. 
+of checks, or other configuration parameters.
 
 To tear down the OpsMgr control plane cluster, use the following::
 

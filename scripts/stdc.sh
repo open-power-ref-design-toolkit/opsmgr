@@ -28,7 +28,7 @@ if [[ -e $OPSMGR_PRL/inventory ]]; then
         echo "Failed running opsmgr recipes/setup.yml, rc=$rc"
         exit 2
     fi
-else 
+else
     echo "Unable to run setup.yml -- proceeding"
 fi
 
