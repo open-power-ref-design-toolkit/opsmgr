@@ -124,12 +124,12 @@ def retrieve_application_links(self, request):
         host_address = request.META.get('HTTP_HOST').split(':')[0]
     except Exception as e:
         host_address = None
-    
+
     for app in applications:
         # build the list of URLs
         # use host value from the request instead
         # app_url = app.protocol + (host value)
-        if host_address == None:
+        if host_address is None:
             # for whatever reason, the request did not have a host value
             # so use whatever was returned from the server
             app_url = app.protocol + app.host
@@ -274,6 +274,8 @@ class InventoryRacksTabs(tabs.TabGroup):
         # Add the application URLs to the list of attributes of the tab group.
         # We need those attributes when launching various applications
         self.attrs.update(retrieve_application_links(self, request))
+
+
 class OverviewTab(tabs.Tab):
     name = _("Overview")
     slug = "overview"
@@ -286,4 +288,3 @@ class OverviewTab(tabs.Tab):
 class ResourceDetailTabs(tabs.TabGroup):
     slug = "resource_details"
     tabs = (OverviewTab,)
-

@@ -43,6 +43,7 @@ class IndexView(tabs.TabbedTableView):
     template_name = 'op_mgmt/inventory/index.html'
     page_title = _("Inventory")
 
+
 class DetailView(tabs.TabView):
     tab_group_class = inventoryRacks_tabs.ResourceDetailTabs
     template_name = 'horizon/common/_detail.html'

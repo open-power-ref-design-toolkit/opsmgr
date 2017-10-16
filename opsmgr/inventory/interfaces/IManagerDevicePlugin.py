@@ -14,6 +14,7 @@
 
 from abc import ABCMeta, abstractmethod
 
+
 class IManagerDevicePlugin(object):
     __metaclass__ = ABCMeta
 
@@ -69,13 +70,13 @@ class IManagerDevicePlugin(object):
         """
         """
 
-    #@abstractmethod
-    #def get_fixes(self):
+    # @abstractmethod
+    # def get_fixes(self):
 
     @abstractmethod
     def change_device_password(self, new_password):
         """
         """
 
-    #@abstractmethod
-    #def change_device_network(self, new_address, subnet=None, gateway=None):
+    # @abstractmethod
+    # def change_device_network(self, new_address, subnet=None, gateway=None):

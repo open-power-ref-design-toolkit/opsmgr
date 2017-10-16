@@ -16,6 +16,7 @@ from opsmgr.common.utils import entry_exit, load_plugin_by_namespace
 
 I_OPERATIONS_PLUGINS = "opsmgr.inventory.interfaces.IOperationsPlugin"
 
+
 class PluginApplication():
 
     def __init__(self, name, function, protocol, host, port, path):
@@ -28,14 +29,19 @@ class PluginApplication():
 
     def get_name(self):
         return self.name
+
     def get_function(self):
         return self.function
+
     def get_protocol(self):
         return self.protocol
+
     def get_host(self):
         return self.host
+
     def get_port(self):
         return self.port
+
     def get_path(self):
         return self.path
 

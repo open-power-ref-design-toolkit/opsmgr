@@ -14,6 +14,7 @@
 
 from abc import ABCMeta, abstractmethod
 
+
 class IManagerRackHook(object):
     __metaclass__ = ABCMeta
 

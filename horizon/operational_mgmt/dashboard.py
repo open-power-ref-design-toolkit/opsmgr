@@ -19,6 +19,7 @@ import imp
 import os
 import sys
 
+
 def get_module_path(module_name):
     """Gets the module path without importing anything.
 
@@ -33,6 +34,7 @@ def get_module_path(module_name):
             file_pointer.close()
 
     return os.path.dirname(path[0])
+
 
 def find_settings_file():
     module_path = os.path.abspath(
@@ -51,6 +53,7 @@ def minimal_footprint():
             found = True
             break
     return found
+
 
 class OpMgmtdashboard(horizon.Dashboard):
     name = _("Operational Management")

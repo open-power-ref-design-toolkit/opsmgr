@@ -16,6 +16,7 @@ import os
 
 CREDS_DIR = "/usr/local/nagios/opsmgr/nagios_config/.creds"
 
+
 def retrieveAccessInfoForDevice(address):
     userid = None
     password = None
@@ -28,7 +29,6 @@ def retrieveAccessInfoForDevice(address):
             ssh_key = input.read().strip()
             if password == "":
                 password = None
-            if ssh_key =="":
+            if ssh_key == "":
                 ssh_key = None
     return (userid, password, ssh_key)
-

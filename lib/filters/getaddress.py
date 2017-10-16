@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 def getaddress(address_pool, used_pool):
     for i, addr in enumerate(address_pool):
         if addr not in used_pool:
@@ -19,9 +20,9 @@ def getaddress(address_pool, used_pool):
             return addr
     return None
 
+
 class FilterModule(object):
     def filters(self):
         return {
             'getaddress': getaddress,
         }
-

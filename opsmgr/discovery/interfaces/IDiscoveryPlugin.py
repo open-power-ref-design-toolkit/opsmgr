@@ -14,6 +14,7 @@
 
 from abc import ABCMeta, abstractmethod
 
+
 class IDiscoveryPlugin(object):
     __metaclass__ = ABCMeta
 
@@ -43,4 +44,3 @@ class IDiscoveryPlugin(object):
     def disconnect(self):
         """
         """
-

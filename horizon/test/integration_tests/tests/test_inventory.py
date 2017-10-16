@@ -21,7 +21,7 @@ class TestInventory(helpers.OpsMgrTestCase):
     * > checks that the inventory page is available
     * > checks that the inventory page loads without error
     * > checks that the rack details can be edited
-    * > adds a resource by host name    
+    * > adds a resource by host name
     * > checks that a resource can be removed
     * > adds a resource by IP address
     * > changes the password of a user on a resource
@@ -53,7 +53,7 @@ class TestInventory(helpers.OpsMgrTestCase):
     NEW_RACK_NAME = "Rack1_Updated"
     NEW_DATA_CENTER = "new data-center"
     NEW_ROOM = "new room"
-    NEW_ROW = "new row" 
+    NEW_ROW = "new row"
     NEW_NOTES = "These notes are updated"
 
     class SecurityInfo(object):
@@ -68,7 +68,7 @@ class TestInventory(helpers.OpsMgrTestCase):
     def test_inventory(self):
         # Go to inventory page
         inv_page = self.home_pg.go_to_operationalmanagement_inventorypage()
-        return    #  Just skip over the location-specific tests
+        return    # Just skip over the location-specific tests
 
         # Open rack details and edit them
         inv_page.edit_rack(self.NEW_RACK_NAME, self.NEW_DATA_CENTER,

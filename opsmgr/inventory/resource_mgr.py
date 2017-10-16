@@ -23,12 +23,14 @@ from datetime import datetime
 from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.inventory import persistent_mgr
-from opsmgr.common.utils import entry_exit, is_valid_address, push_message, load_plugin_by_namespace
+from opsmgr.common.utils import (entry_exit, is_valid_address,
+                                 push_message, load_plugin_by_namespace)
 from opsmgr.inventory.data_model import Resource, Key, Rack, ResourceRole
 
 I_MANAGER_DEVICE_PLUGIN = "opsmgr.inventory.interfaces.IManagerDevicePlugin"
 I_MANAGER_DEVICE_HOOK = "opsmgr.inventory.interfaces.IManagerDeviceHook"
 I_MANAGER_RACK_HOOK = "opsmgr.inventory.interfaces.IManagerRackHook"
+
 
 @entry_exit(exclude_index=[4, 7], exclude_name=["password", "ssh_key"])
 def add_resource(label, device_type, address, userid, password, rackid='', rack_location='',
@@ -107,7 +109,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
             racks_info = persistent_mgr.get_all_racks(session)
             rack = racks_info[0]
         except IndexError:
-            #No rack exist, create one
+            # No rack exist, create one
             rack = Rack()
             rack.label = "Default"
             persistent_mgr.add_racks(session, [rack])
@@ -132,7 +134,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
     device_info.validated = True
 
     hooks = _load_inventory_device_plugins()
-    hook_name = 'unknown' #keeps pylint happy
+    hook_name = 'unknown'  # keeps pylint happy
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.add_device_pre_save(device_info)
@@ -163,6 +165,7 @@ def add_resource(label, device_type, address, userid, password, rackid='', rack_
         message = _("Added device successfully.")
     session.close()
     return 0, message
+
 
 @entry_exit(exclude_index=[2, 3], exclude_name=["old_password", "new_password"])
 def change_resource_password(label=None, deviceid=None, old_password=None, new_password=None):
@@ -214,14 +217,14 @@ def change_resource_password(label=None, deviceid=None, old_password=None, new_p
             logging.exception(e)
             logging.warning("%s:plugin. Exception running change_device_password: %s",
                             method_, e)
-            message = _("Failed to change device password, Exception occurred for " \
-                      "plugin (%s).") % (device_type)
+            message = _("Failed to change device password, Exception occurred for plugin (%s).") % (device_type)
             return 101, message
 
     if not message:
         message = _("Changed device password successfully.")
     session.close()
     return 0, message
+
 
 @entry_exit(exclude_index=[4, 8], exclude_name=["password", "ssh_key"])
 def change_resource_properties(label=None, deviceid=None, new_label=None,
@@ -342,7 +345,7 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
             temp_password = password
         else:
             if device.password is not None:
-                if new_auth is None: #only lookup old password if auth hasn't changed
+                if new_auth is None:  # only lookup old password if auth hasn't changed
                     temp_password = persistent_mgr.decrypt_data(device.password)
         if ssh_key:
             temp_ssh_key = ssh_key
@@ -351,7 +354,7 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
                 key = device.key
                 temp_ssh_key = key.value
                 if key.password:
-                    if new_auth is None: #only lookup old password if auth hasn't changed
+                    if new_auth is None:  # only lookup old password if auth hasn't changed
                         temp_password = persistent_mgr.decrypt_data(key.password)
         if new_auth == "key":
             rc, message = _change_device_key(device, ip_address, temp_userid,
@@ -386,9 +389,9 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
     if rack_location is not None:
         device.eia_location = rack_location
 
-    #pre_save hooks
+    # pre_save hooks
     hooks = _load_inventory_device_plugins()
-    hook_name = 'unknown' #keeps pylint happy
+    hook_name = 'unknown'  # keeps pylint happy
 
     try:
         for hook_name, hook_plugin in hooks.items():
@@ -408,13 +411,13 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
         key_info = device.key
         persistent_mgr.delete_keys(session, [key_info])
 
-    #post_save hooks
+    # post_save hooks
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.change_device_post_save(device, old_device_info)
     except Exception as e:
         logging.exception(e)
-        message = push_message(message, _("After device properties were changed, " \
+        message = push_message(message, _("After device properties were changed, "
                                "Error in plugin (%s): %s") % (hook_name, e))
 
     # return success
@@ -422,6 +425,7 @@ def change_resource_properties(label=None, deviceid=None, new_label=None,
     message = push_message(message, _("Changed device successfully."))
     session.close()
     return 0, message
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=None,
@@ -455,7 +459,6 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
                 'roles']
     brief_tags = ['label']
     result = {}
-
 
     session = persistent_mgr.create_database_session()
 
@@ -564,6 +567,7 @@ def list_resources(labels=None, isbriefly=False, device_types=None, deviceids=No
     session.close()
     return 0, result
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def remove_resource(labels=None, all_devices=False, deviceids=None):
     '''Remove devices based on information present in the arguments
@@ -601,7 +605,7 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
         return -1, message
 
     hooks = _load_inventory_device_plugins()
-    hook_name = 'unknown' #keeps pylint happy
+    hook_name = 'unknown'  # keeps pylint happy
 
     message = None
     remove_devices = []
@@ -613,8 +617,7 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
                 hook_plugin.remove_device_pre_save(device)
         except Exception as e:
             logging.exception(e)
-            message += _("Error in plugin (%s). Unable to remove resource: Reason: %s") % \
-                       (hook_name, e)
+            message += _("Error in plugin (%s). Unable to remove resource: Reason: %s") % (hook_name, e)
             not_remove_devices.append(device)
             continue
         remove_devices.append(device)
@@ -624,14 +627,14 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
         labels_message = get_labels_message(remove_devices)
         message = push_message(message, _("devices removed: %s.") % labels_message)
 
-        #Call hook for remove_device_post_save
+        # Call hook for remove_device_post_save
         for device in remove_devices:
             try:
                 for hook_name, hook_plugin in hooks.items():
                     hook_plugin.remove_device_post_save(device)
             except Exception as e:
                 logging.exception(e)
-                message = push_message(message, _("After device was removed. Error in plugin " \
+                message = push_message(message, _("After device was removed. Error in plugin "
                                        "(%s): %s") % (hook_name, e))
 
     if len(not_remove_devices) > 0:
@@ -646,9 +649,11 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
     session.close()
     return ret, message
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def list_resource_types():
     return sorted(_load_device_plugins().keys())
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_labels_message(items):
@@ -671,6 +676,7 @@ def get_labels_message(items):
             labels_message += obj.label
     return labels_message
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_resource_id_by_label(resource_label):
     """
@@ -685,6 +691,7 @@ def get_resource_id_by_label(resource_label):
         resource_id = resource.resource_id
     session.close()
     return resource_id
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def add_resource_roles(resource_label=None, resource_id=None, roles=None, additional_data=None):
@@ -711,9 +718,9 @@ def add_resource_roles(resource_label=None, resource_id=None, roles=None, additi
         roles_to_add.append(ResourceRole(resource_id, role, additional_data))
 
     hooks = _load_inventory_device_plugins()
-    hook_name = 'unknown' #keeps pylint happy
+    hook_name = 'unknown'  # keeps pylint happy
 
-    #pre_save hooks
+    # pre_save hooks
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.add_role_pre_save(resource, roles_to_add)
@@ -723,7 +730,7 @@ def add_resource_roles(resource_label=None, resource_id=None, roles=None, additi
 
     persistent_mgr.add_device_roles(session, roles_to_add)
 
-    #post_save hooks
+    # post_save hooks
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.add_role_post_save(resource, roles_to_add)
@@ -765,7 +772,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
 
     for plugin_device_type, plugin in plugins.items():
         try:
-            #if device_type was specified skip other plugins
+            # if device_type was specified skip other plugins
             if device_type:
                 if plugin_device_type != device_type:
                     continue
@@ -789,6 +796,7 @@ def validate(address, userid, password, device_type, ssh_key=None):
             plugin.disconnect()
 
     return (validate_failure, None, None, None, None, None)
+
 
 @entry_exit(exclude_index=[2, 4], exclude_name=["password", "ssh_key"])
 def _validate(address, userid, password, device_type, ssh_key=None):
@@ -828,7 +836,8 @@ def _validate(address, userid, password, device_type, ssh_key=None):
             message = _("Root access is required to manage this device.")
     return rc, message
 
-#@entry_exit(exclude_index=[], exclude_name=[])
+
+# @entry_exit(exclude_index=[], exclude_name=[])
 def _get_devicetag_text_id(tag_name):
     devicetag_id = {
         'resourceid': _('id'),
@@ -851,6 +860,7 @@ def _get_devicetag_text_id(tag_name):
         return devicetag_id[tag_name]
     return tag_name
 
+
 @entry_exit(exclude_index=[4, 5], exclude_name=["ssh_key_string", "password"])
 def _change_device_key(device, address, userid, ssh_key_string, password):
     """ Validate the new ssh key works, and change the device properties
@@ -869,9 +879,9 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
     rc, message = _validate(address, userid, password, device.resource_type, ssh_key_string)
     if rc == 0:
         # Update the device and key object for the new ssh_key
-        if device.key: #existing key to update
+        if device.key:  # existing key to update
             key_info = device.key
-        else: #new key needs created
+        else:  # new key needs created
             key_info = Key()
             key_info.resource = device
             key_info.type = "RSA"
@@ -882,8 +892,9 @@ def _change_device_key(device, address, userid, ssh_key_string, password):
             key_info.password = None
 
         device.userid = userid
-        device.password = None # using ssh_key authentication
+        device.password = None  # using ssh_key authentication
     return (rc, message)
+
 
 @entry_exit(exclude_index=[3], exclude_name=["password"])
 def _change_device_userpass(device, address, userid, password):
@@ -901,11 +912,10 @@ def _change_device_userpass(device, address, userid, password):
     """
     rc, message = _validate(address, userid, password, device.resource_type, None)
     if rc == 0:
-        #Update the device object for the new userid/password
+        # Update the device object for the new userid/password
         device.userid = userid
         device.password = persistent_mgr.encrypt_data(password)
     return (rc, message)
-
 
 
 def _load_device_plugins():
@@ -915,12 +925,14 @@ def _load_device_plugins():
     """
     return load_plugin_by_namespace(I_MANAGER_DEVICE_PLUGIN)
 
+
 def _load_inventory_device_plugins():
     """
     Find the inventory device plugins and return them as
     dictonary[name]=plugin class
     """
     return load_plugin_by_namespace(I_MANAGER_DEVICE_HOOK)
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def _check_device_exist(session, address):
@@ -931,6 +943,7 @@ def _check_device_exist(session, address):
         if address == device.address:
             return True
     return False
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def _check_device_exist_by_props(session, device_type, mtm, serialnum):
@@ -949,6 +962,7 @@ def _check_device_exist_by_props(session, device_type, mtm, serialnum):
         except AttributeError:
             continue
     return found
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def validate_address(address):
@@ -978,6 +992,7 @@ def validate_address(address):
         session.close()
     return 0, ""
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def validate_label(label):
     """Make sure the label is not in use
@@ -1003,6 +1018,7 @@ def validate_label(label):
     finally:
         session.close()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def _check_address(address):
     ipv4 = ""
@@ -1012,11 +1028,11 @@ def _check_address(address):
         try:
             hostname = socket.gethostbyaddr(address)[0]
         except Exception:
-            pass # no DNS
+            pass  # no DNS
     else:
         hostname = socket.getfqdn(address)
         try:
             ipv4 = socket.gethostbyname(hostname)
         except Exception:
-            pass # host not valid or offline
+            pass  # host not valid or offline
     return ipv4, hostname

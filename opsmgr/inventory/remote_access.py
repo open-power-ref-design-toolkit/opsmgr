@@ -20,10 +20,10 @@ import termios
 import tty
 
 try:
-    #python 2.7
+    # python 2.7
     from StringIO import StringIO
 except ImportError:
-    #python 3.4
+    # python 3.4
     from io import StringIO
 
 import paramiko
@@ -31,6 +31,7 @@ from paramiko.py3compat import u
 
 from opsmgr.inventory import persistent_mgr
 from opsmgr.common.utils import entry_exit
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def remote_access(label):
@@ -83,6 +84,7 @@ def remote_access(label):
     session.close()
     return 0, message
 
+
 @entry_exit(exclude_index=[3, 4], exclude_name=["password", "ssh_key_string"])
 def _create_remote_connection(remote_access_label, address, userid, password, ssh_key_string):
     """ create a remote ssh connection based on the information provided.
@@ -112,6 +114,7 @@ def _create_remote_connection(remote_access_label, address, userid, password, ss
           remote_access_label)
     logging.info("%s::Remote connection to device (%s) disconnected.",
                  _method_, remote_access_label)
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def _open_interactive_shell(chan):

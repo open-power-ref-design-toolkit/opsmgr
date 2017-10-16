@@ -17,10 +17,10 @@ import socket
 import time
 
 try:
-    #python 2.7
+    # python 2.7
     from StringIO import StringIO
 except ImportError:
-    #python 3.4
+    # python 3.4
     from io import StringIO
 
 import paramiko
@@ -29,6 +29,7 @@ from opsmgr.common import constants
 from opsmgr.common import exceptions
 from opsmgr.common.utils import entry_exit
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
+
 
 class MLNXOSPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 

@@ -14,7 +14,7 @@
 
 import re
 
-StatusTypes  = ["OK","WARNING","CRITICAL","UNKNOWN","OK:"]
+StatusTypes = ["OK", "WARNING", "CRITICAL", "UNKNOWN", "OK:"]
 
 
 def parse_host_data(data_lines):
@@ -26,7 +26,7 @@ def parse_host_data(data_lines):
     for line in data_lines:
         if (line == "hoststatus {"):
             # get host_name (next line), Ex. host_name=cephosd-23
-            next_line = data_lines[line_cnt+1]
+            next_line = data_lines[line_cnt + 1]
             host_name = next_line.split('host_name=')[1]
 
             # search for plugin_output line & save data
@@ -39,7 +39,7 @@ def parse_host_data(data_lines):
                 if (host_status_type == "plugin_output"):
                     # read status string after '=' and find the status
                     host_status_str = next_line.split('=')[1]
-                    host_status,rc = _parse_status(host_status_str)
+                    host_status, rc = _parse_status(host_status_str)
                     if rc == 0:
                         # don't need to save non-error string
                         if (host_status == "OK"):
@@ -47,13 +47,14 @@ def parse_host_data(data_lines):
                         else:
                             host_status_str = host_status_str.split('- ')[1]
                         # read line into array
-                        stats[host_num] = {'host_name' : host_name, 'host_status' : host_status, 'host_err' : host_status_str}
+                        stats[host_num] = {'host_name': host_name, 'host_status': host_status, 'host_err': host_status_str}
                         host_num += 1
                         break
                 j += 1
         line_cnt += 1
 
     return stats
+
 
 def parse_service_data(data_lines):
     # parse service data in .dat file
@@ -66,33 +67,34 @@ def parse_service_data(data_lines):
         if (line == "servicestatus {"):
             # get host_name (next line down)
             # Ex. host_name=cephosd-23
-            next_line = data_lines[line_cnt+1]
+            next_line = data_lines[line_cnt + 1]
             host_name = next_line.split('host_name=')[1]
 
             # get service_name (next line down after host)
             # Ex. service_description=Ceph OSD Server
-            next_line = data_lines[line_cnt+2]
+            next_line = data_lines[line_cnt + 2]
             service_name = next_line.split('service_description=')[1]
 
             # search for plugin_output line & save string
             # Ex. plugin_output=SSH OK - OpenSSH_7.2p2 Ubuntu-4ubuntu2.1 (protocol 2.0)
             # Ex. plugin_output=OK - 1 plugins checked, 1 ok
-            j = line_cnt+2
+            j = line_cnt + 2
             for status_line in data_lines:
                 next_line = data_lines[j]
                 service_status_type = next_line.split('=')[0]
 
-                # Ex, plugin_output=CRITICAL - 12 plugins checked, 1 critical (server-disk), 11 ok [please don't run plugins as root!]
+                # Ex, plugin_output=CRITICAL - 12 plugins checked, 1 critical (server-disk),
+                #                              11 ok [please don't run plugins as root!]
                 if (service_status_type == "plugin_output"):
                     # read status string after the '=' and get the status
                     service_status_str = next_line.split('=')[1]
-                    service_status,rc = _parse_status(service_status_str)
+                    service_status, rc = _parse_status(service_status_str)
 
                     # need to search string for service_status and then save rest of string
-                    # Ex. UNKNOWN - 3 plugins checked, 3 unknown (osa_compute_nova, osa_compute_libvirt, osa_compute_neutron)
+                    # Ex. UNKNOWN - 2 plugins checked, 2 unknown (osa_compute_nova, osa_compute_libvirt)
                     if (rc == 0 and service_status == "UNKNOWN"):
                         unknown_str = "unknown"
-                        pattern = '(.*\,) (.*) ('+unknown_str+') (\(.*\))'
+                        pattern = '(.*\,) (.*) (' + unknown_str + ') (\(.*\))'
                         match_status = re.search(pattern, service_status_str)
                         if match_status:
                             # get all the unknown types from plugin_output
@@ -100,15 +102,15 @@ def parse_service_data(data_lines):
                             unknown_service_type = _get_unknown_types(match_status)
                             if unknown_service_type:
                                 # read next line which is long_plugin_output
-                                next_line = data_lines[j+1]
-                                service_status_type, long_plugin_str = next_line.split('=',1)
+                                next_line = data_lines[j + 1]
+                                service_status_type, long_plugin_str = next_line.split('=', 1)
 
                                 # search for the unknown strings
                                 num = 0
                                 loop_cnt = 0
                                 while (num < int(unknown_num_str)):
                                     # set the search pattern
-                                    pattern = '(\[.*\]) (.*'+unknown_service_type[num]+'.*)'
+                                    pattern = '(\[.*\]) (.*' + unknown_service_type[num] + '.*)'
                                     plugin_info_strings = long_plugin_str.split('\\n')[loop_cnt]
                                     loop_cnt += 1
 
@@ -121,28 +123,32 @@ def parse_service_data(data_lines):
                                         if service_error_str:
                                             # remove unknown type from beginning of string and remove []
                                             service_error = service_error_str.group(2).split('[')[1].strip(']')
-                                            stats[service_num] = {'host_name' : host_name, 'service_name' : service_name, 'service_status' : service_status, 'service_err' : service_error}
+                                            stats[service_num] = {'host_name': host_name, 'service_name': service_name,
+                                                                  'service_status': service_status,
+                                                                  'service_err': service_error}
                                             service_num += 1
                                             num += 1
 
                     # check if WARNING/CRITICAL in order to capture message in long_plugin_output
-                    # Ex. long_plugin_output= ...[ 2] server-mem MEM OK - free system memory: 268 MB\n[ 3] server-disk CheckDisk CRITICAL: / 96%\n ...
+                    # Ex. long_plugin_output= ...[ 2] server-mem MEM OK - free system memory: 268 MB\n
+                    #                            [ 3] server-disk CheckDisk CRITICAL: / 96%\n ...
                     elif (rc == 0 and service_status != "OK"):
                         # determine the number of plugins checked for errors
                         plugin_str = service_status_str.split('- ')[1]
                         plugin_num_str = plugin_str.split(' ')[0]
 
                         # read next line which is long_plugin_output
-                        next_line = data_lines[j+1]
-                        service_status_type, long_plugin_str = next_line.split('=',1)
+                        next_line = data_lines[j + 1]
+                        service_status_type, long_plugin_str = next_line.split('=', 1)
                         if (service_status_type == "long_plugin_output"):
                             # check for empty string, which is the case for localhost
                             if len(long_plugin_str) < 1:
-                                stats[service_num] = {'host_name' : host_name, 'service_name' : service_name, 'service_status' : service_status, 'service_err' : service_status_str}
+                                stats[service_num] = {'host_name': host_name, 'service_name': service_name,
+                                                      'service_status': service_status, 'service_err': service_status_str}
                                 service_num += 1
                             else:
                                 # set the search pattern
-                                pattern = '(\[.*\]) (.*'+service_status+'.*)'
+                                pattern = '(\[.*\]) (.*' + service_status + '.*)'
                                 num = 0
                                 loop_cnt = 0
                                 while (num < int(plugin_num_str)):
@@ -157,12 +163,15 @@ def parse_service_data(data_lines):
                                                 service_err_str = service_error_str.group(2).split('[')[0]
                                             else:
                                                 service_err_str = service_error_str.group(2)
-                                            stats[service_num] = {'host_name' : host_name, 'service_name' : service_name, 'service_status' : service_status, 'service_err' : service_err_str}
+                                            stats[service_num] = {'host_name': host_name, 'service_name': service_name,
+                                                                  'service_status': service_status,
+                                                                  'service_err': service_err_str}
                                             service_num += 1
                                         num += 1
                     # OK status or not readable status, so don't need to store error status
                     else:
-                        stats[service_num] = {'host_name' : host_name, 'service_name' : service_name, 'service_status' : service_status, 'service_err' : ""}
+                        stats[service_num] = {'host_name': host_name, 'service_name': service_name,
+                                              'service_status': service_status, 'service_err': ""}
                         service_num += 1
                     break
                 j += 1
@@ -176,7 +185,7 @@ def _parse_status(service_status_str):
     service_status = ""
 
     for num in range(len(StatusTypes)):
-        pattern = '(.*'+StatusTypes[num]+') (.*)'
+        pattern = '(.*' + StatusTypes[num] + ') (.*)'
         match_status = re.search(pattern, service_status_str)
         if match_status:
             break
@@ -190,7 +199,7 @@ def _parse_status(service_status_str):
     else:
         rc = 1
 
-    return service_status,rc
+    return service_status, rc
 
 
 def _get_unknown_types(match_status):
@@ -207,4 +216,3 @@ def _get_unknown_types(match_status):
             else:
                 unknown_service_type[num] = unknown_err_types
     return (unknown_service_type)
-

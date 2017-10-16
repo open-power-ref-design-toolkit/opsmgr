@@ -23,6 +23,7 @@ from stevedore import extension
 
 from opsmgr.common import constants
 
+
 def is_valid_address(address, family=socket.AF_INET):
     # Modified this script to take in any IP address format.
     # This will default to IPv4 if none is specified.
@@ -59,6 +60,7 @@ def get_strip_strings_array(strings):
             result.append(string)
     return result
 
+
 def execute_command(command):
     """ This function is to execute a command on the local system
         return (rc, stdout, stderr)
@@ -76,13 +78,15 @@ def execute_command(command):
     p.stderr.close()
     return (rc, stdout, stderr)
 
+
 def push_message(message, new_message):
     if new_message is not None and len(new_message) > 0:
         if message:
-            message = message + '\n' +  new_message
+            message = message + '\n' + new_message
         else:
             message = new_message
     return message
+
 
 def load_plugin_by_namespace(namespace):
     plugins = {}
@@ -91,6 +95,7 @@ def load_plugin_by_namespace(namespace):
     for ext in extensions:
         plugins[ext.name] = ext.plugin()
     return plugins
+
 
 def entry_exit(exclude_index=None, exclude_name=None, log_name=None, level=logging.INFO):
     """
@@ -131,6 +136,7 @@ def entry_exit(exclude_index=None, exclude_name=None, log_name=None, level=loggi
             return result
         return wrapper
     return f
+
 
 class LoggingService(object):
 

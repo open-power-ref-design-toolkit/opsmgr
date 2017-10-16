@@ -304,8 +304,8 @@ class ResourcesTable(tables.DataTable):
     rack_loc = tables.Column('rack_loc',
                              verbose_name=_("EIA Location"))
     manager = NameLinkColumn('web_url',
-                           verbose_name=_('Management Interface'),
-                           link=True)
+                             verbose_name=_('Management Interface'),
+                             link=True)
     userid = tables.Column('userid',
                            verbose_name=_("Management User"))
     mtm = tables.Column('mtm',

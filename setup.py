@@ -32,9 +32,9 @@ setup(
                  'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: 3.4',
                  'Programming Language :: Python :: 3.5',
-                 ],
+    ],
 
-    install_requires = [
+    install_requires=[
         'pbr>=2.0',
         'paramiko>=1.16.0',
         'sqlalchemy>=1.0.12',
@@ -59,7 +59,7 @@ setup(
         'console_scripts': [
             'opsmgr = opsmgr.scripts.cli:main',
             'opsmgr-admin = opsmgr.scripts.cli_admin:main',
-         ],
+        ],
         'opsmgr.discovery.interfaces.IDiscoveryPlugin': [],
         'opsmgr.inventory.interfaces.IManagerDevicePlugin': [],
         'opsmgr.inventory.interfaces.IManagerDeviceHook': [],

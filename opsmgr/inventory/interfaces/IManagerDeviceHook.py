@@ -14,6 +14,7 @@
 
 from abc import ABCMeta, abstractmethod
 
+
 class IManagerDeviceHook(object):
     __metaclass__ = ABCMeta
 
@@ -61,7 +62,3 @@ class IManagerDeviceHook(object):
     @abstractmethod
     def change_device_post_save(device, old_device_info):
         pass
-
-
-
-

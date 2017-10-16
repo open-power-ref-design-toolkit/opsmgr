@@ -23,6 +23,7 @@ from opsmgr.inventory.data_model import Rack
 
 I_MANAGER_RACK_HOOK = "opsmgr.inventory.interfaces.IManagerRackHook"
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def add_rack(label, data_center='', room='', row='', notes=''):
     """add rack to the list of racks in the configuration managed
@@ -61,7 +62,7 @@ def add_rack(label, data_center='', room='', row='', notes=''):
     rack_info.notes = notes
 
     hooks = _load_inventory_rack_plugins()
-    hook_name = 'unknown' #keeps pylint happy
+    hook_name = 'unknown'  # keeps pylint happy
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.add_rack_pre_save(rack_info)
@@ -85,6 +86,7 @@ def add_rack(label, data_center='', room='', row='', notes=''):
 
     session.close()
     return 0, message
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def list_racks(labels=None, isbriefly=False, rackids=None):
@@ -157,6 +159,7 @@ def list_racks(labels=None, isbriefly=False, rackids=None):
     session.close()
     return 0, result
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def remove_rack(labels=None, all_racks=False, rackids=None):
     '''Remove racks based on information present in the arguments
@@ -193,7 +196,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
     devices = persistent_mgr.get_all_devices(session)
 
     hooks = _load_inventory_rack_plugins()
-    hook_name = 'unknown' #keeps pylint happy
+    hook_name = 'unknown'  # keeps pylint happy
 
     message = None
     remove_racks = []
@@ -239,7 +242,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
         labels_message = resource_mgr.get_labels_message(remove_racks)
         message = push_message(message, _("racks removed: %s") % labels_message)
 
-        #Call hook for remove_rack_post_save
+        # Call hook for remove_rack_post_save
         for rack in remove_racks:
             try:
                 for hook_name, hook_plugin in hooks.items():
@@ -247,8 +250,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
             except Exception as e:
                 logging.exception(e)
                 message = push_message(message, _("After rack (%s) was removed. "
-                                                  "Error in plugin (%s): %s") % \
-                       (rack.label, hook_name, e))
+                                                  "Error in plugin (%s): %s") % (rack.label, hook_name, e))
 
     if len(not_remove_racks) > 0:
         labels_message = resource_mgr.get_labels_message(not_remove_racks)
@@ -263,6 +265,7 @@ def remove_rack(labels=None, all_racks=False, rackids=None):
     message = push_message(message, result_message)
     session.close()
     return ret, message
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def change_rack_properties(label=None, rackid=None, new_label=None, data_center=None,
@@ -332,7 +335,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
         rack.notes = notes
 
     hooks = _load_inventory_rack_plugins()
-    hook_name = 'unknown' #keeps pylint happy
+    hook_name = 'unknown'  # keeps pylint happy
     try:
         for hook_name, hook_plugin in hooks.items():
             hook_plugin.change_rack_pre_save(rack)
@@ -356,6 +359,7 @@ def change_rack_properties(label=None, rackid=None, new_label=None, data_center=
     session.close()
     return 0, message
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_rack_id_by_label(rack_label):
     """
@@ -371,6 +375,7 @@ def get_rack_id_by_label(rack_label):
     session.close()
     return rack_id
 
+
 def _get_racktag_text_id(tag_name):
     racktag_id = {
         'rackid': _('id'),
@@ -385,6 +390,7 @@ def _get_racktag_text_id(tag_name):
     if tag_name in racktag_id:
         return racktag_id[tag_name]
     return tag_name
+
 
 def _load_inventory_rack_plugins():
     """

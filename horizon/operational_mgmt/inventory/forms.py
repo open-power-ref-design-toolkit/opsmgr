@@ -356,8 +356,7 @@ class EditResourceForm(forms.SelfHandlingForm):
                                        int(data['rackid'])):
                 new_rackid = data['rackid']
             new_eia_location = None
-            if ('eiaLocation' in data) and (self.initial['eiaLocation']
-                                            != data['eiaLocation']):
+            if ('eiaLocation' in data) and (self.initial['eiaLocation'] != data['eiaLocation']):
                 new_eia_location = data['eiaLocation']
 
             # Need to ensure we pass correct authentication-related fields

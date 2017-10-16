@@ -41,7 +41,7 @@ def _load_yml(inventory_name):
     return gen_dict
 
 
-def process_inventory(inv_name,output_file):
+def process_inventory(inv_name, output_file):
     """Process the input inventory file.
 
     :param inv_name: The path name of the input genesis inventory.
@@ -51,7 +51,7 @@ def process_inventory(inv_name,output_file):
         gen_dict = _load_yml(inv_name)
         env_vars_dict = gen_dict.get('deployment-environment')
         out = open(output_file, 'w')
-        if env_vars_dict == None or env_vars_dict == {}:
+        if env_vars_dict is None or env_vars_dict == {}:
             out.write('---\n')
             out.write('deployment_environment_variables: {}\n')
         else:
@@ -96,7 +96,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    args.func(args.input_file,args.output_file)
+    args.func(args.input_file, args.output_file)
 
     return 0
 

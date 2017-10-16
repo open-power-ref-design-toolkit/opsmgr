@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#Known issues
-#https://bugs.python.org/issue9694 argparse required arguments displayed under "optional arguments"
+# Known issues
+# https://bugs.python.org/issue9694 argparse required arguments displayed under "optional arguments"
 
 import argparse
 import getpass
@@ -27,6 +27,7 @@ import paramiko
 from opsmgr.discovery import discovery_mgr
 from opsmgr.inventory import resource_mgr, rack_mgr, remote_access
 from opsmgr.common.utils import get_strip_strings_array, LoggingService
+
 
 def _prompt_for_key_password(key_file, password=None):
     """ Given a key_file will attempt read it, if password is None
@@ -52,6 +53,7 @@ def _read_key_file(key_file, password=None):
         ssh_key_string = file.read()
         file.close()
     return (ssh_key_string, password)
+
 
 def add_device(args):
     ssh_key_string = None
@@ -80,8 +82,10 @@ def add_device(args):
     return resource_mgr.add_resource(args.label, args.type, args.address, args.user,
                                      password, rack_id, args.rack_location, ssh_key_string)
 
+
 def add_rack(args):
     return rack_mgr.add_rack(args.label, args.data_center, args.room, args.row, args.notes)
+
 
 def change_device(args):
     ssh_key_string = None
@@ -118,6 +122,7 @@ def change_device(args):
                                                    rack_location=args.rack_location,
                                                    ssh_key=ssh_key_string)
 
+
 def change_device_password(args):
     if not args.oldpassword:
         old_password = getpass.getpass(prompt='Enter the current Password:')
@@ -142,14 +147,15 @@ def change_device_password(args):
     return resource_mgr.change_resource_password(label=args.label, old_password=old_password,
                                                  new_password=new_password)
 
+
 def change_rack(args):
-    if not args.new_label and not args.data_center and not args.room \
-           and not args.row and not args.notes:
+    if not args.new_label and not args.data_center and not args.room and not args.row and not args.notes:
         message = _("You must specify at least one property to be modified.")
         return -1, message
     return rack_mgr.change_rack_properties(label=args.label, new_label=args.new_label,
                                            data_center=args.data_center, room=args.room,
                                            row=args.row, notes=args.notes)
+
 
 def list_devices(args):
     labels = None
@@ -227,7 +233,7 @@ def list_devices(args):
             line += "\n"
             result += line
     except KeyError:
-        #if a key is missing the error will be in the message
+        # if a key is missing the error will be in the message
         pass
 
     # if a message, now output it
@@ -235,6 +241,7 @@ def list_devices(args):
         result += "\n"
         result += result_dict['message']
     return (rc, result)
+
 
 def list_racks(args):
     labels = None
@@ -276,7 +283,7 @@ def list_racks(args):
             line += "\n"
             result += line
     except KeyError:
-        #if a key is missing the error will be in the message
+        # if a key is missing the error will be in the message
         pass
 
     # if a message, now output it
@@ -285,13 +292,16 @@ def list_racks(args):
         result += result_dict['message']
     return (rc, result)
 
+
 def list_supported_device_types():
     device_types = resource_mgr.list_resource_types()
     result = ",".join(device_types)
     return 0, result
 
+
 def remote_access_cmd(args):
     return remote_access.remote_access(args.label)
+
 
 def remove_device(args):
     labels = None
@@ -299,17 +309,21 @@ def remove_device(args):
         labels = get_strip_strings_array(str(args.label))
     return resource_mgr.remove_resource(labels, args.all)
 
+
 def remove_rack(args):
     labels = get_strip_strings_array(str(args.label))
     return rack_mgr.remove_rack(labels)
+
 
 def list_discovery_plugins():
     discovery_plugins = discovery_mgr.list_plugins()
     result = ",".join(discovery_plugins)
     return 0, result
 
+
 def find_resources():
     return discovery_mgr.find_resources()
+
 
 def import_resources(args):
     if args.label:
@@ -317,6 +331,7 @@ def import_resources(args):
     else:
         resource = '*'
     return discovery_mgr.import_resources(resource, args.offline)
+
 
 def add_role(args):
     roles = get_strip_strings_array(str(args.role))
@@ -330,17 +345,18 @@ def add_role(args):
 
     return resource_mgr.add_resource_roles(args.label, None, roles, data_dict)
 
+
 def main(argv=sys.argv[1:]):
     LoggingService().init_cli_logging()
 
     parser = argparse.ArgumentParser(description='Integrated Manager Commands')
     subparsers = parser.add_subparsers(dest='operation', help='Actions')
 
-    #Three letter variable names are parser + command name
-    #pad = Parser add_device
-    #plr = Parser list_rack
+    # Three letter variable names are parser + command name
+    # pad = Parser add_device
+    # plr = Parser list_rack
 
-    #add_resource
+    # add_resource
     pad = subparsers.add_parser('add_resource', help='Add a resource to be managed')
     pad.add_argument('-l', '--label', required=True, help='Label for the resource being added')
     pad.add_argument('-u', '--user', required=True,
@@ -356,7 +372,7 @@ def main(argv=sys.argv[1:]):
     pad.add_argument('-r', '--rack', help='The rack label, defaults to the first rack')
     pad.add_argument('--rack-location', help='The location in the rack of the resource being added')
 
-    #add_rack
+    # add_rack
     par = subparsers.add_parser('add_rack', help='Add a rack to group resources')
     par.add_argument('-l', '--label', required=True, help='Label for the rack being added')
     par.add_argument('--data-center',
@@ -366,7 +382,7 @@ def main(argv=sys.argv[1:]):
     par.add_argument('-n', '--notes',
                      help='Text notes with any additional information about the rack')
 
-    #change_resource
+    # change_resource
     pcd = subparsers.add_parser('change_resource',
                                 help='Modify parameters associated with a resource')
     pcd.add_argument('-l', '--label', required=True, help='Label for the resource being modified')
@@ -381,14 +397,14 @@ def main(argv=sys.argv[1:]):
     pcd.add_argument('-r', '--rack', help='The label of the rack to assign the resource to')
     pcd.add_argument('--rack-location', help='The location in the rack of the resource')
 
-    #change_resource_password
+    # change_resource_password
     pcdp = subparsers.add_parser('change_resource_password',
                                  help='Change the password on the resource')
     pcdp.add_argument('-l', '--label', required=True, help='Label for the resource being modified')
     pcdp.add_argument('-o', '--oldpassword', help='The current password of the resource')
     pcdp.add_argument('-n', '--newpassword', help='The new password of the resource')
 
-    #change_rack
+    # change_rack
     pcr = subparsers.add_parser('change_rack', help='Modify parameters associated with a rack')
     pcr.add_argument('-l', '--label', required=True, help='Label for the rack being modified')
     pcr.add_argument('--new-label', help='New label for the rack.')
@@ -399,7 +415,7 @@ def main(argv=sys.argv[1:]):
     pcr.add_argument('-n', '--notes',
                      help='Text notes with any additional information about the rack')
 
-    #list_resources
+    # list_resources
     pld = subparsers.add_parser('list_resources', help='List the managed resources')
     pld_mxg = pld.add_mutually_exclusive_group()
     pld.add_argument('-b', '--briefly', action='store_true',
@@ -407,69 +423,64 @@ def main(argv=sys.argv[1:]):
     pld_mxg.add_argument('-l', '--label',
                          help='The label of the resource to list, multiple labels are comma'
                               ' separated.')
-    pld_mxg.add_argument('-t', '--type', help='The type of the resource to list, ' \
+    pld_mxg.add_argument('-t', '--type', help='The type of the resource to list, '
                          'multiple types are comma separated.')
     pld_mxg.add_argument('-r', '--rack',
                          help='The rack label of the resource to list, multiple rack labels are'
                               ' comma separated.')
 
-    #list_rack
+    # list_rack
     plr = subparsers.add_parser('list_racks', help='List the managed racks')
     plr.add_argument('-b', '--briefly', action='store_true', help='Only list the rack labels')
     plr.add_argument('-l', '--label',
                      help='The label of the rack to list, multiple labels are comma separated.')
 
-    #list_resource_types
+    # list_resource_types
     subparsers.add_parser('list_resource_types',
                           help='List the supported resource types')
 
-    #remote_access
+    # remote_access
     pra = subparsers.add_parser('remote_access',
                                 help='Interactive ssh session to a managed resource.')
     pra.add_argument('-l', '--label', required=True,
                      help='Label of the resource to ceate ssh session for.')
 
-    #remove_resource
+    # remove_resource
     prd = subparsers.add_parser('remove_resource', help='Removes a managed resource')
-    #prd.add_argument('-f', '--force', action='store_true',
+    # prd.add_argument('-f', '--force', action='store_true',
     #                 help='Forces the removal of the resource')
     prd_mxg = prd.add_mutually_exclusive_group()
     prd_mxg.add_argument('-a', '--all', action='store_true', help='Removes all the resources')
     prd_mxg.add_argument('-l', '--label',
                          help='Label of resource to remove, multiple labels are comma separated.')
 
-    #remove_rack
+    # remove_rack
     prr = subparsers.add_parser('remove_rack', help='Removes a rack having no resources')
     prr.add_argument('-l', '--label', required=True, help='Label of the rack to be removed.')
 
-    #list_discovery_plugins
+    # list_discovery_plugins
     subparsers.add_parser('list_discovery_plugins',
                           help='List the supported discovery plugin types')
 
-    #find_resources
+    # find_resources
     subparsers.add_parser('find_resources',
-                          help='Loads all supported discovery plugins and lists resources ' \
-                               'from them')
+                          help='Loads all supported discovery plugins and lists resources from them')
 
-    #import_resources
+    # import_resources
     pir = subparsers.add_parser('import_resources',
-                                help='Loads all supported discovery plugins and imports ' \
-                                     'resources from them')
+                                help='Loads all supported discovery plugins and imports resources from them')
     pir.add_argument('--offline', action='store_true',
                      help='Imports resource into Inventory even if it is offline.')
     pir.add_argument('-l', '--label', required=False,
-                     help='Label of the resource to import into Inventory. If omitted, ' \
-                          'all are imported.')
+                     help='Label of the resource to import into Inventory. If omitted, all are imported.')
 
-    #add_role
+    # add_role
     par = subparsers.add_parser('add_role',
                                 help='Adds a role to a resource')
     par.add_argument('-l', '--label', required=True, help='Label for the resource with the role')
-    par.add_argument('-r', '--role', required=True, help='Role the resource plays in the ' \
-                                                         'environment. Multiple roles are ' \
-                                                         'comma separated')
-    par.add_argument('-d', '--data', help='additional data inputed as key=value pairs saved ' \
-                                          'in a python dictonary')
+    par.add_argument('-r', '--role', required=True, help='Role the resource plays in the '
+                                                         'environment. Multiple roles are comma separated')
+    par.add_argument('-d', '--data', help='additional data inputed as key=value pairs saved in a python dictonary')
 
     message = ''
     rc = -1
@@ -507,7 +518,6 @@ def main(argv=sys.argv[1:]):
         (rc, message) = add_role(args)
     else:
         parser.print_help()
-
 
     if message:
         print(message)

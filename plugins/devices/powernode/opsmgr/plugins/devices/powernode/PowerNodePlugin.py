@@ -18,6 +18,7 @@ from opsmgr.common import exceptions
 from opsmgr.common.utils import entry_exit, execute_command
 from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
+
 class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
     IPMI_TOOL = "/usr/local/bin/ipmitool"
@@ -136,4 +137,3 @@ class PowerNodePlugin(IManagerDevicePlugin.IManagerDevicePlugin):
         else:
             raise exceptions.DeviceException("Failed to determine the id for the user: %s" %
                                              self.userid)
-

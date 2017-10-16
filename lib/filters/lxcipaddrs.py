@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from netaddr import IPNetwork, IPAddress
+from netaddr import IPNetwork
+
 
 def lxcipaddrs(cidr, blacklist=[], num=1):
     whitelist = []
@@ -24,12 +25,12 @@ def lxcipaddrs(cidr, blacklist=[], num=1):
         whitelist.append(ipstr)
         count += 1
         if count == num:
-          break
+            break
     return whitelist
+
 
 class FilterModule(object):
     def filters(self):
         return {
             'lxcipaddrs': lxcipaddrs,
         }
-

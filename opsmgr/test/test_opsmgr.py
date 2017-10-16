@@ -13,8 +13,6 @@
 # limitations under the License.
 
 import paramiko as sshconnect
-import getpass
-import os
 import unittest
 
 output_string = 'label,rack id,rack location,machine type model,serial number,ip-address,userid,version,device type'
@@ -29,7 +27,7 @@ class SSHUtility(object):
         global ip_address
         global user
         global _pass
-     
+
         ip_address = '127.0.0.1'
         user = 'userid'
         _pass = 'PASSW0RD'
@@ -39,7 +37,6 @@ class SSHUtility(object):
             ssh_session = sshconnect.SSHClient()
             ssh_session.set_missing_host_key_policy(sshconnect.AutoAddPolicy())
             ssh_session.connect(ip_address, username=user, password=_pass)
-
 
     def execute_command(self, command='ls'):
         global ssh_session
@@ -62,7 +59,7 @@ class Test_1(unittest.TestCase):
         x.execute_command('opsmgr remove_device --all')
         x.execute_command('opsmgr add_device -l rhel -u root -p PASSW0RD -a 9.27.24.68')
         line = x.execute_command('opsmgr list_devices | tee >(wc -l) | tail -c 2 ')
-        ip =x.execute_command('''opsmgr list_devices | egrep -o  '([0-9]{1,3}\.){3}[0-9]{1,3}' ''')
+        ip = x.execute_command('''opsmgr list_devices | egrep -o  '([0-9]{1,3}\.){3}[0-9]{1,3}' ''')
         x.execute_command('opsmgr add_device -l v7000 -u superuser -p stor1virt -a 9.114.44.11')
         line = x.execute_command('opsmgr list_devices | tee >(wc -l) | tail -c 2 ')
 
@@ -75,7 +72,6 @@ class Test_1(unittest.TestCase):
         x = SSHUtility()
         x.execute_command('opsmgr remove_device --all')
         print(x.execute_command('opsmgr list_racks'))
-
 
     def test_remove_device(self):
         x = SSHUtility()

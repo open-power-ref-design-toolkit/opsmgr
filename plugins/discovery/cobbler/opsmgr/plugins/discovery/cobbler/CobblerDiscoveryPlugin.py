@@ -25,13 +25,14 @@ COBBLER_TAG_MAC = "mac_address_eth0"
 COBBLER_TAG_ADDRESS = "ip_address_eth0"
 COBBLER_TAG_BREED = "breed"
 
-COBBLER_DIC_TYPES = {'ubuntu' : 'Ubuntu',
-                     'rhel' : 'Redhat Enterprise Linux'}
+COBBLER_DIC_TYPES = {'ubuntu': 'Ubuntu',
+                     'rhel': 'Redhat Enterprise Linux'}
 
-#TODO: read these parameters from Cobbler too
+# TODO: read these parameters from Cobbler too
 SUDO_PASSWORD = "setup4me"
 DEFAULT_RESOURCE_USER = "ubuntu"
 DEFAULT_RESOURCE_PWD = "ubuntu"
+
 
 class CobblerPlugin(IDiscoveryPlugin):
 
@@ -163,4 +164,3 @@ class CobblerPlugin(IDiscoveryPlugin):
         if self.shell:
             self.shell.close()
             self.shell = None
-

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 def lxcaddress(lxc_info, lxc_name):
     for i, res in enumerate(lxc_info['results']):
         if res['item']['name'] == lxc_name:
@@ -20,9 +21,9 @@ def lxcaddress(lxc_info, lxc_name):
                     return ip
     return None
 
+
 class FilterModule(object):
     def filters(self):
         return {
             'lxcaddress': lxcaddress,
         }
-

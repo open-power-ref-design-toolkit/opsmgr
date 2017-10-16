@@ -19,6 +19,7 @@ from opsmgr.inventory.interfaces.IOperationsPlugin import IOperationsPlugin
 from opsmgr.inventory import plugins
 from opsmgr.common.utils import entry_exit
 
+
 class ELKPlugin(IOperationsPlugin):
 
     OPSMGR_CONF = "/etc/opsmgr/opsmgr.conf"
@@ -40,12 +41,11 @@ class ELKPlugin(IOperationsPlugin):
                 pluginApp = plugins.PluginApplication(application, capability, web_protcol,
                                                       web_proxy, web_port, None)
             except configparser.Error:
-               # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
-               pass
+                # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
+                pass
         return pluginApp
 
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def get_status():
         return (None, None)
- 

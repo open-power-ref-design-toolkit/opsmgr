@@ -25,6 +25,7 @@ from opsmgr.common import exceptions
 from opsmgr.common.utils import entry_exit
 from opsmgr.plugins.operations.nagios.NagiosStatusParsing import parse_host_data, parse_service_data
 
+
 class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
 
     CONFIG_PATH = "/usr/local/nagios/opsmgr/nagios_config"
@@ -40,7 +41,7 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
     NAGIOS_SERVER = "server"
     NAGIOS_USERID = "userid"
     NAGIOS_SSHKEY = "sshkey"
-    
+
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def get_application_url():
@@ -56,8 +57,8 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
                 pluginApp = plugins.PluginApplication("nagios", "monitoring", web_protcol,
                                                       web_proxy, web_port, web_path)
             except configparser.Error:
-               # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
-               pass
+                # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
+                pass
         return pluginApp
 
     @staticmethod
@@ -149,14 +150,16 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
         # parse service status for red/yellow status strings; should return more than service_err
         for key in service_stats:
             if service_stats[key].get('service_status') == "CRITICAL":
-                red_stats.append(service_stats[key].get('host_name')+':'+service_stats[key].get('service_name')+':'+service_stats[key].get('service_err') + "\n")
+                red_stats.append(service_stats[key].get('host_name') + ':' + service_stats[key].get('service_name') +
+                                 ':' + service_stats[key].get('service_err') + "\n")
             if service_stats[key].get('service_status') == "WARNING":
-                yellow_stats.append(service_stats[key].get('host_name')+':'+service_stats[key].get('service_name')+':'+service_stats[key].get('service_err') + "\n")
+                yellow_stats.append(service_stats[key].get('host_name') + ':' + service_stats[key].get('service_name') +
+                                    ':' + service_stats[key].get('service_err') + "\n")
             if service_stats[key].get('service_status') == "UNKNOWN":
-                yellow_stats.append(service_stats[key].get('host_name')+':'+service_stats[key].get('service_name')+':'+service_stats[key].get('service_err') + "\n")
+                yellow_stats.append(service_stats[key].get('host_name') + ':' + service_stats[key].get('service_name') +
+                                    ':' + service_stats[key].get('service_err') + "\n")
 
         return (red_stats, yellow_stats)
-
 
     ###########################################################################
     #                      PRIVATE METHODS BELOW HERE                         #
@@ -191,14 +194,14 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
 
     @staticmethod
     def _write_creds_file(address, userid, password, key_string):
-        #try:
+        # try:
             client = NagiosPlugin._connect()
             sftp = client.open_sftp()
             try:
                 NagiosPlugin._mkdir(client, NagiosPlugin.CREDS_DIR)
                 NagiosPlugin._chown(client, NagiosPlugin.CREDS_DIR, 'nagios', 'nagios')
             except IOError:
-                #directory already exist
+                # directory already exist
                 pass
             target_file = "/tmp/" + address + ".crd"
             file_handle = sftp.open(target_file, 'w')
@@ -213,7 +216,7 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
             NagiosPlugin._chmod(client, target_file, '0600')
             NagiosPlugin._chown(client, target_file, 'nagios', 'nagios')
             NagiosPlugin._mv(client, target_file, NagiosPlugin.CREDS_DIR)
-        #finally:
+        # finally:
             client.close()
 
     @staticmethod
@@ -226,7 +229,7 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
                 NagiosPlugin._mkdir(client, NagiosPlugin.HOSTS_DIR)
                 NagiosPlugin._chown(client, NagiosPlugin.HOSTS_DIR, 'nagios', 'nagios')
             except IOError:
-                #directory already exist
+                # directory already exist
                 pass
             source_file = NagiosPlugin.HOSTS_DIR + "/" + device_type.replace(" ", "_") + ".host"
             target_file = "/tmp/" + hostname + ".cfg"
@@ -287,21 +290,21 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def _remove_config_files(hostname):
-        #try:
+        # try:
             client = NagiosPlugin._connect()
             target_file = NagiosPlugin.HOSTS_DIR + "/" + hostname + "*.cfg"
             try:
                 NagiosPlugin._rm(client, target_file)
             except IOError:
-                #file already removed
+                # file already removed
                 pass
             target_file = NagiosPlugin.CREDS_DIR + "/." + hostname + ".creds"
             try:
                 NagiosPlugin._rm(client, target_file)
             except IOError:
-                #file already removed
+                # file already removed
                 pass
-        #finally:
+        # finally:
             client.close()
 
     @staticmethod
@@ -391,6 +394,3 @@ class NagiosPlugin(IManagerDeviceHook, IOperationsPlugin):
             raise
         else:
             return True
-
-
-

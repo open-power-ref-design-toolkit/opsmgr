@@ -24,6 +24,7 @@ from opsmgr.common.utils import entry_exit
 
 OPSMGR_CONF = "/etc/opsmgr/opsmgr.conf"
 
+
 def encrypt_data(str_to_encrypt):
     """ encrypt data in string to encoded value
     """
@@ -99,7 +100,8 @@ def read_passphrase():
         return key_hash
     else:
         pass
-        #TODO raise an exception here
+        # TODO raise an exception here
+
 
 def read_database_connection():
     """ gets the database connection info and returns it
@@ -110,7 +112,8 @@ def read_database_connection():
         return parser.get('DATABASE', 'connection')
     else:
         pass
-        #TODO raise an exception here
+        # TODO raise an exception here
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def create_database_session():
@@ -120,6 +123,7 @@ def create_database_session():
     Base.metadata.bind = engine
     db_session = sessionmaker(bind=engine)
     return db_session()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_device_by_label(session, label):
@@ -132,6 +136,7 @@ def get_device_by_label(session, label):
     """
     return session.query(Resource).filter(Resource.label == label).one_or_none()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_device_by_id(session, device_id):
     """get Device by id
@@ -142,6 +147,7 @@ def get_device_by_id(session, device_id):
         device found or None
     """
     return session.query(Resource).filter(Resource.resource_id == device_id).one_or_none()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_devices_by_labels(session, labels):
@@ -164,6 +170,7 @@ def get_devices_by_labels(session, labels):
             devices.append(device)
     return (devices, not_found_labels)
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_devices_by_ids(session, device_ids):
     """get Devices by ids
@@ -184,6 +191,7 @@ def get_devices_by_ids(session, device_ids):
         else:
             devices.append(device)
     return (devices, not_found_ids)
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_devices_by_device_type(session, device_types):
@@ -206,6 +214,7 @@ def get_devices_by_device_type(session, device_types):
             all_devices.append(devices)
     return (all_devices, not_found_device_types)
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_all_devices(session):
     """get all devices from the data store
@@ -215,6 +224,7 @@ def get_all_devices(session):
         [] List of Device classes
     """
     return session.query(Resource).order_by(Resource.resource_id).all()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_rack_by_label(session, label):
@@ -227,6 +237,7 @@ def get_rack_by_label(session, label):
     """
     return session.query(Rack).filter(Rack.label == label).one_or_none()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_rack_by_id(session, rack_id):
     """get rack by id
@@ -237,6 +248,7 @@ def get_rack_by_id(session, rack_id):
         rack found or None
     """
     return session.query(Rack).filter(Rack.rack_id == rack_id).one_or_none()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_racks_by_labels(session, labels):
@@ -259,6 +271,7 @@ def get_racks_by_labels(session, labels):
             racks.append(rack)
     return (racks, not_found_labels)
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_racks_by_ids(session, rack_ids):
     """get racks by ids
@@ -280,6 +293,7 @@ def get_racks_by_ids(session, rack_ids):
             racks.append(rack)
     return (racks, not_found_ids)
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_all_racks(session):
     """get all racks from the data store
@@ -289,6 +303,7 @@ def get_all_racks(session):
         [] List of Rack classes
     """
     return session.query(Rack).order_by(Rack.rack_id).all()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def get_device_roles_by_device_id(session, device_id):
@@ -301,6 +316,7 @@ def get_device_roles_by_device_id(session, device_id):
     """
     return session.query(ResourceRole).filter(ResourceRole.resource_id == device_id).all()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def add_racks(session, racks):
     """ Adds the racks in the list to the data store
@@ -311,6 +327,7 @@ def add_racks(session, racks):
     """
     _add(session, racks)
     session.commit()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def add_devices(session, devices):
@@ -323,15 +340,18 @@ def add_devices(session, devices):
     _add(session, devices)
     session.commit()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def add_ssh_keys(session, ssh_keys):
     _add(session, ssh_keys)
     session.commit()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def add_device_roles(session, device_roles):
     _add(session, device_roles)
     session.commit()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def update_rack(session):
@@ -344,6 +364,7 @@ def update_rack(session):
     """
     session.commit()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def update_device(session):
     """ Updates devices in data store
@@ -354,6 +375,7 @@ def update_device(session):
         nothing
     """
     session.commit()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def delete_racks(session, racks):
@@ -367,6 +389,7 @@ def delete_racks(session, racks):
     """
     _delete(session, racks)
     session.commit()
+
 
 @entry_exit(exclude_index=[], exclude_name=[])
 def delete_devices(session, devices):
@@ -392,6 +415,7 @@ def delete_devices(session, devices):
     _delete(session, devices)
     session.commit()
 
+
 @entry_exit(exclude_index=[], exclude_name=[])
 def delete_keys(session, keys):
     """Removes list of key classes from data store
@@ -405,10 +429,12 @@ def delete_keys(session, keys):
     _delete(session, keys)
     session.commit()
 
+
 def _add(session, items):
     items = [] if items is None else items
     for item in items:
         session.add(item)
+
 
 def _delete(session, items):
     items = [] if items is None else items

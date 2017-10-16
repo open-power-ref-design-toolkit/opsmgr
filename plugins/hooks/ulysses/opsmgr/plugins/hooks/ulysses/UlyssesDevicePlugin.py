@@ -13,15 +13,16 @@
 # limitations under the License.
 
 try:
-    #python 2.7
+    # python 2.7
     from StringIO import StringIO
 except ImportError:
-    #python 3.4
+    # python 3.4
     from io import StringIO
 import paramiko
 from opsmgr.inventory.interfaces.IManagerDeviceHook import IManagerDeviceHook
 from opsmgr.inventory import resource_mgr, persistent_mgr
 from opsmgr.common.utils import entry_exit
+
 
 class UlyssesDevicePlugin(IManagerDeviceHook):
 

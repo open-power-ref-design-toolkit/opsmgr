@@ -13,16 +13,16 @@
 # limitations under the License.
 
 import os
-import re
 
 import paramiko
 
 from backports import configparser
 from opsmgr.inventory.interfaces.IManagerDeviceHook import IManagerDeviceHook
 from opsmgr.inventory.interfaces.IOperationsPlugin import IOperationsPlugin
-from opsmgr.inventory import persistent_mgr, plugins
+from opsmgr.inventory import plugins
 from opsmgr.common import exceptions
 from opsmgr.common.utils import entry_exit
+
 
 class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
 
@@ -43,7 +43,7 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
     def get_application_url():
         pluginApp = None
         if os.path.exists(GangliaPlugin.OPSMGR_CONF):
-            try: 
+            try:
                 parser = configparser.ConfigParser()
                 parser.read(GangliaPlugin.OPSMGR_CONF, encoding='utf-8')
                 web_protcol = parser.get(GangliaPlugin.GANGLIA_SECTION, "web_protocol").strip('"')
@@ -53,8 +53,8 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
                 pluginApp = plugins.PluginApplication("ganglia", "monitoring", web_protcol,
                                                       web_proxy, web_port, web_path)
             except configparser.Error:
-               # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
-               pass
+                # App missing from /etc/opsmgr/opsmgr.conf, may not be installed
+                pass
 
         return pluginApp
 
@@ -97,7 +97,7 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
         if new_address != old_address:
             GangliaPlugin._change_config_files(old_address)
             GangliaPlugin._reload_gmetad()
-    
+
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def get_status():
@@ -130,37 +130,33 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
         finally:
             client.close()
 
-
-
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def _write_gmetad_config_file(address):
         try:
             client = GangliaPlugin._connect()
-            cmd="cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 1 ]; then " + "sudo sed -i 's/localhost[[:space:]]*$/" + address + " &/' /etc/ganglia/gmetad.conf; service gmetad restart; fi"
+            cmd = "cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 1 ]; then " + "sudo sed -i 's/localhost[[:space:]]*$/" + address + " &/' /etc/ganglia/gmetad.conf; service gmetad restart; fi"
             (_stdin, stdout, _stderr) = client.exec_command(cmd)
             rc = stdout.channel.recv_exit_status()
             if rc != 0:
                 raise exceptions.OpsException("Error when change gmetad config file:\n"
-                                          "Command: " + cmd + "\n"
-                                          "Output: " + output + "\n")
+                                              "Command: " + cmd + "\n"
+                                              "Output: " + output + "\n")
         finally:
             client.close()
-
-
 
     @staticmethod
     @entry_exit(exclude_index=[], exclude_name=[])
     def _remove_config_files(address):
         try:
             client = GangliaPlugin._connect()
-            cmd="cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 0 ]; then " + "sudo sed -i 's/" + address + "//'  /etc/ganglia/gmetad.conf; service gmetad restart; fi"
+            cmd = "cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 0 ]; then " + "sudo sed -i 's/" + address + "//'  /etc/ganglia/gmetad.conf; service gmetad restart; fi"
             (_stdin, stdout, _stderr) = client.exec_command(cmd)
             rc = stdout.channel.recv_exit_status()
             if rc != 0:
                 raise exceptions.OpsException("Error when change gmetad config file:\n"
-                                          "Command: " + cmd + "\n"
-                                          "Output: " + output + "\n")
+                                              "Command: " + cmd + "\n"
+                                              "Output: " + output + "\n")
         finally:
             client.close()
 
@@ -184,9 +180,3 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
                                               "Userid: " + userid + "\n"
                                               "Sshkey: " + sshkey + "\n")
         return client
-
-
-
-
-
-

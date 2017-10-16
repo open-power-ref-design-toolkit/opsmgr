@@ -14,6 +14,7 @@
 
 from abc import ABCMeta, abstractmethod
 
+
 class IManagementPlugin(object):
     __metaclass__ = ABCMeta
 
@@ -74,4 +75,3 @@ class IManagementPlugin(object):
     @abstractmethod
     def restart(self):
         pass
-

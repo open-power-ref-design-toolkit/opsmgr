@@ -26,19 +26,19 @@ setup(
     url='',
 
     classifiers=[
-                 'Programming Language :: Python',
-                 'Programming Language :: Python :: 2',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3',
-                 'Programming Language :: Python :: 3.4',
-                 'Programming Language :: Python :: 3.5',
-                 ],
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+    ],
 
     platforms=['Any'],
 
     scripts=[],
 
-    namespace_packages=['opsmgr','opsmgr.plugins','opsmgr.plugins.operations'],
+    namespace_packages=['opsmgr', 'opsmgr.plugins', 'opsmgr.plugins.operations'],
 
     provides=['opsmgr.plugins.operations.elk'],
 
@@ -53,4 +53,3 @@ setup(
 
     zip_safe=False,
 )
-

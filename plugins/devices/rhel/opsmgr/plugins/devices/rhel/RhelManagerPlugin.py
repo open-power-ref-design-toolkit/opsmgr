@@ -17,10 +17,10 @@ import socket
 import time
 
 try:
-    #python 2.7
+    # python 2.7
     from StringIO import StringIO
 except ImportError:
-    #python 3.4
+    # python 3.4
     from io import StringIO
 
 import paramiko
@@ -32,6 +32,7 @@ from opsmgr.inventory.interfaces import IManagerDevicePlugin
 
 RHEL_RELEASE_FILE = "/etc/redhat-release"
 RELEASE_TAG = "Red Hat Enterprise"
+
 
 class RhelPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 

@@ -33,6 +33,7 @@ LOG_DIR = "/var/log/opsmgr"
 LOG_FILE = LOG_DIR + "/opsmgr.log"
 LOG_ERROR_FILE = LOG_DIR + "/opsmgr_error.log"
 
+
 def _copy_logging_yaml():
     if os.path.exists(LOGGING_FILE):
         print(LOGGING_FILE + " already exist. Will not modify this file")
@@ -42,23 +43,22 @@ def _copy_logging_yaml():
         fp.write(logging_string)
         fp.close()
 
+
 def _write_conf_file(args):
-    #Hack to support python2.7
+    # Hack to support python2.7
     try:
         input = raw_input
     except NameError:
         pass
 
-
     if os.path.exists(CONF_FILE):
-        print(CONF_FILE + " exist. To generate a new passphrase delete " \
-              "this file and run the command again.")
+        print(CONF_FILE + " exist. To generate a new passphrase delete this file and run the command again.")
     else:
         passphrase = str(base64.b64encode(os.urandom(32)))
 
-        print("At this time only a mysql database on localhost is supported. " \
-              "Any sqlalchemy supported database can be used by " \
-              "modifying the connection property in " + CONF_FILE + " " \
+        print("At this time only a mysql database on localhost is supported. "
+              "Any sqlalchemy supported database can be used by "
+              "modifying the connection property in " + CONF_FILE + " "
               "and running opsmgr-admin db_sync.")
 
         if args.db_user:
@@ -69,8 +69,7 @@ def _write_conf_file(args):
         if args.db_password:
             password = args.db_password
         else:
-            password = getpass.getpass(prompt="Enter password for database userid (" +
-                                       userid + "):")
+            password = getpass.getpass(prompt="Enter password for database userid (" + userid + "):")
         if args.db_name:
             database_name = args.db_name
         else:
@@ -78,8 +77,7 @@ def _write_conf_file(args):
             if database_name == '':
                 database_name = "opsmgr"
 
-        connection_string = "mysql+pymysql://" + userid + ":" + password + \
-                        "@localhost/" + database_name
+        connection_string = "mysql+pymysql://" + userid + ":" + password + "@localhost/" + database_name
         cfgfile = open(CONF_FILE, 'w')
         config = configparser.ConfigParser()
         config.add_section('DATABASE')
@@ -89,10 +87,11 @@ def _write_conf_file(args):
         cfgfile.close()
 
         os.chmod(CONF_FILE, 0o600)
-        print(CONF_FILE + " has been created with the only the current user having read " \
-              "authority. To allow others to use the command line read access to this file " \
+        print(CONF_FILE + " has been created with the only the current user having read "
+              "authority. To allow others to use the command line read access to this file "
               "is required. Be aware that exposes the password for the database user.")
         db_sync()
+
 
 def _create_log_files():
     if not os.path.exists(LOG_DIR):
@@ -101,6 +100,7 @@ def _create_log_files():
         open(LOG_ERROR_FILE, 'a').close()
         os.chmod(LOG_FILE, 0o666)
         os.chmod(LOG_ERROR_FILE, 0o666)
+
 
 def post_install_config(args):
     """ Needs to:
@@ -117,10 +117,12 @@ def post_install_config(args):
     _write_conf_file(args)
     _create_log_files()
 
+
 def db_sync():
     engine = create_engine(persistent_mgr.read_database_connection())
     data_model.Base.metadata.create_all(engine)
     print("Database tables have been created")
+
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Operational Manager Admin Commands')
@@ -131,7 +133,7 @@ def main(argv=sys.argv[1:]):
     pic.add_argument('--db_password', help='Password of the database userid')
     pic.add_argument('--db_name', help='Name of the database (default: opsmgr')
 
-    #db_sync
+    # db_sync
     subparsers.add_parser('db_sync', help='Create the database tables')
 
     args = parser.parse_args(argv)

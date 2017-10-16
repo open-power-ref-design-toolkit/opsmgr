@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class CallbackModule(object):
 
     def runner_on_ok(self, host, res):
@@ -24,4 +25,3 @@ class CallbackModule(object):
     def v2_runner_on_ok(self, result):
         host = result._host.get_name()
         self.runner_on_ok(host, result._result)
-
