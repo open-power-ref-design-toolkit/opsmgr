@@ -25,10 +25,12 @@
 
   pre_tasks:
 
-    - local_action: command uname -r
+    - name: run uname cmd
+      local_action: command uname -r
       register: uname
 
-    - set_fact: ansible_kernel="{{ uname.stdout | replace('\"', '') }}"
+    - name: set ansible_kernel value
+      set_fact: ansible_kernel="{{ uname.stdout | replace('\"', '') }}"
 
   tasks:
 

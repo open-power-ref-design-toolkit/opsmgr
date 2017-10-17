@@ -17,7 +17,7 @@
     - genesis_dir: "/var/oprc"
     - osa_conf: "/etc/openstack_deploy"
     - osa_play: "/etc/ansible/roles"
-    - osa_home: "/opt/openstack-ansible" 
+    - osa_home: "/opt/openstack-ansible"
     - files_to_include:
         - "{{ osa_conf }}/user_secrets.yml"
         - "{{ osa_conf }}/openstack_user_config.yml"
@@ -26,13 +26,15 @@
         - "{{ osa_play }}/galera_client/defaults/main.yml"
         - "{{ osa_home }}/playbooks/inventory/group_vars/all.yml"
         - "{{ genesis_dir }}/inventory.yml"
-  
+
   pre_tasks:
 
-    - local_action: command uname -r
+    - name: run uname cmd
+      local_action: command uname -r
       register: uname
 
-    - set_fact: ansible_kernel="{{ uname.stdout | replace('\"', '') }}"
+    - name: set ansible_kernel value
+      set_fact: ansible_kernel="{{ uname.stdout | replace('\"', '') }}"
 
   tasks:
 
@@ -50,11 +52,13 @@
     - name: store it in variable for later use
       set_fact: routing_address="{{ result.stdout }}"
 
-    - template:
+    - name: create inventory from template
+      template:
           src: "templates/inventory.j2"
           dest: "{{ output_dir }}/inventory"
 
-    - template:
+    - name: create vars file from template
+      template:
           src: "templates/vars.yml.j2"
           dest: "{{ output_dir }}/vars.yml"
 

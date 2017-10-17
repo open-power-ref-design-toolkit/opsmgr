@@ -21,7 +21,8 @@
   pre_tasks:
     - debug: var=profile
     - debug: var=opsmgr_prl
-    - include_vars: "{{ opsmgr_prl }}/vars.yml"
+    - name: include vars file
+      include_vars: "{{ opsmgr_prl }}/vars.yml"
   tasks:
     - include: "{{ opsmgr_lib }}/util/import.yml"
 

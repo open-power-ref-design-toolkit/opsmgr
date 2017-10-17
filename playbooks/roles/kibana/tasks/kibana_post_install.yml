@@ -21,7 +21,7 @@
     owner: "root"
     group: "root"
   with_items:
-    - kibana.yml
+    - kibana.yml.j2
   notify: Restart Kibana
   tags:
     - kibana-post-install

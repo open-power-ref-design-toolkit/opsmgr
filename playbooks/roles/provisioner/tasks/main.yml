@@ -14,7 +14,7 @@
 # limitations under the License.
 
     # sets up ssh keys and configuration
-    
+
     - name: check if ssh keys should be imported
       stat:
           path: "{{ item }}"
@@ -32,7 +32,7 @@
         path: "{{ opsmgr_lib }}/keys/current"
         state: directory
         mode: 0700
-    
+
     - name: copy existing keys
       copy:
         src: "{{ item.0 }}"
@@ -45,7 +45,7 @@
         - [ "{{ provisioning_key_prv }}", "{{ provisioning_key_pub }}" ]
         - [ 'opsmgr.key', 'opsmgr.pub' ]
       when: use_existing_keys | bool == true
-    
+
     - name: fallback to use opsmgr master key instead
       copy:
         src: "{{ opsmgr_lib }}/keys/master/{{ item }}"
@@ -55,7 +55,7 @@
         - opsmgr.key
         - opsmgr.pub
       when: use_existing_keys | bool == false
-    
+
     # configure ssh proxy information
 
     - name: remove ~/.ssh/config.d directory if it exists

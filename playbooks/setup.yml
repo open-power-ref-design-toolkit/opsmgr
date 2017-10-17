@@ -25,7 +25,8 @@
 - hosts: all
   gather_facts: yes
   tasks:
-    - set_fact: provisioning_user_id={{ lookup('env','USER') }}
+    - name: set provisioning_user_id value
+      set_fact: provisioning_user_id={{ lookup('env','USER') }}
 
 - hosts: localhost
   connection: local

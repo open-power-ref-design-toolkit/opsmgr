@@ -6,22 +6,26 @@
   connection: local
   become: no
   tasks:
-    - file: dest={{ opsmgr_lib }}/hosts/host-* state=absent
-    - file: dest={{ opsmgr_lib }}/hosts state=directory
+    - name: remove previous hosts definitions
+      file: dest={{ opsmgr_lib }}/hosts/host-* state=absent
+    - name: create hosts directory
+      file: dest={{ opsmgr_lib }}/hosts state=directory
 
 # target uniqueness control - persist configuration
 - hosts: targets
   become: no
   serial: 1
   tasks:
-    - local_action: copy dest={{ opsmgr_lib }}/hosts/host-{{ ansible_ssh_host }} content={{ inventory_hostname }} force=no
+    - name: copy host files
+      local_action: copy dest={{ opsmgr_lib }}/hosts/host-{{ ansible_ssh_host }} content={{ inventory_hostname }} force=no
       when: ansible_ssh_host is defined
 
 # target uniqueness control - load configuration
 - hosts: targets
   become: no
   tasks:
-    - set_fact: alias={{ lookup("file", opsmgr_lib + "/hosts/host-" + ansible_ssh_host) }}
+    - name: set alias value
+      set_fact: alias={{ lookup("file", opsmgr_lib + "/hosts/host-" + ansible_ssh_host) }}
       when: ansible_ssh_host is defined
 
 - hosts: localhost

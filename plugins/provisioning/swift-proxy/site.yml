@@ -27,7 +27,8 @@
     - debug:
         msg: "ismetal = {{ ismetal }}"
 
-    - include_vars: "/etc/openstack_deploy/env.d/swift_proxy-container.yml"
+    - name: include vars file
+      include_vars: "/etc/openstack_deploy/env.d/swift_proxy-container.yml"
       ignore_errors: yes
 
     - name: check is_metal

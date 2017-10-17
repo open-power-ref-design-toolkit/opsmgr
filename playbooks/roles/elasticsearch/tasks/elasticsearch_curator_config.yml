@@ -27,7 +27,7 @@
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-  with_items: 
+  with_items:
     - "{{ elasticsearch_curator_configuration_files }}"
     - "{{ elasticsearch_curator_action_files }}"
   tags:

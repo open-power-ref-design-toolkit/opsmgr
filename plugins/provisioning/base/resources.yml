@@ -39,7 +39,7 @@
 
     - name: register resources in opsmgr
       shell: >
-          opsmgr add_resource -l "{{ item }}" -a "{{ hostvars[item].ansible_ssh_host }}" 
+          opsmgr add_resource -l "{{ item }}" -a "{{ hostvars[item].ansible_ssh_host }}"
           -u "{{ ansible_user_id }}" --key "/etc/opsmgr/opsmgr.key"
       with_items: "{{ groups['targets'] }}"
       when: >

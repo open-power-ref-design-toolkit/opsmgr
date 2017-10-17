@@ -25,7 +25,8 @@
         dest: "{{ opsmgr_dat }}/lxc-net.yml"
       delegate_to: localhost
 
-    - include_vars: "{{ opsmgr_dat }}/lxc-net.yml"
+    - name: include vars file
+      include_vars: "{{ opsmgr_dat }}/lxc-net.yml"
       delegate_to: localhost
 
     - name: drop veth cleanup script

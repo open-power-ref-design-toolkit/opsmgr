@@ -21,7 +21,7 @@
     - defaults.yml
   tasks:
 
-  # If the patch_ui var is set, then remove any openstack 
+  # If the patch_ui var is set, then remove any openstack
   # configuration files
   - name: Remove files from /etc/openstack_deploy/conf.d
     file: path="/etc/openstack_deploy/conf.d/{{ item }}" state=absent

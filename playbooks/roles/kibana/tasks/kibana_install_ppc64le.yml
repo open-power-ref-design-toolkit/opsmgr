@@ -20,7 +20,8 @@
 # kibana image and replace the nodejs binary with the ppc64le binrary.
 
 
-- include_vars: ppc64le.yml
+- name: include vars file
+  include_vars: ppc64le.yml
 
 - name: installs prereq packages
   package:

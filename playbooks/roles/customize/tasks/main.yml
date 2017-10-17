@@ -32,7 +32,7 @@
     # update network interfaces files
 
     - name: keep only br-mgmt on osa_interfaces.cfg
-      shell: sed -n -i '/auto br-vxlan/q;p' /etc/network/interfaces.d/osa_interfaces.cfg 
+      shell: sed -n -i '/auto br-vxlan/q;p' /etc/network/interfaces.d/osa_interfaces.cfg
 
     - name: remove vxlan.cfg if it exists
       file: path=/etc/network/interfaces.d/vxlan.cfg state=absent
