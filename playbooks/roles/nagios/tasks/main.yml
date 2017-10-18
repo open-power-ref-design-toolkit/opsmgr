@@ -133,7 +133,11 @@
       command: make install-commandmode chdir={{ nagios_dir }}
 
     - name: make nagios start on boot on Ubuntu
-      command: ln -sf /etc/init.d/nagios /etc/rcS.d/S99nagios
+      file:
+          src: /etc/rcS.d/S99nagios
+          dest: /etc/init.d/nagios
+          force: yes
+          state: link
       when: ansible_os_family == "Debian"
 
     - name: copy nagios conf to apache

@@ -68,9 +68,16 @@
       lineinfile: dest={{ opsmgr_dat }}/inventory-all line='{{ item }} ansible_ssh_host={{ hostvars[item].ansible_ssh_host }}'
       with_items: "{{groups['all']}}"
       when: hostvars[item].ansible_ssh_host is defined
+    - name: clean up facts and logs
+      file:
+          dest: "{{ opsmgr_dir }}/plugins/provisioning/base/{{ item }}"
+          state: absent
+      with_items:
+          - ".facts"
+          - "ansible.log"
+      when: runbase == true
     - name: run base ansible playbook
       shell: >
-        rm -rf .facts *.log;
         ansible-playbook -i "{{ opsmgr_dat }}/inventory-all"
         -e "opsmgr_dir={{ opsmgr_dir }}"
         site.yml
@@ -84,9 +91,17 @@
       with_items: "{{ groups.keys() }}"
       register: directory_stat
 
+    - name: clean up facts and logs
+      file:
+          dest: "{{ opsmgr_dir }}/plugins/provisioning/{{ item[0].item}}/{{ item[1] }}"
+          state: absent
+      with_nested:
+          - "{{ directory_stat.results }}"
+          - [ ".facts", "ansible.log", "run.log" ]
+      when: runtgts == true and item[0].stat.exists
+
     - name: run target ansible playbooks
       shell: >
-        rm -rf .facts *.log;
         ansible-playbook -i "{{ opsmgr_dat }}/inventory-{{ item.item }}"
         -e "opsmgr_dir={{ opsmgr_dir }}"
         site.yml
