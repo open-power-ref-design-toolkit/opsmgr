@@ -14,8 +14,8 @@
 # limitations under the License.
 
 nagios_download_site: https://assets.nagios.com/downloads/nagioscore/releases
-nagios_download_file: nagios-4.3.2.tar.gz
-nagios_download_checksum: "sha1:3a8a765583bd0588e77d87d32d7f2d618911c1f0"
+nagios_download_file: nagios-4.3.4.tar.gz
+nagios_download_checksum: "sha1:15e38467fecf8c42200d1f253e5b7d4d124abec1"
 plugin_download_site: http://nagios-plugins.org/download
 plugin_download_file: nagios-plugins-2.2.1.tar.gz
 plugin_download_checksum: "sha1:0d3fc8876343a906f0dcc2c00850e4ad956a150a"
