@@ -21,5 +21,5 @@ logstash_pre_packages:
 
 logstash_packages:
   - { url: "https://artifacts.elastic.co/downloads/logstash",
-      file: "logstash-5.3.0.rpm",
-      checksum: "5d1e69ebcba8c674b336ebf88478cffd177a71bc" }
+      file: "logstash-5.6.3.rpm",
+      checksum: "sha512:f1fbcbfb3c73e7e0eddb8f947d4dbae626ffb04236d9261d43278c23dea40ec6e0da4d826548d0cadf066ba14ca2673c7c9be5826381f3d7b922bd9b505c33c3" }

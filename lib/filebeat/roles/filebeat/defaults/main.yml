@@ -16,7 +16,7 @@
 package_path_host: /tmp
 package_path: /tmp/filebeat_install
 download_url: https://artifacts.elastic.co/downloads/beats/filebeat
-filebeat_version: 5.2.2
+filebeat_version: 5.6.3
 
 filebeat_logstash_port: "{{ logstash_beats_port |default(5044) }}"
 

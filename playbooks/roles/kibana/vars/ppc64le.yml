@@ -14,18 +14,18 @@
 #
 temp_install_directory: /tmp/kibana_install
 
-kibana_directory: kibana-5.3.0-linux-x86_64
-nodejs_directory: node-v6.9.5-linux-ppc64le
+kibana_directory: kibana-5.6.3-linux-x86_64
+nodejs_directory: node-v6.11.1-linux-ppc64le
 
 kibana_packages:
   - { url: "https://artifacts.elastic.co/downloads/kibana",
-      file: "kibana-5.3.0-linux-x86_64.tar.gz",
+      file: "kibana-5.6.3-linux-x86_64.tar.gz",
       directory: "{{ kibana_directory }}",
-      checksum: "sha1:4e9daf275f8ef749fba931c1f5c35f85662efd53" }
-  - { url: "http://nodejs.org/dist/v6.9.5",
-      file: "node-v6.9.5-linux-ppc64le.tar.gz",
+      checksum: "sha512:fe957f0a2def9fb40be32ac77986d5eb7cc3373f828eed8eae074770ef965cf01c36028f2f9790f927e217ee59a283e63273eb768b9d2375aa0cdf15e4963c9a" }
+  - { url: "http://nodejs.org/dist/v6.11.1",
+      file: "node-v6.11.1-linux-ppc64le.tar.gz",
       directory: "{{ nodejs_directory }}",
-      checksum: "sha1:f6beaac743e57df39eb022330dca4e331735ab61" }
+      checksum: "sha1:a5e508518d1bc288aeae1582c9669cdb6216932a" }
 
 config_dir: /opt/kibana/config
 install_dir: /opt/kibana

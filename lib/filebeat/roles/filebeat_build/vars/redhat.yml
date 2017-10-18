@@ -18,9 +18,9 @@ build_prereq_packages:
   - glibc-static
   - rpm-build
 
-filebeat_version: 5.2.2
+filebeat_version: 5.6.3
 rpm_package_amd64: filebeat-{{ filebeat_version }}-x86_64.rpm
 rpm_package_ppc64el: filebeat-{{ filebeat_version }}-1.ppc64le.rpm
 rpm_download_path: https://artifacts.elastic.co/downloads/beats/filebeat
-rpm_download_checksum: "sha1:f37f0d2246b682c8720420fef70ae130d0acb037"
+rpm_download_checksum: "sha512:6d3256ed149da58b1062a85be476fd619c87d2a6b5051927e880a342161571b6017522e22b604170eb088a0d61cbbb30a8a919c7c3475ac2b8acbbf8df51ae0d"
 rpm_working_dir: "{{ build_dir }}/BUILDROOT"

@@ -17,10 +17,10 @@ build_prereq_packages:
   - git
   - build-essential
 
-deb_package_amd64: filebeat-5.2.2-amd64.deb
-deb_package_ppc64el: filebeat-5.2.2-ppc64el.deb
+deb_package_amd64: filebeat-5.6.3-amd64.deb
+deb_package_ppc64el: filebeat-5.6.3-ppc64el.deb
 deb_download_path: https://artifacts.elastic.co/downloads/beats/filebeat
-deb_download_checksum: "sha1:710d95c50aad87b675d756791ebd0ff3cc9fc876"
+deb_download_checksum: "sha512:d8a27129ada2ff94df107b52e868d1bd4491411da07d7af1f8307c812cf4f67e18b44216ae0aa17c0204a9bc1bf5bc5dcc12a05c5ca6cd0d7ca4374272abf7ae"
 deb_working_dir: "{{ build_dir }}/debworkingdir"
 deb_binary_path: "{{ deb_working_dir }}/usr/share/filebeat/bin"
 deb_control_file: "{{ deb_working_dir }}/DEBIAN/control"

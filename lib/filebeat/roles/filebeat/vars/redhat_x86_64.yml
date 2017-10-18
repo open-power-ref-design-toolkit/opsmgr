@@ -14,4 +14,4 @@
 # limitations under the License.
 
 package_file: filebeat-{{ filebeat_version }}-x86_64.rpm
-download_checksum: "sha1:f37f0d2246b682c8720420fef70ae130d0acb037"
+download_checksum: "sha512:6d3256ed149da58b1062a85be476fd619c87d2a6b5051927e880a342161571b6017522e22b604170eb088a0d61cbbb30a8a919c7c3475ac2b8acbbf8df51ae0d"
