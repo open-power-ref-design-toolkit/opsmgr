@@ -111,8 +111,8 @@ def change_device(args):
             message = _("Input label for rack option (%s) not found.") % (args.rack)
             return -1, message
 
-    if (not password and not args.address and not args.new_label and not rackid
-            and not args.rack_location and not ssh_key_string):
+    if (not password and not args.address and not args.new_label and not
+            rackid and not args.rack_location and not ssh_key_string):
         message = _("You must specify at least one property to be modified.")
         return -1, message
 
@@ -170,7 +170,7 @@ def list_devices(args):
         racks = get_strip_strings_array(str(args.rack))
         for rack in racks:
             rack_id = rack_mgr.get_rack_id_by_label(rack)
-            if not rack_id is None:
+            if rack_id is not None:
                 rack_ids.append(rack_id)
 
     (rc, result_dict) = resource_mgr.list_resources(labels, args.briefly, types, racks=rack_ids)

@@ -62,6 +62,8 @@ class DetailView(tabs.TabView):
     @memoized.memoized_method
     def get_data(self):
         try:
+            __method__ = 'views.DetailView.get_data'
+            failure_message = str("Unable to retrieve detailed data for the resource")
             if "resource_id" in self.kwargs:
                 try:
                     (rc, result_dict) = resource_mgr.list_resources(

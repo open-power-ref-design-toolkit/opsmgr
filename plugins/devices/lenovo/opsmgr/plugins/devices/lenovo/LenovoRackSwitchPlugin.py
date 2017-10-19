@@ -116,8 +116,6 @@ class RackSwitchPlugin(IManagerDevicePlugin.IManagerDevicePlugin):
 
     @entry_exit(exclude_index=[0, 1], exclude_name=["self", "new_password"])
     def change_device_password(self, new_password):
-        _method_ = "RackSwitchPlugin.change_device_password"
-
         self._check_connection()
         client_shell = self.client.invoke_shell()
         client_shell.send(self.PASSWORD_CHANGE_COMMAND)

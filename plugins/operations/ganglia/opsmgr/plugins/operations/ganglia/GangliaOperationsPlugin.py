@@ -135,9 +135,12 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
     def _write_gmetad_config_file(address):
         try:
             client = GangliaPlugin._connect()
-            cmd = "cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 1 ]; then " + "sudo sed -i 's/localhost[[:space:]]*$/" + address + " &/' /etc/ganglia/gmetad.conf; service gmetad restart; fi"
+            cmd = ("cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 1 ]; then " +
+                   "sudo sed -i 's/localhost[[:space:]]*$/" + address +
+                   " &/' /etc/ganglia/gmetad.conf; service gmetad restart; fi")
             (_stdin, stdout, _stderr) = client.exec_command(cmd)
             rc = stdout.channel.recv_exit_status()
+            output = stdout.read().decode()
             if rc != 0:
                 raise exceptions.OpsException("Error when change gmetad config file:\n"
                                               "Command: " + cmd + "\n"
@@ -150,9 +153,11 @@ class GangliaPlugin(IManagerDeviceHook, IOperationsPlugin):
     def _remove_config_files(address):
         try:
             client = GangliaPlugin._connect()
-            cmd = "cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 0 ]; then " + "sudo sed -i 's/" + address + "//'  /etc/ganglia/gmetad.conf; service gmetad restart; fi"
+            cmd = ("cat /etc/ganglia/gmetad.conf |grep " + address + "; if [ $? == 0 ]; then " +
+                   "sudo sed -i 's/" + address + "//'  /etc/ganglia/gmetad.conf; service gmetad restart; fi")
             (_stdin, stdout, _stderr) = client.exec_command(cmd)
             rc = stdout.channel.recv_exit_status()
+            output = stdout.read().decode()
             if rc != 0:
                 raise exceptions.OpsException("Error when change gmetad config file:\n"
                                               "Command: " + cmd + "\n"
