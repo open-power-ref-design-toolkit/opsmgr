@@ -32,13 +32,13 @@
   become: no
   tasks:
     - debug: msg='{{ hostvars[item].inventory_hostname }} --> {{ hostvars[item].alias }}'
-      with_items: groups['targets']
+      with_items: "{{ groups['targets'] }}"
       when: hostvars[item].ansible_ssh_host is defined
     - debug: msg='{{ item == hostvars[item].alias }}'
-      with_items: groups['targets']
+      with_items: "{{ groups['targets'] }}"
       when: hostvars[item].ansible_ssh_host is defined
     - debug: msg='{{ hostvars[item].ansible_ssh_host }} {{ item }}'
-      with_items: groups['targets']
+      with_items: "{{ groups['targets'] }}"
       when: >
           (hostvars[item].ansible_ssh_host is defined) and
           (item == hostvars[item].alias)

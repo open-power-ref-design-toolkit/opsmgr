@@ -3,7 +3,11 @@
     # clean temporary directories if they exist
 
     - name: cleanup temp directory
-      command: rm -rf {{ temp_dir }}
+      file:
+          dest: "{{ temp_dir }}"
+          recurse: yes
+          force: yes
+          state: absent
 
     # checkout from github repository
 
@@ -36,6 +40,10 @@
           mode: 0755
 
     - name: cleanup temp directory
-      command: rm -rf {{ temp_dir }}
+      file:
+          dest: "{{ temp_dir }}"
+          recurse: yes
+          force: yes
+          state: absent
 
 
