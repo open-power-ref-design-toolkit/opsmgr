@@ -16,12 +16,12 @@
 
 - name: Deploy Kibana configuration files
   template:
-    src: "{{ item }}"
+    src: "{{ item }}.j2"
     dest: "{{ config_dir }}/{{ item }}"
     owner: "root"
     group: "root"
   with_items:
-    - kibana.yml.j2
+    - kibana.yml
   notify: Restart Kibana
   tags:
     - kibana-post-install
