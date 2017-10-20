@@ -15,7 +15,9 @@
 
     - name: ensure the facts directory exists
       become: no
-      command: mkdir -p {{ opsmgr_dat }}
+      file:
+          dest: "{{ opsmgr_dat }}"
+          state: directory
       delegate_to: localhost
 
     - name: lxcnet configuration for all hosts
