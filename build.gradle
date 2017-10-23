@@ -14,13 +14,10 @@
 */
 
 task build (type : Exec) {
-     print 'Building opsMgr'
-     //exec { commandLine = ["sudo python3 setup.py install"] }
-     executable = "sudo"; args = ["python3", "setup.py", "install"] 
-    standardOutput = new ByteArrayOutputStream()
-    ext.output = {
-       return standardOutput.toString()
-    }
+    print 'Building opsmgr:'
+    // There currently isn't any build necessary.
+    executable = "ls"
+    args "-lah"
 }
 task do_all{
   build.execute();
