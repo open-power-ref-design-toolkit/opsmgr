@@ -189,8 +189,6 @@
 
     - name: ensure the temporary directory exists
       become: no
-#      local_action: command
-#          mkdir -p {{ opsmgr_dat }}/{{ item }}
       file:
           dest: "{{ opsmgr_dat }}/{{ item }}"
           recurse: yes
