@@ -122,7 +122,7 @@ def retrieve_application_links(self, request):
     # http request -- so we need to handle that exception
     try:
         host_address = request.META.get('HTTP_HOST').split(':')[0]
-    except Exception as e:
+    except Exception:
         host_address = None
 
     for app in applications:

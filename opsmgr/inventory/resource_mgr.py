@@ -585,7 +585,6 @@ def remove_resource(labels=None, all_devices=False, deviceids=None):
         ret    return code
         message message if provided with return code
     '''
-    _method_ = 'resource_mgr.remove_resource'
     not_found_values = []
 
     session = persistent_mgr.create_database_session()

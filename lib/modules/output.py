@@ -24,13 +24,13 @@ EXAMPLES = '''
 ---
 '''
 
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import true, AnsibleModule
 
 
 def main():
 
     fields = {
-        "msg": {"required": true, "type": "str" },
+        "msg": {"required": true, "type": "str"},
     }
 
     module = AnsibleModule(argument_spec=fields)
