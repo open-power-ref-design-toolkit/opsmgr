@@ -40,7 +40,7 @@ import_containers:
     role:     core
     address:  {{ hostvars[item].container_address }}
     host:     {{ physical_host }}
-    hostaddr: {{ hostvars[physical_host].ansible_ssh_host }}
+    hostaddr: {{ hostvars[physical_host].ansible_host }}
     hostname: {{ item }}
 {% endif %}
 {% endfor %}

@@ -1,7 +1,7 @@
 [opsmgr]
 
 {% for host in groups['shared-infra_hosts'] %}
-{{ hostvars['' + host]['inventory_hostname'] }} ansible_ssh_host={{ hostvars['' + host]['ansible_ssh_host'] }}
+{{ hostvars['' + host]['inventory_hostname'] }} ansible_ssh_host={{ hostvars['' + host]['ansible_host'] }}
 {% endfor %}
 
 [osa-newton]
