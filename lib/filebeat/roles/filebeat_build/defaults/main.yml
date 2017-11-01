@@ -20,8 +20,8 @@ build_prereq_packages:
 build_dir: /tmp/filebeat_build
 
 go_download_url: https://storage.googleapis.com/golang
-go_download_file: go1.8.3.linux-ppc64le.tar.gz
-go_download_checksum: "sha256:e5fb00adfc7291e657f1f3d31c09e74890b5328e6f991a3f395ca72a8c4dc0b3"
+go_download_file: go1.7.6.linux-ppc64le.tar.gz
+go_download_checksum: "sha256:8b5b602958396f165a3547a1308ab91ae3f2ad8ecb56063571a37aadc2df2332"
 go_root: "{{ build_dir }}/go"
 go_path: "{{ build_dir }}/go_path"
 
